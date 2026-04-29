@@ -29,4 +29,8 @@ runs/
 
 # 주피터
 .ipynb_checkpoints/
-*.ipynb
+*.ipynb*.pt
+*.pth
+*.onnx
+*.pkl
+runs/
