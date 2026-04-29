@@ -19,3 +19,23 @@ line_length = 88
 max-line-length = 88
 exclude = .venv, venv, __pycache__
 extend-ignore = E203, W503
+
+# api/pyproject.toml 에 추가
+
+[tool.importlinter]
+root_packages = ["app"]
+
+[[tool.importlinter.contracts]]
+name = "routers → services만 호출 가능"
+type = "layers"
+layers = [
+    "app.routers",
+    "app.services",
+    "app.models",
+]
+
+[[tool.importlinter.contracts]]
+name = "routers는 models 직접 접근 금지"
+type = "forbidden"
+source_modules = ["app.routers"]
+forbidden_modules = ["app.models"]

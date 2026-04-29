@@ -1,17 +1,20 @@
-
-#!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
-
 # api/ 변경사항 있을 때만 실행
+# api/ 개발 시작 시 활성화
 if git diff --cached --name-only | grep -q "^api/"; then
-  echo "🔍 api/ black 검사 중..."
-  cd api && black --check . && isort --check . && cd ..
+  echo "🔍 api/ 검사 중..."
+  # python -m black --check .
+  # python -m isort --check .
+  # python -m lint_imports
+  cd ..
 fi
 
 # vision/ 변경사항 있을 때만 실행
+# vision/ 개발 시작 시 활성화
 if git diff --cached --name-only | grep -q "^vision/"; then
-  echo "🔍 vision/ black 검사 중..."
-  cd vision && black --check . && isort --check . && cd ..
+  echo "🔍 vision/ 검사 중..."
+  # python -m black --check .
+  # python -m isort --check .
+  cd ..
 fi
 
 # weight 파일 커밋 차단
