@@ -1,0 +1,27 @@
+# api/ 변경사항 있을 때만 실행
+# api/ 개발 시작 시 활성화
+if git diff --cached --name-only | grep -q "^api/"; then
+  echo "🔍 api/ 검사 중..."
+  # python -m black --check .
+  # python -m isort --check .
+  # python -m lint_imports
+  cd ..
+fi
+
+# vision/ 변경사항 있을 때만 실행
+# vision/ 개발 시작 시 활성화
+if git diff --cached --name-only | grep -q "^vision/"; then
+  echo "🔍 vision/ 검사 중..."
+  # python -m black --check .
+  # python -m isort --check .
+  cd ..
+fi
+
+# weight 파일 커밋 차단
+if git diff --cached --name-only | grep -qE "\.(pt|pth|onnx|pkl)$"; then
+  echo "❌ weight 파일 커밋 금지 (.pt .pth .onnx .pkl)"
+  echo "👉 runs/, models/ 확인 후 .gitignore에 추가하세요"
+  exit 1
+fi
+
+echo "✅ pre-commit 통과"

@@ -1,0 +1,26 @@
+{
+  "name": "siren-api",
+  "version": "1.0.0",
+  "description": "> 선박 LNG탱크 부품 결함을 AI가 탐지하고, 조치 방법까지 안내하는 현장 보조 앱",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prepare": "husky"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zldnlto/siren-api.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/zldnlto/siren-api/issues"
+  },
+  "homepage": "https://github.com/zldnlto/siren-api#readme",
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^16.4.0"
+  }
+}
