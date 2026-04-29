@@ -1,1 +1,24 @@
 
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# api/ 변경사항 있을 때만 실행
+if git diff --cached --name-only | grep -q "^api/"; then
+  echo "🔍 api/ black 검사 중..."
+  cd api && black --check . && isort --check . && cd ..
+fi
+
+# vision/ 변경사항 있을 때만 실행
+if git diff --cached --name-only | grep -q "^vision/"; then
+  echo "🔍 vision/ black 검사 중..."
+  cd vision && black --check . && isort --check . && cd ..
+fi
+
+# weight 파일 커밋 차단
+if git diff --cached --name-only | grep -qE "\.(pt|pth|onnx|pkl)$"; then
+  echo "❌ weight 파일 커밋 금지 (.pt .pth .onnx .pkl)"
+  echo "👉 runs/, models/ 확인 후 .gitignore에 추가하세요"
+  exit 1
+fi
+
+echo "✅ pre-commit 통과"
