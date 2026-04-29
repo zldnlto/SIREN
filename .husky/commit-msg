@@ -1,0 +1,40 @@
+COMMIT_MSG_FILE="$1"
+COMMIT_MSG=$(cat "$COMMIT_MSG_FILE")
+
+# 컬러 설정
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m'
+
+# 허용 타입
+TYPES="feat|fix|docs|test|refactor|style|ci|build|chore|revert|data|train|model|exp"
+
+# Merge 커밋 제외
+if echo "$COMMIT_MSG" | grep -qE "^Merge "; then
+  echo "${GREEN}✅ Merge 커밋 — 형식 검사 생략${NC}"
+  exit 0
+fi
+
+# 형식 검사
+if ! echo "$COMMIT_MSG" | grep -qE "^($TYPES)(\(.+\))?: .+"; then
+  echo ""
+  echo "${RED}❌ 🐶 커밋 메시지 형식을 수정해주세요!${NC}"
+  echo "${YELLOW}올바른 형식:${NC}"
+  echo "  <type>: <설명>"
+  echo "  <type>(<scope>): <설명>"
+  echo ""
+  echo "${YELLOW}허용 타입:${NC}"
+  echo "  공통:    feat fix docs test refactor style"
+  echo "           ci build chore revert"
+  echo "  vision:  data train model exp"
+  echo ""
+  echo "${YELLOW}예시:${NC}"
+  echo "  chore: husky 설정 #6"
+  echo "  feat(api): 검사 엔드포인트 추가 #12"
+  echo "-------------------------------------------------------"
+  echo ""
+  exit 1
+fi
+
+echo "${GREEN}✅ 커밋 메시지 형식 확인 완료${NC}"
