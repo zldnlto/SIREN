@@ -1,0 +1,32 @@
+# 환경변수
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# 가상환경
+venv/
+.venv/
+
+# ML 핵심 제외
+*.pt
+*.pth
+*.onnx
+*.pkl
+
+# 데이터셋
+data/
+datasets/
+*.csv
+*.json.gz
+
+# YOLOv8 학습 결과
+runs/
+
+# 주피터
+.ipynb_checkpoints/
+*.ipynb

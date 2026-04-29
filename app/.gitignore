@@ -1,0 +1,25 @@
+# Flutter 빌드
+build/
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+
+# 환경변수
+.env
+.env.*
+!.env.example
+
+# Android
+android/local.properties
+android/.gradle/
+android/app/google-services.json
+
+# iOS
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+
+# IDE
+.idea/
+*.iml
