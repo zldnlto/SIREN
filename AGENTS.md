@@ -19,6 +19,7 @@ Phase 1 MVP:
 
 - 모델 가중치 커밋 금지: _.pt, _.onnx, _.pth, _.pkl
 - .env, secrets, 토큰, API 키 읽기 또는 출력 금지
+- 실제 dataset / raw data 읽기 또는 수정 금지
 - 부모 이슈가 브랜치 단위
 - Sub-issue가 커밋 단위
 - Draft PR 먼저 생성
@@ -37,14 +38,15 @@ data, train, model, exp
 
 feat/fix/data/train/model/exp 타입은 이슈 번호 필수
 
-## 리뷰 기준
+## Review guidelines
 
-다음 항목은 높은 우선순위로 표시:
+명확한 근거 없이 아래 항목이 발견되면 P1으로 처리:
 
-- 변경된 동작에 대한 테스트 누락
-- 롤백 계획 없는 DB 스키마 변경
-- 출처 근거 없는 RAG 응답
-- 데이터셋/설정/메트릭 기록 없는 Vision 실험
-- 가중치 파일 커밋
-- 시크릿, 토큰, .env 노출
-- 위험한 쉘 명령어
+- secrets, credentials, Firebase config, 모델 가중치, raw dataset 노출
+- FastAPI route가 service/repository 레이어를 우회
+- API 응답 계약 변경 시 Flutter 연동 업데이트 누락
+- RAG retrieval 동작 변경 시 smoke 증거 누락
+- YOLO inference path / device / model 하드코딩
+- PostgreSQL 스키마 변경 시 migration / 테스트 증거 누락
+- 변경 영역에 대한 validation evidence 누락
+- 위험 shell / DB 명령어 포함
