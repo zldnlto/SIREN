@@ -12,3 +12,7 @@ Thumbs.db
 .vscode/
 *.swp
 node_modules/
+
+# Claude Code 개인 설정
+.claude/settings.local.json
+.claude/logs/
