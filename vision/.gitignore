@@ -34,3 +34,6 @@ runs/
 *.onnx
 *.pkl
 runs/
+
+/bin
+aihubshell
