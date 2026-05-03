@@ -1,171 +1,409 @@
-# vision/src/inspect_label.py
-# 사용법: python vision/src/inspect_label.py
-# 목적: TL 라벨 zip 1개를 열어 JSON 구조 자동 분석
+# vision/src/parse_all_labels.py
+# 사용법: python vision/src/parse_all_labels.py
+# 목적: TL_* / VL_* 전체 zip 파싱
+#       → dataset_index.csv + label_report.md + 노션 입력용 로그 출력
 
 import zipfile
 import json
+import csv
+import unicodedata
 from pathlib import Path
-from typing import TypedDict, Optional
-
+from collections import defaultdict
+from typing import Optional
 
 # ── 경로 설정 ──────────────────────────────────────────────
-LABELS_ROOT = Path.home() / "Desktop/Final_PJ/siren-api/vision/data/labels/104.부품_품질_검사_영상_데이터_선박-해양플랜드_고도화_LNG탱크_품질_검사_영상_데이터/3.개방데이터/1.데이터/Training/02.라벨링데이터"
+LABELS_ROOT = Path.home() / "Desktop/Final_PJ/siren-api/vision/data/labels"
+OUTPUT_DIR  = Path.home() / "Desktop/Final_PJ/siren-api/vision/data"
+OUTPUT_CSV  = OUTPUT_DIR / "dataset_index.csv"
+REPORT_PATH = OUTPUT_DIR / "label_report.md"
+NOTION_LOG  = OUTPUT_DIR / "notion_log.txt"
 
-TARGET_ZIP = "TL_표면처리_균열_도장.zip"
+# ── 카테고리 매핑 ──────────────────────────────────────────
+CATEGORY_MAP = {
+    1101: ("용접",     "용접양품"),
+    1102: ("용접",     "용접불량"),
+    1202: ("용접",     "용접블로우홀"),
+    2101: ("표면처리", "표면양품"),
+    2102: ("표면처리", "균열"),
+    2202: ("표면처리", "도장흐름"),
+    2302: ("표면처리", "도막떨어짐"),
+    2402: ("표면처리", "도막분리"),
+    2502: ("표면처리", "스크래치"),
+    2602: ("표면처리", "보온재손상"),
+    2702: ("표면처리", "탱크클리닝불량"),
+    3101: ("파이프",   "볼트체결양품"),
+    3102: ("파이프",   "볼트체결불량"),
+    4101: ("케이블",   "케이블설치양품"),
+    4102: ("케이블",   "케이블설치불량"),
+    4201: ("케이블",   "케이블양품"),
+    4202: ("케이블",   "케이블손상"),
+    4301: ("케이블",   "바인딩양품"),
+    4302: ("케이블",   "바인딩불량"),
+    5101: ("절단",     "절단양품"),
+    5102: ("절단",     "절단불량"),
+    6101: ("폼스프레이", "폼스프레이양품"),
+    6102: ("폼스프레이", "폼스프레이불량"),
+}
 
-
-# ── 타입 정의 ──────────────────────────────────────────────
-class ImageInfo(TypedDict):
-    count: int
-    sample_keys: list[str]
-    sample: dict
-
-
-class JsonSummary(TypedDict):
-    top_level_keys: list[str]
-    annotation_type: Optional[str]
-    annotation_sample_keys: Optional[list[str]]
-    class_info: Optional[list[dict]]
-    image_info: Optional[ImageInfo]
-    annotation_count: int
-    raw_preview: Optional[dict]
-
-
-# ── 경로 탐색 ──────────────────────────────────────────────
-import unicodedata
-
-def find_zip(root: Path, filename: str) -> Optional[Path]:
-    """root 하위를 재귀 탐색해 filename과 일치하는 첫 번째 zip 반환"""
-    target = unicodedata.normalize("NFC", filename)
-    matches = [
-        p for p in root.rglob("*.zip")
-        if unicodedata.normalize("NFC", p.name) == target
-    ]
-    if not matches:
-        return None
-    if len(matches) > 1:
-        print(f"⚠️  동일 파일명 {len(matches)}개 발견 — 첫 번째 사용: {matches[0]}")
-    return matches[0]
+VALID_CATEGORY_IDS = set(CATEGORY_MAP.keys())
 
 
-def list_all_zips(root: Path) -> list[Path]:
-    """root 하위 전체 zip 목록 반환"""
-    return sorted(root.rglob("*.zip"))
+# ── 파일명 파싱 ────────────────────────────────────────────
+def parse_zip_name(zip_name: str) -> dict:
+    """
+    TL_표면처리_균열_도장.zip
+    → split=TL, domain=표면처리, defect_name=균열, part_name=도장
+    """
+    stem  = zip_name.replace(".zip", "")
+    parts = stem.split("_", 3)
+    return {
+        "split":       parts[0] if len(parts) > 0 else "",
+        "domain":      parts[1] if len(parts) > 1 else "",
+        "defect_name": parts[2] if len(parts) > 2 else "",
+        "part_name":   parts[3] if len(parts) > 3 else "",
+    }
 
 
-# ── 어노테이션 분석 ────────────────────────────────────────
-def detect_annotation_type(annotation: dict) -> str:
-    """annotation 키 구성으로 라벨 타입 자동 감지"""
-    if "segmentation" in annotation and annotation["segmentation"]:
+# ── 어노테이션 타입 감지 ───────────────────────────────────
+def detect_label_type(annotation: dict) -> str:
+    has_seg  = bool(annotation.get("segmentation"))
+    has_bbox = bool(annotation.get("bbox"))
+    if has_seg and has_bbox:
+        return "segmentation+bbox"
+    if has_seg:
         return "segmentation"
-    if "bbox" in annotation and annotation["bbox"]:
+    if has_bbox:
         return "bbox"
     return "classification"
 
 
-def inspect_json(data: dict) -> JsonSummary:
-    """JSON 1개의 핵심 구조 요약"""
-    summary: JsonSummary = {
-        "top_level_keys": list(data.keys()),
-        "annotation_type": None,
-        "annotation_sample_keys": None,
-        "class_info": None,
-        "image_info": None,
-        "annotation_count": 0,
-        "raw_preview": None,
+# ── 품질 체크 ──────────────────────────────────────────────
+def check_quality(data: dict) -> dict:
+    issues      = []
+    annotations = data.get("annotations", [])
+    images      = data.get("images", [])
+
+    image_ids     = {img["id"] for img in images}
+    ann_image_ids = {ann["image_id"] for ann in annotations}
+
+    # 어노테이션 없는 이미지
+    no_ann = image_ids - ann_image_ids
+    if no_ann:
+        issues.append(f"어노테이션 없는 이미지 {len(no_ann)}개")
+
+    # bbox / segmentation 비어있음
+    empty_bbox = sum(1 for a in annotations if not a.get("bbox"))
+    empty_seg  = sum(1 for a in annotations if not a.get("segmentation"))
+    if empty_bbox:
+        issues.append(f"bbox 비어있음 {empty_bbox}개")
+    if empty_seg:
+        issues.append(f"segmentation 비어있음 {empty_seg}개")
+
+    # area 이상값
+    zero_area = sum(1 for a in annotations if a.get("area", 1) <= 0)
+    if zero_area:
+        issues.append(f"area=0 이하 {zero_area}개")
+
+    # bbox 너무 작음 (10px 이하)
+    tiny_bbox = sum(
+        1 for a in annotations
+        if a.get("bbox") and (a["bbox"][2] < 10 or a["bbox"][3] < 10)
+    )
+    if tiny_bbox:
+        issues.append(f"bbox 10px 이하 {tiny_bbox}개")
+
+    # 중복 어노테이션
+    ann_map    = defaultdict(list)
+    for a in annotations:
+        ann_map[a.get("image_id")].append(a.get("category_id"))
+    duplicates = sum(
+        1 for cats in ann_map.values()
+        if len(cats) != len(set(cats))
+    )
+    if duplicates:
+        issues.append(f"중복 어노테이션 이미지 {duplicates}개")
+
+    # 유효하지 않은 category_id
+    invalid_ids = {
+        a.get("category_id") for a in annotations
+        if a.get("category_id") not in VALID_CATEGORY_IDS
+    }
+    if invalid_ids:
+        issues.append(f"유효하지 않은 category_id {invalid_ids}")
+
+    return {"clean": len(issues) == 0, "issues": issues}
+
+
+# ── 단일 JSON 파싱 ─────────────────────────────────────────
+def parse_json(data: dict, zip_info: dict) -> list[dict]:
+    rows        = []
+    annotations = data.get("annotations", [])
+    images      = data.get("images", [])
+    image_map   = {img["id"]: img for img in images}
+
+    for ann in annotations:
+        image_id    = ann.get("image_id")
+        category_id = ann.get("category_id")
+        img         = image_map.get(image_id, {})
+        domain, defect_name = CATEGORY_MAP.get(category_id, ("", ""))
+
+        rows.append({
+            "file_name":     img.get("file_name", ""),
+            "split":         zip_info["split"],
+            "domain":        domain or zip_info["domain"],
+            "defect_name":   defect_name or zip_info["defect_name"],
+            "part_name":     zip_info["part_name"],
+            "category_id":   category_id,
+            "label_type":    detect_label_type(ann),
+            "width":         img.get("width", ""),
+            "height":        img.get("height", ""),
+            "date_captured": img.get("date_captured", ""),
+            "area":          ann.get("area", ""),
+            "zip_source":    zip_info["zip_name"],
+        })
+    return rows
+
+
+# ── zip 1개 처리 ───────────────────────────────────────────
+def process_zip(zip_path: Path) -> dict:
+    zip_name = unicodedata.normalize("NFC", zip_path.name)
+    zip_info = parse_zip_name(zip_name)
+    zip_info["zip_name"] = zip_name
+
+    result = {
+        "zip_name":          zip_name,
+        "split":             zip_info["split"],
+        "domain":            zip_info["domain"],
+        "defect_name":       zip_info["defect_name"],
+        "part_name":         zip_info["part_name"],
+        "image_count":       0,
+        "label_type":        set(),
+        "resolution":        set(),
+        "category_ids_used": set(),
+        "defect_count":      0,
+        "good_count":        0,
+        "date_range":        [],
+        "quality":           {"clean": True, "issues": []},
+        "rows":              [],
+        "error":             None,
     }
 
-    # COCO 포맷 계열 (images / annotations / categories)
-    if "annotations" in data:
-        annotations: list[dict] = data["annotations"]
-        summary["annotation_count"] = len(annotations)
+    try:
+        with zipfile.ZipFile(zip_path, "r") as zf:
+            json_files = [f for f in zf.namelist() if f.endswith(".json")]
+            result["image_count"] = len(json_files)
 
-        if annotations:
-            sample_ann = annotations[0]
-            summary["annotation_type"] = detect_annotation_type(sample_ann)
-            summary["annotation_sample_keys"] = list(sample_ann.keys())
+            quality_checked = False
 
-        if "categories" in data:
-            cats = data["categories"]
-            summary["class_info"] = cats if isinstance(cats, list) else [cats]
+            for jf in json_files:
+                with zf.open(jf) as f:
+                    data = json.load(f)
 
-        if "images" in data:
-            imgs: list[dict] = data["images"]
-            img = imgs[0] if imgs else {}
-            summary["image_info"] = ImageInfo(
-                count=len(imgs),
-                sample_keys=list(img.keys()),
-                sample=img,
-            )
+                # 품질 체크 (첫 번째 JSON에서만)
+                if not quality_checked:
+                    result["quality"] = check_quality(data)
+                    quality_checked   = True
 
-    # 단일 이미지 포맷 (image / label / objects)
-    elif "image" in data or "label" in data:
-        summary["annotation_type"] = "single_image_format"
-        summary["raw_preview"] = {k: data[k] for k in list(data.keys())[:5]}
+                rows = parse_json(data, zip_info)
+                result["rows"].extend(rows)
 
-    return summary
+                for row in rows:
+                    result["label_type"].add(row["label_type"])
+                    if row["width"] and row["height"]:
+                        result["resolution"].add(
+                            f"{row['width']}x{row['height']}"
+                        )
+                    if row["category_id"]:
+                        result["category_ids_used"].add(row["category_id"])
+                    if row["date_captured"]:
+                        result["date_range"].append(row["date_captured"])
+
+                    cat = row.get("category_id", 0) or 0
+                    if cat % 10 == 1:
+                        result["good_count"] += 1
+                    elif cat % 10 == 2:
+                        result["defect_count"] += 1
+
+    except Exception as e:
+        result["error"] = str(e)
+
+    return result
+
+
+# ── 노션 출력 포맷 ─────────────────────────────────────────
+def format_notion_row(res: dict) -> str:
+    label_types = "/".join(sorted(res["label_type"]))
+    resolutions = "/".join(sorted(res["resolution"]))
+    total       = res["good_count"] + res["defect_count"]
+    good_ratio  = f"{res['good_count']/total*100:.0f}%" if total > 0 else "-"
+
+    date_range = "-"
+    if res["date_range"]:
+        dates      = sorted(res["date_range"])
+        date_range = f"{dates[0][:7]} ~ {dates[-1][:7]}"
+
+    quality_str  = "✅ 없음" if res["quality"]["clean"] else "⚠️ 있음"
+    issue_str    = " / ".join(res["quality"]["issues"]) if res["quality"]["issues"] else "-"
+    bbox_issue   = "⚠️ 있음" if any("bbox" in i for i in res["quality"]["issues"]) else "✅ 없음"
+    dup_issue    = "⚠️ 있음" if any("중복" in i for i in res["quality"]["issues"]) else "✅ 없음"
+
+    return (
+        f"\n{'='*60}\n"
+        f"📋 노션 입력용\n"
+        f"{'='*60}\n"
+        f"이름:           {res['zip_name'].replace('.zip','')}\n"
+        f"상태:           완료\n"
+        f"split:          {res['split']}\n"
+        f"이미지수:       {res['image_count']:,}\n"
+        f"라벨타입:       {label_types}\n"
+        f"해상도:         {resolutions}\n"
+        f"양품수:         {res['good_count']:,}\n"
+        f"불량수:         {res['defect_count']:,}\n"
+        f"양품비율:       {good_ratio}\n"
+        f"촬영기간:       {date_range}\n"
+        f"결측여부:       {quality_str}\n"
+        f"결측내용:       {issue_str}\n"
+        f"bbox이상:       {bbox_issue}\n"
+        f"중복어노테이션: {dup_issue}\n"
+        f"특이사항:       \n"
+        f"{'='*60}"
+    )
+
+
+# ── 리포트 작성 ────────────────────────────────────────────
+def write_report(zip_results: list[dict], all_rows: list[dict]) -> None:
+    lines = ["# SIREN 라벨 분석 리포트\n"]
+
+    total_images = sum(r["image_count"] for r in zip_results)
+    total_defect = sum(r["defect_count"] for r in zip_results)
+    total_good   = sum(r["good_count"]   for r in zip_results)
+    issue_zips   = [r for r in zip_results if not r["quality"]["clean"]]
+
+    lines += [
+        "## 전체 요약\n",
+        f"- 총 zip 수: {len(zip_results)}개",
+        f"- 총 이미지 수: {total_images:,}개",
+        f"- 총 불량 수: {total_defect:,}개",
+        f"- 총 양품 수: {total_good:,}개",
+        f"- 품질 이슈 zip: {len(issue_zips)}개\n",
+    ]
+
+    # 도메인별 샘플 수
+    domain_counts = defaultdict(int)
+    for row in all_rows:
+        domain_counts[row["domain"]] += 1
+
+    lines += ["\n## 도메인별 이미지 수\n"]
+    for domain, count in sorted(domain_counts.items(), key=lambda x: -x[1]):
+        lines.append(f"- {domain}: {count:,}개")
+
+    # defect_name × part_name 조합
+    combo_counts = defaultdict(int)
+    for row in all_rows:
+        key = f"{row['defect_name']}_{row['part_name']}"
+        combo_counts[key] += 1
+
+    lines += ["\n## defect_name × part_name 조합 (매뉴얼 작성 범위)\n"]
+    for combo, count in sorted(combo_counts.items(), key=lambda x: -x[1]):
+        lines.append(f"- {combo}: {count:,}개")
+
+    # 라벨 타입 분포
+    label_type_counts = defaultdict(int)
+    for row in all_rows:
+        label_type_counts[row["label_type"]] += 1
+
+    lines += ["\n## 라벨 타입 분포\n"]
+    for lt, count in sorted(label_type_counts.items(), key=lambda x: -x[1]):
+        lines.append(f"- {lt}: {count:,}개")
+
+    # 품질 이슈
+    if issue_zips:
+        lines += ["\n## 품질 이슈 목록\n"]
+        for r in issue_zips:
+            lines += [f"### {r['zip_name']}"]
+            for issue in r["quality"]["issues"]:
+                lines += [f"- {issue}"]
+
+    # zip별 상세 테이블
+    lines += [
+        "\n## zip별 상세\n",
+        "| zip명 | split | 이미지수 | 라벨타입 | 양품 | 불량 | 품질 |",
+        "|-------|-------|---------|---------|-----|-----|-----|",
+    ]
+    for r in zip_results:
+        label_types = "/".join(sorted(r["label_type"]))
+        quality     = "🟢" if r["quality"]["clean"] else "⚠️"
+        name        = (r["zip_name"].replace(".zip", "")
+                       .replace("TL_", "").replace("VL_", ""))
+        lines.append(
+            f"| {name} | {r['split']} | {r['image_count']:,} | "
+            f"{label_types} | {r['good_count']:,} | "
+            f"{r['defect_count']:,} | {quality} |"
+        )
+
+    with open(REPORT_PATH, "w", encoding="utf-8") as f:
+        f.write("\n".join(lines))
 
 
 # ── 메인 ───────────────────────────────────────────────────
 def main() -> None:
-    zip_path = find_zip(LABELS_ROOT, TARGET_ZIP)
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
-    if zip_path is None:
-        print(f"❌ '{TARGET_ZIP}' 를 찾을 수 없습니다.")
-        print(f"📂 LABELS_ROOT 하위 zip 목록:")
-        for f in list_all_zips(LABELS_ROOT):
-            print(f"   {f.relative_to(LABELS_ROOT)}")
-        return
+    all_zips = sorted(
+        p for p in LABELS_ROOT.rglob("*.zip")
+        if unicodedata.normalize("NFC", p.name).startswith(("TL_", "VL_"))
+    )
 
-    print(f"📦 발견: {zip_path.relative_to(LABELS_ROOT)}")
+    print(f"총 {len(all_zips)}개 zip 발견")
     print("=" * 60)
 
-    with zipfile.ZipFile(zip_path, "r") as zf:
-        json_files = [f for f in zf.namelist() if f.endswith(".json")]
-        print(f"📄 내부 JSON 파일 수: {len(json_files)}")
+    all_rows     = []
+    zip_results  = []
+    notion_lines = []
 
-        if not json_files:
-            print("❌ JSON 파일 없음 — zip 내부 구조:")
-            for name in zf.namelist()[:20]:
-                print(f"   {name}")
-            return
+    for i, zp in enumerate(all_zips, 1):
+        name = unicodedata.normalize("NFC", zp.name)
+        print(f"[{i:02d}/{len(all_zips)}] {name} 처리 중...")
 
-        print("\n📁 내부 디렉토리 구조 (상위 10개):")
-        for name in sorted(zf.namelist())[:10]:
-            print(f"   {name}")
+        res = process_zip(zp)
+        zip_results.append(res)
+        all_rows.extend(res["rows"])
 
-        target_json = json_files[0]
-        print(f"\n🔍 분석 대상 JSON: {target_json}")
-        print("-" * 60)
+        status  = "✅" if res["error"] is None else f"❌ {res['error']}"
+        quality = ("🟢 정상" if res["quality"]["clean"]
+                   else f"⚠️  {res['quality']['issues']}")
 
-        with zf.open(target_json) as f:
-            data = json.load(f)
+        print(f"  {status} 이미지수: {res['image_count']:,} | "
+              f"라벨타입: {res['label_type']} | "
+              f"품질: {quality}")
 
-        summary = inspect_json(data)
+        notion_row = format_notion_row(res)
+        print(notion_row)
+        notion_lines.append(notion_row)
 
-        print(f"최상위 키:          {summary['top_level_keys']}")
-        print(f"어노테이션 타입:    {summary['annotation_type']}")
-        print(f"어노테이션 수:      {summary['annotation_count']}")
+    # CSV 저장
+    if all_rows:
+        fieldnames = [
+            "file_name", "split", "domain", "defect_name",
+            "part_name", "category_id", "label_type",
+            "width", "height", "date_captured", "area", "zip_source",
+        ]
+        with open(OUTPUT_CSV, "w", newline="", encoding="utf-8") as f:
+            writer = csv.DictWriter(f, fieldnames=fieldnames)
+            writer.writeheader()
+            writer.writerows(all_rows)
+        print(f"\n✅ CSV 저장 완료: {OUTPUT_CSV}")
+        print(f"   총 {len(all_rows):,}개 row")
 
-        if sample_keys := summary["annotation_sample_keys"]:
-            print(f"어노테이션 샘플 키: {sample_keys}")
+    # 리포트 저장
+    write_report(zip_results, all_rows)
+    print(f"✅ 리포트 저장 완료: {REPORT_PATH}")
 
-        if class_info := summary["class_info"]:
-            print("\n📌 클래스 목록:")
-            for cat in class_info:
-                print(f"   {cat}")
-
-        if image_info := summary["image_info"]:
-            print(f"\n🖼️  이미지 수:      {image_info['count']}")
-            print(f"이미지 샘플 키:    {image_info['sample_keys']}")
-            print(f"이미지 샘플:       {image_info['sample']}")
-
-        if raw_preview := summary["raw_preview"]:
-            print("\n📋 Raw 미리보기:")
-            print(json.dumps(raw_preview, ensure_ascii=False, indent=2))
-
-        print("\n" + "=" * 60)
-        print("✅ 분석 완료 — 결과를 공유해주시면 다음 단계 진행합니다.")
+    # 노션 로그 저장
+    with open(NOTION_LOG, "w", encoding="utf-8") as f:
+        f.write("\n".join(notion_lines))
+    print(f"✅ 노션 로그 저장 완료: {NOTION_LOG}")
+    print("\n💡 notion_log.txt를 열어 각 항목을 노션에 붙여넣으세요.")
 
 
 if __name__ == "__main__":
