@@ -3,6 +3,18 @@
 # 목적: TL_* / VL_* 전체 zip 파싱
 #       → dataset_index.csv + label_report.md + 노션 입력용 로그 출력
 
+
+# ── 분석 결과 (2026-05-02) ────────────────────────────────
+# 대상: TL_표면처리_균열_도장.zip
+# 포맷: COCO (images / annotations / categories)
+# JSON 1개 = 이미지 1개 구조
+# 라벨 타입: segmentation + bbox 혼재
+# categories: 전체 23개 클래스 포함 (전 도메인 공통)
+# 실사용 category_id: 2102 (균열)
+# 해상도: 3024x4032
+# 라벨 오류: 용접불량 1개 포함 (무시)
+
+
 import zipfile
 import json
 import csv
