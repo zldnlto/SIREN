@@ -48,20 +48,21 @@ CATEGORY_TO_YOLO = {
 # ── COCO segmentation → YOLO .txt 변환 ────────────────────
 def coco_to_yolo_seg(annotation: dict, img_w: int, img_h: int,
                      yolo_class_id: int) -> Optional[str]:
-    """
-    COCO segmentation → YOLO seg 포맷
-    출력: "class_id x1 y1 x2 y2 ... (정규화)"
-    """
     seg = annotation.get("segmentation", [])
     if not seg:
         return None
 
-    points = seg[0]  # [[x1,y1,x2,y2,...]]
+    # 중첩 리스트인지 flat 리스트인지 자동 감지
+    if isinstance(seg[0], list):
+        points = seg[0]   # [[x1,y1,...]] 구조
+    else:
+        points = seg      # [x1,y1,...] 구조 ← 실제 데이터
+
     if len(points) < 6:
         return None
 
     normalized = []
-    for i in range(0, len(points), 2):
+    for i in range(0, len(points) - 1, 2):
         x = points[i]   / img_w
         y = points[i+1] / img_h
         normalized += [f"{x:.6f}", f"{y:.6f}"]
@@ -229,6 +230,11 @@ def main(target_class: Optional[str] = None):
 
         if i % 100 == 0:
             print(f"[{i}/{len(manifest)}] ✅{success} ⚠️{skip} ❌{fail}")
+
+        if res["status"] == "skip":
+            print(f"  ⚠️ SKIP: {res['file_name']} | {res['reason']}")
+
+            
 
     print("=" * 60)
     print(f"완료: {success}개 / 스킵: {skip}개 / 실패: {fail}개")
