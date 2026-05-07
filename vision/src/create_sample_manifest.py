@@ -141,7 +141,19 @@ def main():
             "sampled":     n,
             "total":       len(group),
         })
-
+        
+    existing = []
+    if MANIFEST_PATH.exists():
+        with open(MANIFEST_PATH, "r", encoding="utf-8") as f:
+            existing = json.load(f)
+        existing = [
+            s for s in existing
+            if not (
+                s["defect_name"] == "균열" and
+                s["part_name"]   == "도장"
+            )
+        ]
+    manifest = existing + manifest
     # 저장
     with open(MANIFEST_PATH, "w", encoding="utf-8") as f:
         json.dump(manifest, f, ensure_ascii=False, indent=2)
