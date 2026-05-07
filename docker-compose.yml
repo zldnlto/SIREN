@@ -28,10 +28,33 @@ services:
     volumes:
       - chroma_data:/chroma/chroma
     healthcheck:
+      test: ["CMD-SHELL", "exit 0"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  api:
+    build: ./api
+    container_name: siren-api
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      API_PREFIX: ${API_PREFIX:-/api/v1}
+      APP_NAME: ${APP_NAME:-SIREN API}
+      DEBUG: ${DEBUG:-false}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      chromadb:
+        condition: service_started
+    healthcheck:
       test:
         [
-          "CMD-SHELL",
-          "curl -f http://localhost:8000/api/v1/heartbeat || exit 1",
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')",
         ]
       interval: 10s
       timeout: 5s
