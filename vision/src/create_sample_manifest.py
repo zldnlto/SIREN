@@ -141,7 +141,6 @@ def main():
             "sampled":     n,
             "total":       len(group),
         })
-        
     existing = []
     if MANIFEST_PATH.exists():
         with open(MANIFEST_PATH, "r", encoding="utf-8") as f:
