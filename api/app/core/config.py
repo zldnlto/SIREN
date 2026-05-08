@@ -6,6 +6,9 @@ class Settings(BaseSettings):
     APP_NAME: str = "SIREN API"
     DEBUG: bool = False
 
+    # DB (Sub-issue 1)
+    DATABASE_URL: str = "postgresql+asyncpg://siren:siren@localhost:5432/siren"
+
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
 
