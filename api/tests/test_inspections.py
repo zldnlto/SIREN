@@ -14,22 +14,22 @@ from app.schemas.detection import DefectItem, DetectionResult
 
 _USER = User(
     id=uuid.uuid4(),
-    email="test@siren.io",
-    username="tester",
-    hashed_password="hashed",
-    is_active=True,
+    employee_id="EMP-001",
+    name="Test Inspector",
+    password_hash="hashed",
+    role="INSPECTOR",
 )
 
 _INSPECTION = Inspection(
     id=uuid.uuid4(),
-    ship_name="LNG-CARRIER-01",
-    tank_id="TANK-A",
+    domain="표면처리",
     status="pending",
     inspector_id=_USER.id,
-    notes=None,
     image_key=None,
     thumbnail_key=None,
-    gradcam_key=None,
+    report_flagged=False,
+    model_version="mock-v0",
+    rag_version="mock-v0",
     created_at=datetime.now(timezone.utc),
     updated_at=datetime.now(timezone.utc),
 )
@@ -38,7 +38,12 @@ _DETECTION_RESULT = DetectionResult(
     id=str(uuid.uuid4()),
     inspection_id=str(_INSPECTION.id),
     defects=[
-        DefectItem(class_name="균열", confidence=0.92, bbox=[10.0, 20.0, 100.0, 80.0])
+        DefectItem(
+            defect_name="균열",
+            confidence_score=0.92,
+            severity="HIGH",
+            bbox=[10.0, 20.0, 100.0, 80.0],
+        )
     ],
     confidence=0.85,
     detected_at=datetime.now(timezone.utc),
@@ -65,7 +70,7 @@ async def test_create_inspection():
         "app.services.inspection_service.create_inspection",
         new=AsyncMock(return_value=_INSPECTION),
     ):
-        resp = client.post("/api/v1/inspections", json={})
+        resp = client.post("/api/v1/inspections", json={"domain": "표면처리"})
     assert resp.status_code == 200
     assert resp.json()["status"] == "pending"
 
@@ -105,14 +110,14 @@ async def test_guidance():
 async def test_upload_image():
     updated = Inspection(
         id=_INSPECTION.id,
-        ship_name=_INSPECTION.ship_name,
-        tank_id=_INSPECTION.tank_id,
+        domain=_INSPECTION.domain,
         status=_INSPECTION.status,
         inspector_id=_INSPECTION.inspector_id,
-        notes=None,
         image_key="inspections/test/image.jpg",
         thumbnail_key=None,
-        gradcam_key=None,
+        report_flagged=False,
+        model_version="mock-v0",
+        rag_version="mock-v0",
         created_at=_INSPECTION.created_at,
         updated_at=_INSPECTION.updated_at,
     )

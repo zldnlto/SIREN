@@ -8,6 +8,7 @@ from app.repositories import defect_repository, inspection_repository
 from app.schemas.detection import (
     CLS_ONLY_CODES,
     DEFECT_CLASSES,
+    DOMAIN_CODES,
     DefectItem,
     DetectionResult,
     confidence_to_severity,
@@ -28,6 +29,8 @@ async def run_detection(db: AsyncSession, inspection_id: str) -> DetectionResult
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Inspection not found"
         )
+
+    domain_code = DOMAIN_CODES.get(inspection.domain, 25)
 
     mock_defects = [
         {"class_code": 0, "confidence": 0.92, "bbox": [10.0, 20.0, 100.0, 80.0]},
@@ -51,15 +54,15 @@ async def run_detection(db: AsyncSession, inspection_id: str) -> DetectionResult
         db_items.append(
             {
                 "inspection_id": uid,
-                "domain_code": 0,
+                "domain_code": domain_code,
                 "class_code": class_code,
-                "confidence": d["confidence"],
+                "defect_name": DEFECT_CLASSES[class_code],
+                "confidence_score": d["confidence"],
                 "bbox": bbox,
                 "severity": confidence_to_severity(d["confidence"]),
             }
         )
 
-    # defect 저장 + status 업데이트를 단일 트랜잭션으로 처리
     await defect_repository.create_many(db, db_items)
     await inspection_repository.update_status(db, inspection, "completed")
     await db.commit()
@@ -67,8 +70,9 @@ async def run_detection(db: AsyncSession, inspection_id: str) -> DetectionResult
     now = datetime.now(timezone.utc)
     response_defects = [
         DefectItem(
-            class_name=DEFECT_CLASSES[d["class_code"]],
-            confidence=d["confidence"],
+            defect_name=DEFECT_CLASSES[d["class_code"]],
+            confidence_score=d["confidence"],
+            severity=confidence_to_severity(d["confidence"]),
             bbox=d["bbox"] if d["class_code"] not in CLS_ONLY_CODES else None,
         )
         for d in mock_defects

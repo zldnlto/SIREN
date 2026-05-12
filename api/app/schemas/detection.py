@@ -16,6 +16,16 @@ DEFECT_CLASSES = [
 # class_code 6, 7 은 분류(is_cls=True) — bbox 없음
 CLS_ONLY_CODES = {6, 7}
 
+# domain 이름 → domain_code 매핑 (ERD 주석 기준)
+DOMAIN_CODES: dict[str, int] = {
+    "표면처리": 25,
+    "용접": 11,
+    "절단": 12,
+    "케이블": 13,
+    "파이프": 14,
+    "폼스프레이": 15,
+}
+
 
 def confidence_to_severity(confidence: float) -> str:
     if confidence >= 0.8:
@@ -26,9 +36,12 @@ def confidence_to_severity(confidence: float) -> str:
 
 
 class DefectItem(BaseModel):
-    class_name: str
-    confidence: float
+    defect_name: str
+    confidence_score: float
+    severity: str
     bbox: list[float] | None = None
+    part_name: str | None = None
+    gradcam_key: str | None = None
 
 
 class DetectionResult(BaseModel):

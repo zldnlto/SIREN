@@ -8,17 +8,10 @@ from app.models.inspection import Inspection
 
 async def create(
     db: AsyncSession,
-    ship_name: str,
-    tank_id: str,
+    domain: str,
     inspector_id: uuid.UUID,
-    notes: str | None = None,
 ) -> Inspection:
-    inspection = Inspection(
-        ship_name=ship_name,
-        tank_id=tank_id,
-        inspector_id=inspector_id,
-        notes=notes,
-    )
+    inspection = Inspection(domain=domain, inspector_id=inspector_id)
     db.add(inspection)
     await db.commit()
     await db.refresh(inspection)
@@ -44,14 +37,11 @@ async def update_image_keys(
     inspection: Inspection,
     image_key: str | None = None,
     thumbnail_key: str | None = None,
-    gradcam_key: str | None = None,
 ) -> Inspection:
     if image_key is not None:
         inspection.image_key = image_key
     if thumbnail_key is not None:
         inspection.thumbnail_key = thumbnail_key
-    if gradcam_key is not None:
-        inspection.gradcam_key = gradcam_key
     await db.commit()
     await db.refresh(inspection)
     return inspection

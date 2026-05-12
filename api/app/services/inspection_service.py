@@ -13,10 +13,8 @@ async def create_inspection(
 ):
     return await inspection_repository.create(
         db,
-        ship_name=data.ship_name,
-        tank_id=data.tank_id,
+        domain=data.domain,
         inspector_id=inspector_id,
-        notes=data.notes,
     )
 
 
@@ -46,7 +44,6 @@ async def upload_image(db: AsyncSession, inspection_id: str, file: UploadFile):
     )
     key = f"inspections/{inspection_id}/image.{ext}"
 
-    # S3 업로드 먼저, DB 실패 시 S3 오브젝트 삭제로 보상
     await s3.upload_file(content, key, file.content_type or "image/jpeg")
     try:
         return await inspection_repository.update_image_keys(
