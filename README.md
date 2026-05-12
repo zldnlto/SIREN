@@ -37,7 +37,7 @@ siren/
 | 대시보드 | Next.js 14                    |
 | 백엔드   | FastAPI, PostgreSQL, ChromaDB |
 | AI 모델  | PyTorch, YOLOv8, Grad-CAM     |
-| RAG      | LangChain, Claude API         |
+| RAG      | LangChain, OpenAI API         |
 | 인프라   | Docker Compose                |
 
 ---
