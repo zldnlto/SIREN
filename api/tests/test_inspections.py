@@ -139,6 +139,18 @@ async def test_get_upload_url_not_found():
 
 
 @pytest.mark.asyncio
+async def test_get_upload_url_forbidden():
+    from fastapi import HTTPException, status
+
+    with patch(
+        "app.services.inspection_service.get_upload_url",
+        new=AsyncMock(side_effect=HTTPException(status_code=status.HTTP_403_FORBIDDEN)),
+    ):
+        resp = client.post(f"/api/v1/inspections/{_INSPECTION.id}/upload-url")
+    assert resp.status_code == 403
+
+
+@pytest.mark.asyncio
 async def test_upload_image():
     updated = Inspection(
         id=_INSPECTION.id,

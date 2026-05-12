@@ -51,7 +51,7 @@ async def get_upload_url(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    return await inspection_service.get_upload_url(db, inspection_id)
+    return await inspection_service.get_upload_url(db, inspection_id, current_user.id)
 
 
 @router.post(
