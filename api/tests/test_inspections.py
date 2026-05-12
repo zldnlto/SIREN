@@ -169,7 +169,10 @@ async def test_confirm_upload_success():
         "app.services.inspection_service.confirm_upload",
         new=AsyncMock(return_value=updated),
     ):
-        resp = client.post(f"/api/v1/inspections/{_INSPECTION.id}/confirm-upload")
+        resp = client.post(
+            f"/api/v1/inspections/{_INSPECTION.id}/confirm-upload",
+            json={"etag": "abc123"},
+        )
     assert resp.status_code == 200
     assert resp.json()["image_key"] == f"inspections/{_INSPECTION.id}/image.jpg"
 
@@ -187,7 +190,10 @@ async def test_confirm_upload_s3_not_found():
             )
         ),
     ):
-        resp = client.post(f"/api/v1/inspections/{_INSPECTION.id}/confirm-upload")
+        resp = client.post(
+            f"/api/v1/inspections/{_INSPECTION.id}/confirm-upload",
+            json={"etag": "abc123"},
+        )
     assert resp.status_code == 422
 
 
@@ -199,7 +205,10 @@ async def test_confirm_upload_not_found():
         "app.services.inspection_service.confirm_upload",
         new=AsyncMock(side_effect=HTTPException(status_code=status.HTTP_404_NOT_FOUND)),
     ):
-        resp = client.post(f"/api/v1/inspections/{uuid.uuid4()}/confirm-upload")
+        resp = client.post(
+            f"/api/v1/inspections/{uuid.uuid4()}/confirm-upload",
+            json={"etag": "abc123"},
+        )
     assert resp.status_code == 404
 
 
