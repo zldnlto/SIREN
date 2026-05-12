@@ -34,7 +34,7 @@ async def update_status(
     db: AsyncSession, inspection: Inspection, status: str
 ) -> Inspection:
     inspection.status = status
-    await db.commit()
+    await db.flush()
     await db.refresh(inspection)
     return inspection
 

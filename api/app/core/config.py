@@ -1,3 +1,4 @@
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -9,8 +10,8 @@ class Settings(BaseSettings):
     # DB (Sub-issue 1)
     DATABASE_URL: str = "postgresql+asyncpg://siren:siren@localhost:5432/siren"
 
-    # Auth (Sub-issue 2)
-    SECRET_KEY: str = "change-me-in-production"
+    # Auth (Sub-issue 2) — SECRET_KEY는 환경변수 필수, 미설정 시 기동 불가
+    SECRET_KEY: str
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
 
@@ -21,6 +22,13 @@ class Settings(BaseSettings):
     AWS_S3_REGION: str = "ap-northeast-2"
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+
+    @field_validator("SECRET_KEY")
+    @classmethod
+    def secret_key_must_be_strong(cls, v: str) -> str:
+        if len(v) < 32:
+            raise ValueError("SECRET_KEY는 32자 이상이어야 합니다.")
+        return v
 
 
 settings = Settings()

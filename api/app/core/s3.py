@@ -36,3 +36,15 @@ async def upload_file(
             status_code=status.HTTP_502_BAD_GATEWAY,
             detail=f"S3 업로드 실패: {exc}",
         )
+
+
+async def delete_file(key: str) -> None:
+    """S3 오브젝트 삭제. DB 롤백 보상 처리용으로만 사용. 실패해도 예외를 전파하지 않는다."""
+
+    def _delete():
+        _get_client().delete_object(Bucket=settings.AWS_S3_BUCKET, Key=key)
+
+    try:
+        await asyncio.to_thread(_delete)
+    except (BotoCoreError, ClientError):
+        pass

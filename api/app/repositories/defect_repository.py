@@ -9,7 +9,7 @@ from app.models.defect_item import DefectItem
 async def create_many(db: AsyncSession, items: list[dict]) -> list[DefectItem]:
     db_items = [DefectItem(**item) for item in items]
     db.add_all(db_items)
-    await db.commit()
+    await db.flush()
     for item in db_items:
         await db.refresh(item)
     return db_items

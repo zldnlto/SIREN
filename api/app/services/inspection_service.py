@@ -45,5 +45,13 @@ async def upload_image(db: AsyncSession, inspection_id: str, file: UploadFile):
         else "jpg"
     )
     key = f"inspections/{inspection_id}/image.{ext}"
+
+    # S3 업로드 먼저, DB 실패 시 S3 오브젝트 삭제로 보상
     await s3.upload_file(content, key, file.content_type or "image/jpeg")
-    return await inspection_repository.update_image_keys(db, inspection, image_key=key)
+    try:
+        return await inspection_repository.update_image_keys(
+            db, inspection, image_key=key
+        )
+    except Exception:
+        await s3.delete_file(key)
+        raise

@@ -1,6 +1,7 @@
 import uuid
 from datetime import datetime, timezone
 
+from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.repositories import defect_repository, inspection_repository
@@ -14,11 +15,16 @@ from app.schemas.detection import (
 
 
 async def run_detection(db: AsyncSession, inspection_id: str) -> DetectionResult:
-    uid = uuid.UUID(inspection_id)
+    try:
+        uid = uuid.UUID(inspection_id)
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="inspection_id가 유효한 UUID 형식이 아닙니다.",
+        )
+
     inspection = await inspection_repository.get_by_id(db, uid)
     if inspection is None:
-        from fastapi import HTTPException, status
-
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Inspection not found"
         )
@@ -53,8 +59,10 @@ async def run_detection(db: AsyncSession, inspection_id: str) -> DetectionResult
             }
         )
 
+    # defect 저장 + status 업데이트를 단일 트랜잭션으로 처리
     await defect_repository.create_many(db, db_items)
     await inspection_repository.update_status(db, inspection, "completed")
+    await db.commit()
 
     now = datetime.now(timezone.utc)
     response_defects = [
