@@ -25,6 +25,9 @@ DEFECT_CLASSES: tuple[str, ...] = (
     "표면양품",
 )
 
+DEFECT_CLASS_TO_YOLO_ID: dict[str, int] = {
+    class_name: index for index, class_name in enumerate(DEFECT_CLASSES)
+}
 CLS_ONLY_CODES = {6, 7}
 
 DOMAIN_CODES: dict[str, int] = {
@@ -88,6 +91,18 @@ def get_source_key(zip_source: str) -> str:
 
     source_name = zip_source.replace(".zip", "")
     return SourceKeyMap.get(source_name, "")
+
+
+def resolve_yolo_class_id(category_id: int, class_name: str | None = None) -> int:
+    """Return the compact YOLO class id for one sample.
+
+    Surface-processing training uses contiguous ids from 0 so the Ultralytics
+    dataset stays compatible with the class list order in `DEFECT_CLASSES`.
+    """
+
+    if class_name and class_name in DEFECT_CLASS_TO_YOLO_ID:
+        return DEFECT_CLASS_TO_YOLO_ID[class_name]
+    return int(category_id)
 
 
 def parse_coco_rows(data: dict[str, Any], zip_info: dict[str, str]) -> list[CocoRow]:
@@ -210,6 +225,7 @@ def build_yolo_label_text(
     category_id: int,
     label_type: str,
     *,
+    class_name: str | None = None,
     image_size: int = DEFAULT_YOLO_IMAGE_SIZE,
 ) -> str | None:
     """Build the label text for one image.
@@ -227,7 +243,7 @@ def build_yolo_label_text(
     image_width = int(image.get("width", image_size) or image_size)
     image_height = int(image.get("height", image_size) or image_size)
     annotation = annotations[0]
-    yolo_class_id = int(category_id)
+    yolo_class_id = resolve_yolo_class_id(category_id, class_name=class_name)
 
     if label_type == "segmentation+bbox":
         return coco_to_yolo_segmentation(annotation, image_width, image_height, yolo_class_id)

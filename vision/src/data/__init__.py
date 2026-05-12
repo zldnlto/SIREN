@@ -19,6 +19,8 @@ from vision.src.data.config import (
 )
 from vision.src.data.images import letterbox_image, resize_and_save_image
 from vision.src.data.labels import (
+    DEFECT_CLASS_TO_YOLO_ID,
+    DEFECT_CLASSES,
     build_yolo_label_text,
     coco_to_yolo_bbox,
     coco_to_yolo_segmentation,
@@ -27,6 +29,7 @@ from vision.src.data.labels import (
     find_label_json_file,
     parse_coco_rows,
     parse_zip_name,
+    resolve_yolo_class_id,
 )
 from vision.src.data.manifest import (
     ManifestItem,
@@ -52,6 +55,8 @@ __all__ = [
     "DEFAULT_TRAIN_SAMPLES_PER_CLASS",
     "DEFAULT_VAL_SAMPLES_PER_CLASS",
     "DEFAULT_YOLO_IMAGE_SIZE",
+    "DEFECT_CLASS_TO_YOLO_ID",
+    "DEFECT_CLASSES",
     "ManifestItem",
     "SourceKeyMap",
     "ValidDomainCombos",
@@ -75,4 +80,5 @@ __all__ = [
     "resize_and_save_image",
     "sample_split_rows",
     "save_manifest",
+    "resolve_yolo_class_id",
 ]

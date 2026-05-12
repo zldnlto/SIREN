@@ -29,9 +29,9 @@
 - [x] #61 `vision` 패키지 진입점과 모듈 구조를 정리한다.
 - [ ] #62 Colab에서 import할 경로와 실행 순서를 문서화한다.
 - [x] #62 데이터셋 경로, split, resize, label 변환 규칙을 코드로 정리한다.
-- [ ] #63 YOLOv8n-seg 학습/평가 실행 함수를 만든다.
-- [ ] #63 Google Drive 저장 위치와 `best.pt` 산출 규칙을 정리한다.
-- [ ] #63 FastAPI 서빙 연결을 염두에 둔 weight 사용 방식을 정리한다.
+- [x] #63 YOLOv8n-seg 학습/평가 실행 함수를 만든다.
+- [x] #63 Google Drive 저장 위치와 `best.pt` 산출 규칙을 정리한다.
+- [x] #63 FastAPI 서빙 연결을 염두에 둔 weight 사용 방식을 정리한다.
 - [ ] #64 Colab 사용 가이드라인 문서를 작성한다.
 - [ ] #63/#64 로컬 또는 Colab에서 한 번은 실제 실행 흐름을 확인한다.
 

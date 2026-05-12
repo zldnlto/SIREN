@@ -65,6 +65,7 @@ def prepare_curated_dataset(
             label_json,
             int(sample["category_id"]),
             sample["label_type"],
+            class_name=sample["defect_name"],
             image_size=target_size,
         )
         if label_text is None:

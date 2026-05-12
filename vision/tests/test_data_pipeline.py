@@ -166,7 +166,7 @@ def test_prepare_curated_dataset_writes_resized_image_and_label(tmp_path: Path) 
     with Image.open(output_image) as resized:
         assert resized.size == (640, 640)
 
-    assert output_label.read_text(encoding="utf-8").startswith("25 ")
+    assert output_label.read_text(encoding="utf-8").startswith("0 ")
 
 
 def test_letterbox_image_preserves_aspect_ratio() -> None:
