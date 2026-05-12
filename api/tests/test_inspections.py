@@ -237,3 +237,41 @@ async def test_upload_image():
         )
     assert resp.status_code == 200
     assert resp.json()["image_key"] == "inspections/test/image.jpg"
+
+
+@pytest.mark.asyncio
+async def test_upload_image_unsupported_mime_type():
+    from fastapi import HTTPException, status
+
+    with patch(
+        "app.services.inspection_service.upload_image",
+        new=AsyncMock(
+            side_effect=HTTPException(
+                status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE
+            )
+        ),
+    ):
+        resp = client.post(
+            f"/api/v1/inspections/{_INSPECTION.id}/upload",
+            files={"file": ("test.gif", b"fake", "image/gif")},
+        )
+    assert resp.status_code == 415
+
+
+@pytest.mark.asyncio
+async def test_upload_image_too_large():
+    from fastapi import HTTPException, status
+
+    with patch(
+        "app.services.inspection_service.upload_image",
+        new=AsyncMock(
+            side_effect=HTTPException(
+                status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE
+            )
+        ),
+    ):
+        resp = client.post(
+            f"/api/v1/inspections/{_INSPECTION.id}/upload",
+            files={"file": ("big.jpg", b"x" * 100, "image/jpeg")},
+        )
+    assert resp.status_code == 413
