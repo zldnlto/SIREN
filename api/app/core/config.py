@@ -14,6 +14,12 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
 
+    # S3 (Sub-issue 5)
+    AWS_ACCESS_KEY_ID: str = ""
+    AWS_SECRET_ACCESS_KEY: str = ""
+    AWS_S3_BUCKET: str = "siren-inspections"
+    AWS_S3_REGION: str = "ap-northeast-2"
+
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
 

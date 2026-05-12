@@ -21,7 +21,9 @@ class Inspection(Base):
     inspector_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("users.id"), nullable=False
     )
-    # TODO(ERD-PENDING): image_key / thumbnail_key / gradcam_key S3 경로 컬럼 — Sub-issue 5에서 추가 예정
+    image_key: Mapped[str | None] = mapped_column(String(512), nullable=True)
+    thumbnail_key: Mapped[str | None] = mapped_column(String(512), nullable=True)
+    gradcam_key: Mapped[str | None] = mapped_column(String(512), nullable=True)
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=text("now()")
