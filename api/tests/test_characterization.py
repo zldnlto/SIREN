@@ -1,0 +1,230 @@
+import uuid
+from datetime import datetime, timezone
+from io import BytesIO
+from unittest.mock import AsyncMock, patch
+
+import pytest
+from fastapi import HTTPException
+from starlette.datastructures import Headers, UploadFile
+
+from app.core.security import hash_password
+from app.models.inspection import Inspection
+from app.models.user import User
+from app.schemas.auth import LoginRequest
+from app.schemas.detection import DetectionResult
+from app.services import auth_service, detection_service, guidance_service
+from app.services import inspection_service
+
+_USER = User(
+    id=uuid.uuid4(),
+    employee_id="EMP-001",
+    name="Test Inspector",
+    password_hash=hash_password("secret1234"),
+    role="INSPECTOR",
+)
+
+_INSPECTION = Inspection(
+    id=uuid.uuid4(),
+    domain="표면처리",
+    status="pending",
+    inspector_id=_USER.id,
+    image_key=None,
+    thumbnail_key=None,
+    report_flagged=False,
+    model_version="mock-v0",
+    rag_version="mock-v0",
+    created_at=datetime.now(timezone.utc),
+    updated_at=datetime.now(timezone.utc),
+)
+
+
+@pytest.mark.asyncio
+async def test_login_rejects_deleted_user():
+    deleted = User(
+        id=uuid.uuid4(),
+        employee_id="EMP-DEL",
+        name="Deleted User",
+        password_hash=hash_password("secret1234"),
+        role="INSPECTOR",
+        deleted_at=datetime.now(timezone.utc),
+    )
+
+    with patch(
+        "app.repositories.user_repository.get_by_employee_id",
+        new=AsyncMock(return_value=deleted),
+    ):
+        with pytest.raises(HTTPException) as exc_info:
+            await auth_service.login(None, LoginRequest(employee_id=deleted.employee_id, password="secret1234"))
+
+    assert exc_info.value.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_get_inspection_rejects_invalid_uuid():
+    with pytest.raises(HTTPException) as exc_info:
+        await inspection_service.get_inspection(None, "not-a-uuid")
+
+    assert exc_info.value.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_get_upload_url_requires_owner():
+    other_user = User(
+        id=uuid.uuid4(),
+        employee_id="EMP-002",
+        name="Other Inspector",
+        password_hash="hashed",
+        role="INSPECTOR",
+    )
+    other_inspection = Inspection(
+        id=_INSPECTION.id,
+        domain=_INSPECTION.domain,
+        status=_INSPECTION.status,
+        inspector_id=other_user.id,
+        image_key=None,
+        thumbnail_key=None,
+        report_flagged=False,
+        model_version=_INSPECTION.model_version,
+        rag_version=_INSPECTION.rag_version,
+        created_at=_INSPECTION.created_at,
+        updated_at=_INSPECTION.updated_at,
+    )
+
+    with patch(
+        "app.application.inspection_usecase.get_inspection",
+        new=AsyncMock(return_value=other_inspection),
+    ):
+        with pytest.raises(HTTPException) as exc_info:
+            await inspection_service.get_upload_url(None, str(_INSPECTION.id), _USER.id)
+
+    assert exc_info.value.status_code == 403
+
+
+@pytest.mark.asyncio
+async def test_confirm_upload_rejects_invalid_key_prefix():
+    with patch(
+        "app.application.inspection_usecase.get_inspection",
+        new=AsyncMock(return_value=_INSPECTION),
+    ):
+        with pytest.raises(HTTPException) as exc_info:
+            await inspection_service.confirm_upload(
+                None,
+                str(_INSPECTION.id),
+                _USER.id,
+                "uploads/not-allowed.jpg",
+                "abc123",
+            )
+
+    assert exc_info.value.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_confirm_upload_rejects_etag_mismatch():
+    with patch(
+        "app.application.inspection_usecase.get_inspection",
+        new=AsyncMock(return_value=_INSPECTION),
+    ), patch(
+        "app.core.s3.get_object_etag",
+        new=AsyncMock(return_value="abc123"),
+    ):
+        with pytest.raises(HTTPException) as exc_info:
+            await inspection_service.confirm_upload(
+                None,
+                str(_INSPECTION.id),
+                _USER.id,
+                f"inspections/{_INSPECTION.id}/uploads/test.jpg",
+                "different",
+            )
+
+    assert exc_info.value.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_upload_image_rejects_unsupported_media_type():
+    upload = UploadFile(
+        file=BytesIO(b"hello"),
+        filename="note.txt",
+        headers=Headers({"content-type": "text/plain"}),
+    )
+
+    with pytest.raises(HTTPException) as exc_info:
+        await inspection_service.upload_image(None, str(_INSPECTION.id), upload)
+
+    assert exc_info.value.status_code == 415
+
+
+@pytest.mark.asyncio
+async def test_upload_image_rejects_large_payload():
+    upload = UploadFile(
+        file=BytesIO(b"x" * (20 * 1024 * 1024 + 1)),
+        filename="image.jpg",
+        headers=Headers({"content-type": "image/jpeg"}),
+    )
+
+    with patch(
+        "app.application.inspection_usecase.get_inspection",
+        new=AsyncMock(return_value=_INSPECTION),
+    ):
+        with pytest.raises(HTTPException) as exc_info:
+            await inspection_service.upload_image(None, str(_INSPECTION.id), upload)
+
+    assert exc_info.value.status_code == 413
+
+
+@pytest.mark.asyncio
+async def test_run_detection_persists_mock_detections():
+    class DummyDB:
+        def __init__(self):
+            self.commit = AsyncMock()
+
+    db = DummyDB()
+
+    with (
+        patch(
+            "app.repositories.inspection_repository.get_by_id",
+            new=AsyncMock(return_value=_INSPECTION),
+        ),
+        patch(
+            "app.repositories.defect_repository.create_many",
+            new=AsyncMock(return_value=[]),
+        ) as create_many,
+        patch(
+            "app.repositories.inspection_repository.update_status",
+            new=AsyncMock(return_value=_INSPECTION),
+        ) as update_status,
+    ):
+        result = await detection_service.run_detection(db, str(_INSPECTION.id))
+
+    assert isinstance(result, DetectionResult)
+    assert result.inspection_id == str(_INSPECTION.id)
+    assert len(result.defects) == 2
+    assert result.defects[0].severity == "HIGH"
+    assert result.defects[1].severity == "MEDIUM"
+    assert result.defects[0].bbox == [10.0, 20.0, 100.0, 80.0]
+    create_many.assert_awaited_once()
+    saved_items = create_many.await_args.args[1]
+    assert saved_items[0]["severity"] == "HIGH"
+    assert saved_items[0]["bbox"] == {
+        "x_min": 10.0,
+        "y_min": 20.0,
+        "x_max": 100.0,
+        "y_max": 80.0,
+    }
+    assert saved_items[1]["severity"] == "MEDIUM"
+    update_status.assert_awaited_once()
+    db.commit.assert_awaited_once()
+
+
+def test_guidance_returns_default_action_steps():
+    result = guidance_service.get_guidance("inspection-123")
+
+    assert result.inspection_id == "inspection-123"
+    assert result.defect_class == "균열"
+    assert result.severity == "HIGH"
+    assert result.referenced_doc == "SIGTTO-LNG-TANK-INSPECTION-V3.pdf"
+    assert result.action_steps == [
+        "해당 구역 접근을 즉시 통제한다.",
+        "안전 담당자에게 보고한다.",
+        "균열 범위를 측정하고 기록한다.",
+        "승인된 보수 절차에 따라 처리한다.",
+    ]
