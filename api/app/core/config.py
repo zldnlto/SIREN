@@ -9,6 +9,11 @@ class Settings(BaseSettings):
     # DB (Sub-issue 1)
     DATABASE_URL: str = "postgresql+asyncpg://siren:siren@localhost:5432/siren"
 
+    # Auth (Sub-issue 2)
+    SECRET_KEY: str = "change-me-in-production"
+    ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
+
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
 
