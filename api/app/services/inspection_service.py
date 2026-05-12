@@ -34,6 +34,13 @@ async def get_inspection(db: AsyncSession, inspection_id: str):
     return inspection
 
 
+async def get_upload_url(db: AsyncSession, inspection_id: str) -> dict:
+    await get_inspection(db, inspection_id)
+    key = f"inspections/{inspection_id}/image.jpg"
+    upload_url = await s3.generate_presigned_put_url(key)
+    return {"upload_url": upload_url, "key": key, "expires_in": 900}
+
+
 async def upload_image(db: AsyncSession, inspection_id: str, file: UploadFile):
     inspection = await get_inspection(db, inspection_id)
     content = await file.read()

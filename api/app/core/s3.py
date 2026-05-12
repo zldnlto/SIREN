@@ -48,3 +48,24 @@ async def delete_file(key: str) -> None:
         await asyncio.to_thread(_delete)
     except (BotoCoreError, ClientError):
         pass
+
+
+async def generate_presigned_put_url(key: str, expires_in: int = 900) -> str:
+    def _generate():
+        return _get_client().generate_presigned_url(
+            "put_object",
+            Params={
+                "Bucket": settings.AWS_S3_BUCKET,
+                "Key": key,
+                "ContentType": "image/jpeg",
+            },
+            ExpiresIn=expires_in,
+        )
+
+    try:
+        return await asyncio.to_thread(_generate)
+    except (BotoCoreError, ClientError) as exc:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=f"S3 presigned URL 생성 실패: {exc}",
+        )

@@ -8,6 +8,12 @@ class InspectionCreate(BaseModel):
     domain: str = "표면처리"
 
 
+class UploadUrlResponse(BaseModel):
+    upload_url: str
+    key: str
+    expires_in: int
+
+
 class InspectionResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 

@@ -6,7 +6,11 @@ from app.dependencies import get_current_user
 from app.models.user import User
 from app.schemas.detection import DetectionResult
 from app.schemas.guidance import GuidanceResponse
-from app.schemas.inspection import InspectionCreate, InspectionResponse
+from app.schemas.inspection import (
+    InspectionCreate,
+    InspectionResponse,
+    UploadUrlResponse,
+)
 from app.services import detection_service, guidance_service, inspection_service
 
 router = APIRouter()
@@ -39,7 +43,22 @@ async def detect(
     return await detection_service.run_detection(db, inspection_id)
 
 
-@router.post("/inspections/{inspection_id}/upload", response_model=InspectionResponse)
+@router.post(
+    "/inspections/{inspection_id}/upload-url", response_model=UploadUrlResponse
+)
+async def get_upload_url(
+    inspection_id: str,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    return await inspection_service.get_upload_url(db, inspection_id)
+
+
+@router.post(
+    "/inspections/{inspection_id}/upload",
+    response_model=InspectionResponse,
+    deprecated=True,
+)
 async def upload_image(
     inspection_id: str,
     file: UploadFile = File(...),
