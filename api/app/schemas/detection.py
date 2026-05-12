@@ -2,7 +2,6 @@ from datetime import datetime
 
 from pydantic import BaseModel
 
-# 결함 클래스 목록 (domain_label_map.json 기준, 표면처리 도메인)
 DEFECT_CLASSES = [
     "균열",
     "스크래치",
@@ -14,11 +13,22 @@ DEFECT_CLASSES = [
     "표면양품",
 ]
 
+# class_code 6, 7 은 분류(is_cls=True) — bbox 없음
+CLS_ONLY_CODES = {6, 7}
+
+
+def confidence_to_severity(confidence: float) -> str:
+    if confidence >= 0.8:
+        return "HIGH"
+    if confidence >= 0.6:
+        return "MEDIUM"
+    return "LOW"
+
 
 class DefectItem(BaseModel):
     class_name: str
     confidence: float
-    bbox: list[float]
+    bbox: list[float] | None = None
 
 
 class DetectionResult(BaseModel):
