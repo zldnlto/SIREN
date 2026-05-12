@@ -26,19 +26,30 @@ extend-ignore = ["E203", "W503"]
 root_packages = ["app"]
 
 [[tool.importlinter.contracts]]
-name = "routers → services만 호출 가능"
+name = "inbound → application → domain → ports → adapters"
 type = "layers"
 layers = [
     "app.routers",
     "app.services",
+    "app.application",
+    "app.domain",
+    "app.ports",
+    "app.repositories",
     "app.models",
+    "app.core",
 ]
 
 [[tool.importlinter.contracts]]
-name = "routers는 models 직접 접근 금지"
+name = "application은 adapter를 직접 import하지 않는다"
 type = "forbidden"
-source_modules = ["app.routers"]
-forbidden_modules = ["app.models"]
+source_modules = ["app.application"]
+forbidden_modules = ["app.repositories", "app.core", "app.models"]
+
+[[tool.importlinter.contracts]]
+name = "domain은 adapter와 HTTP를 모른다"
+type = "forbidden"
+source_modules = ["app.domain"]
+forbidden_modules = ["app.application", "app.services", "app.routers", "app.repositories", "app.core", "app.models", "app.schemas"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

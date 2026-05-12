@@ -1,88 +1,44 @@
-import uuid
-from datetime import datetime, timezone
-
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.application.detection_usecase import run_detection as run_detection_usecase
+from app.application.errors import InvalidInputError, NotFoundError
 from app.repositories import defect_repository, inspection_repository
-from app.schemas.detection import (
-    CLS_ONLY_CODES,
-    DEFECT_CLASSES,
-    DOMAIN_CODES,
-    DefectItem,
-    DetectionResult,
-    confidence_to_severity,
-)
+from app.schemas.detection import DefectItem, DetectionResult
 
 
 async def run_detection(db: AsyncSession, inspection_id: str) -> DetectionResult:
     try:
-        uid = uuid.UUID(inspection_id)
-    except ValueError:
+        outcome = await run_detection_usecase(
+            db,
+            inspection_id,
+            get_by_id_fn=inspection_repository.get_by_id,
+            create_many_fn=defect_repository.create_many,
+            update_status_fn=inspection_repository.update_status,
+            commit_fn=db.commit,
+        )
+    except InvalidInputError:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="inspection_id가 유효한 UUID 형식이 아닙니다.",
         )
-
-    inspection = await inspection_repository.get_by_id(db, uid)
-    if inspection is None:
+    except NotFoundError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Inspection not found"
         )
 
-    domain_code = DOMAIN_CODES.get(inspection.domain, 25)
-
-    mock_defects = [
-        {"class_code": 0, "confidence": 0.92, "bbox": [10.0, 20.0, 100.0, 80.0]},
-        {"class_code": 1, "confidence": 0.78, "bbox": [50.0, 60.0, 200.0, 150.0]},
-    ]
-
-    db_items = []
-    for d in mock_defects:
-        class_code = d["class_code"]
-        bbox_raw = d["bbox"]
-        bbox = (
-            None
-            if class_code in CLS_ONLY_CODES
-            else {
-                "x_min": bbox_raw[0],
-                "y_min": bbox_raw[1],
-                "x_max": bbox_raw[2],
-                "y_max": bbox_raw[3],
-            }
-        )
-        db_items.append(
-            {
-                "inspection_id": uid,
-                "domain_code": domain_code,
-                "class_code": class_code,
-                "defect_name": DEFECT_CLASSES[class_code],
-                "confidence_score": d["confidence"],
-                "bbox": bbox,
-                "severity": confidence_to_severity(d["confidence"]),
-            }
-        )
-
-    await defect_repository.create_many(db, db_items)
-    await inspection_repository.update_status(db, inspection, "completed")
-    await db.commit()
-
-    now = datetime.now(timezone.utc)
-    response_defects = [
-        DefectItem(
-            defect_name=DEFECT_CLASSES[d["class_code"]],
-            confidence_score=d["confidence"],
-            severity=confidence_to_severity(d["confidence"]),
-            bbox=d["bbox"] if d["class_code"] not in CLS_ONLY_CODES else None,
-        )
-        for d in mock_defects
-    ]
-    overall_confidence = sum(d["confidence"] for d in mock_defects) / len(mock_defects)
-
     return DetectionResult(
-        id=str(uuid.uuid4()),
-        inspection_id=inspection_id,
-        defects=response_defects,
-        confidence=overall_confidence,
-        detected_at=now,
+        id=outcome.id,
+        inspection_id=outcome.inspection_id,
+        defects=[
+            DefectItem(
+                defect_name=defect.defect_name,
+                confidence_score=defect.confidence_score,
+                severity=defect.severity,
+                bbox=defect.bbox,
+            )
+            for defect in outcome.defects
+        ],
+        confidence=outcome.confidence,
+        detected_at=outcome.detected_at,
     )

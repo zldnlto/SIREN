@@ -3,7 +3,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.dependencies import get_current_user
-from app.models.user import User
 from app.schemas.detection import DetectionResult
 from app.schemas.guidance import GuidanceResponse
 from app.schemas.inspection import (
@@ -21,7 +20,7 @@ router = APIRouter()
 async def create_inspection(
     data: InspectionCreate,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user=Depends(get_current_user),
 ):
     return await inspection_service.create_inspection(db, data, current_user.id)
 
@@ -30,7 +29,7 @@ async def create_inspection(
 async def get_inspection(
     inspection_id: str,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user=Depends(get_current_user),
 ):
     return await inspection_service.get_inspection(db, inspection_id)
 
@@ -39,7 +38,7 @@ async def get_inspection(
 async def detect(
     inspection_id: str,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user=Depends(get_current_user),
 ):
     return await detection_service.run_detection(db, inspection_id)
 
@@ -50,7 +49,7 @@ async def detect(
 async def get_upload_url(
     inspection_id: str,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user=Depends(get_current_user),
 ):
     return await inspection_service.get_upload_url(db, inspection_id, current_user.id)
 
@@ -62,7 +61,7 @@ async def confirm_upload(
     inspection_id: str,
     data: ConfirmUploadRequest,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user=Depends(get_current_user),
 ):
     return await inspection_service.confirm_upload(
         db, inspection_id, current_user.id, data.key, data.etag
@@ -78,7 +77,7 @@ async def upload_image(
     inspection_id: str,
     file: UploadFile = File(...),
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user=Depends(get_current_user),
 ):
     return await inspection_service.upload_image(db, inspection_id, file)
 
@@ -86,6 +85,6 @@ async def upload_image(
 @router.get("/inspections/{inspection_id}/guidance", response_model=GuidanceResponse)
 async def get_guidance(
     inspection_id: str,
-    current_user: User = Depends(get_current_user),
+    current_user=Depends(get_current_user),
 ):
     return guidance_service.get_guidance(inspection_id)
