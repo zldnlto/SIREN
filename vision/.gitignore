@@ -23,6 +23,8 @@ data/
 datasets/
 *.csv
 *.json.gz
+!src/data/
+!src/data/**/*.py
 
 # YOLOv8 학습 결과
 runs/
