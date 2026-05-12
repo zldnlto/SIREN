@@ -37,7 +37,7 @@ siren/
 | 대시보드 | Next.js 14                    |
 | 백엔드   | FastAPI, PostgreSQL, ChromaDB |
 | AI 모델  | PyTorch, YOLOv8, Grad-CAM     |
-| RAG      | LangChain, Claude API         |
+| RAG      | LangChain, OpenAI API         |
 | 인프라   | Docker Compose                |
 
 ---
@@ -70,5 +70,6 @@ uvicorn app.main:app --reload
 
 ## 관련 문서
 
+- [docs/PRD.md](./docs/PRD.md) — 제품 요구사항 문서
 - [CONTRIBUTING.md](./CONTRIBUTING.md) — 커밋/브랜치/이슈/PR 컨벤션
 - [CLAUDE.md](./CLAUDE.md) — 에이전트 작업 가이드
