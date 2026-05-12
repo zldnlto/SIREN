@@ -107,6 +107,50 @@ async def test_guidance():
 
 
 @pytest.mark.asyncio
+async def test_get_upload_url():
+    _key = f"inspections/{_INSPECTION.id}/image.jpg"
+    _url_result = {
+        "upload_url": "https://s3.amazonaws.com/siren-inspections/fake-signed",
+        "key": _key,
+        "expires_in": 900,
+    }
+    with patch(
+        "app.services.inspection_service.get_upload_url",
+        new=AsyncMock(return_value=_url_result),
+    ):
+        resp = client.post(f"/api/v1/inspections/{_INSPECTION.id}/upload-url")
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["key"] == _key
+    assert body["expires_in"] == 900
+    assert "upload_url" in body
+
+
+@pytest.mark.asyncio
+async def test_get_upload_url_not_found():
+    from fastapi import HTTPException, status
+
+    with patch(
+        "app.services.inspection_service.get_upload_url",
+        new=AsyncMock(side_effect=HTTPException(status_code=status.HTTP_404_NOT_FOUND)),
+    ):
+        resp = client.post(f"/api/v1/inspections/{uuid.uuid4()}/upload-url")
+    assert resp.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_get_upload_url_forbidden():
+    from fastapi import HTTPException, status
+
+    with patch(
+        "app.services.inspection_service.get_upload_url",
+        new=AsyncMock(side_effect=HTTPException(status_code=status.HTTP_403_FORBIDDEN)),
+    ):
+        resp = client.post(f"/api/v1/inspections/{_INSPECTION.id}/upload-url")
+    assert resp.status_code == 403
+
+
+@pytest.mark.asyncio
 async def test_upload_image():
     updated = Inspection(
         id=_INSPECTION.id,

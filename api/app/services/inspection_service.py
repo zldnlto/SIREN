@@ -34,6 +34,20 @@ async def get_inspection(db: AsyncSession, inspection_id: str):
     return inspection
 
 
+async def get_upload_url(
+    db: AsyncSession, inspection_id: str, requester_id: uuid.UUID
+) -> dict:
+    inspection = await get_inspection(db, inspection_id)
+    if inspection.inspector_id != requester_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="본인의 검사 건에만 이미지를 업로드할 수 있습니다.",
+        )
+    key = f"inspections/{inspection_id}/image.jpg"
+    upload_url = await s3.generate_presigned_put_url(key)
+    return {"upload_url": upload_url, "key": key, "expires_in": 900}
+
+
 async def upload_image(db: AsyncSession, inspection_id: str, file: UploadFile):
     inspection = await get_inspection(db, inspection_id)
     content = await file.read()
