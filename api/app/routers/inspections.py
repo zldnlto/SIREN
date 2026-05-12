@@ -65,7 +65,7 @@ async def confirm_upload(
     current_user: User = Depends(get_current_user),
 ):
     return await inspection_service.confirm_upload(
-        db, inspection_id, current_user.id, data.etag
+        db, inspection_id, current_user.id, data.key, data.etag
     )
 
 
