@@ -55,6 +55,17 @@ async def get_upload_url(
 
 
 @router.post(
+    "/inspections/{inspection_id}/confirm-upload", response_model=InspectionResponse
+)
+async def confirm_upload(
+    inspection_id: str,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    return await inspection_service.confirm_upload(db, inspection_id, current_user.id)
+
+
+@router.post(
     "/inspections/{inspection_id}/upload",
     response_model=InspectionResponse,
     deprecated=True,

@@ -48,6 +48,23 @@ async def get_upload_url(
     return {"upload_url": upload_url, "key": key, "expires_in": 900}
 
 
+async def confirm_upload(db: AsyncSession, inspection_id: str, requester_id: uuid.UUID):
+    inspection = await get_inspection(db, inspection_id)
+    if inspection.inspector_id != requester_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="본인의 검사 건에만 업로드 확인을 할 수 있습니다.",
+        )
+    key = f"inspections/{inspection_id}/image.jpg"
+    exists = await s3.verify_object_exists(key)
+    if not exists:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="S3에 업로드된 이미지를 찾을 수 없습니다. 먼저 이미지를 업로드해 주세요.",
+        )
+    return await inspection_repository.update_image_keys(db, inspection, image_key=key)
+
+
 async def upload_image(db: AsyncSession, inspection_id: str, file: UploadFile):
     inspection = await get_inspection(db, inspection_id)
     content = await file.read()
