@@ -43,13 +43,18 @@ async def get_upload_url(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="본인의 검사 건에만 이미지를 업로드할 수 있습니다.",
         )
-    key = f"inspections/{inspection_id}/image.jpg"
+    session_id = uuid.uuid4()
+    key = f"inspections/{inspection_id}/uploads/{session_id}.jpg"
     upload_url = await s3.generate_presigned_put_url(key)
     return {"upload_url": upload_url, "key": key, "expires_in": 900}
 
 
 async def confirm_upload(
-    db: AsyncSession, inspection_id: str, requester_id: uuid.UUID, client_etag: str
+    db: AsyncSession,
+    inspection_id: str,
+    requester_id: uuid.UUID,
+    client_key: str,
+    client_etag: str,
 ):
     inspection = await get_inspection(db, inspection_id)
     if inspection.inspector_id != requester_id:
@@ -57,8 +62,13 @@ async def confirm_upload(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="본인의 검사 건에만 업로드 확인을 할 수 있습니다.",
         )
-    key = f"inspections/{inspection_id}/image.jpg"
-    server_etag = await s3.get_object_etag(key)
+    expected_prefix = f"inspections/{inspection_id}/uploads/"
+    if not client_key.startswith(expected_prefix):
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="유효하지 않은 업로드 key입니다.",
+        )
+    server_etag = await s3.get_object_etag(client_key)
     if server_etag is None:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
@@ -70,7 +80,9 @@ async def confirm_upload(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="업로드 검증 실패: ETag가 일치하지 않습니다.",
         )
-    return await inspection_repository.update_image_keys(db, inspection, image_key=key)
+    return await inspection_repository.update_image_keys(
+        db, inspection, image_key=client_key
+    )
 
 
 _ALLOWED_MIME_TYPES: dict[str, str] = {

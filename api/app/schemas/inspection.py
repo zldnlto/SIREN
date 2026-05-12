@@ -15,6 +15,7 @@ class UploadUrlResponse(BaseModel):
 
 
 class ConfirmUploadRequest(BaseModel):
+    key: str
     etag: str
 
 

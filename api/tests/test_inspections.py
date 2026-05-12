@@ -108,7 +108,7 @@ async def test_guidance():
 
 @pytest.mark.asyncio
 async def test_get_upload_url():
-    _key = f"inspections/{_INSPECTION.id}/image.jpg"
+    _key = f"inspections/{_INSPECTION.id}/uploads/some-uuid.jpg"
     _url_result = {
         "upload_url": "https://s3.amazonaws.com/siren-inspections/fake-signed",
         "key": _key,
@@ -121,9 +121,34 @@ async def test_get_upload_url():
         resp = client.post(f"/api/v1/inspections/{_INSPECTION.id}/upload-url")
     assert resp.status_code == 200
     body = resp.json()
-    assert body["key"] == _key
+    assert f"inspections/{_INSPECTION.id}/uploads/" in body["key"]
     assert body["expires_in"] == 900
     assert "upload_url" in body
+
+
+@pytest.mark.asyncio
+async def test_upload_url_keys_are_unique():
+    """동일 inspection에 복수 upload-url 요청 시 서로 다른 key 반환."""
+    from unittest.mock import AsyncMock as AM
+
+    import app.services.inspection_service as svc
+
+    with (
+        patch(
+            "app.repositories.inspection_repository.get_by_id",
+            new=AM(return_value=_INSPECTION),
+        ),
+        patch(
+            "app.core.s3.generate_presigned_put_url",
+            new=AM(return_value="https://fake-url"),
+        ),
+    ):
+        result1 = await svc.get_upload_url(None, str(_INSPECTION.id), _USER.id)
+        result2 = await svc.get_upload_url(None, str(_INSPECTION.id), _USER.id)
+
+    assert result1["key"] != result2["key"]
+    assert result1["key"].startswith(f"inspections/{_INSPECTION.id}/uploads/")
+    assert result2["key"].startswith(f"inspections/{_INSPECTION.id}/uploads/")
 
 
 @pytest.mark.asyncio
@@ -165,16 +190,18 @@ async def test_confirm_upload_success():
         created_at=_INSPECTION.created_at,
         updated_at=_INSPECTION.updated_at,
     )
+    _session_key = f"inspections/{_INSPECTION.id}/uploads/test-uuid.jpg"
+    updated.image_key = _session_key
     with patch(
         "app.services.inspection_service.confirm_upload",
         new=AsyncMock(return_value=updated),
     ):
         resp = client.post(
             f"/api/v1/inspections/{_INSPECTION.id}/confirm-upload",
-            json={"etag": "abc123"},
+            json={"key": _session_key, "etag": "abc123"},
         )
     assert resp.status_code == 200
-    assert resp.json()["image_key"] == f"inspections/{_INSPECTION.id}/image.jpg"
+    assert resp.json()["image_key"] == _session_key
 
 
 @pytest.mark.asyncio
@@ -192,7 +219,10 @@ async def test_confirm_upload_s3_not_found():
     ):
         resp = client.post(
             f"/api/v1/inspections/{_INSPECTION.id}/confirm-upload",
-            json={"etag": "abc123"},
+            json={
+                "key": f"inspections/{_INSPECTION.id}/uploads/x.jpg",
+                "etag": "abc123",
+            },
         )
     assert resp.status_code == 422
 
@@ -207,7 +237,7 @@ async def test_confirm_upload_not_found():
     ):
         resp = client.post(
             f"/api/v1/inspections/{uuid.uuid4()}/confirm-upload",
-            json={"etag": "abc123"},
+            json={"key": f"inspections/{uuid.uuid4()}/uploads/x.jpg", "etag": "abc123"},
         )
     assert resp.status_code == 404
 
