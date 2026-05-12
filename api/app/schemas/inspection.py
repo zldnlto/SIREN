@@ -14,6 +14,10 @@ class UploadUrlResponse(BaseModel):
     expires_in: int
 
 
+class ConfirmUploadRequest(BaseModel):
+    etag: str
+
+
 class InspectionResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 

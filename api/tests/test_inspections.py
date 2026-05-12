@@ -151,6 +151,68 @@ async def test_get_upload_url_forbidden():
 
 
 @pytest.mark.asyncio
+async def test_confirm_upload_success():
+    updated = Inspection(
+        id=_INSPECTION.id,
+        domain=_INSPECTION.domain,
+        status=_INSPECTION.status,
+        inspector_id=_INSPECTION.inspector_id,
+        image_key=f"inspections/{_INSPECTION.id}/image.jpg",
+        thumbnail_key=None,
+        report_flagged=False,
+        model_version="mock-v0",
+        rag_version="mock-v0",
+        created_at=_INSPECTION.created_at,
+        updated_at=_INSPECTION.updated_at,
+    )
+    with patch(
+        "app.services.inspection_service.confirm_upload",
+        new=AsyncMock(return_value=updated),
+    ):
+        resp = client.post(
+            f"/api/v1/inspections/{_INSPECTION.id}/confirm-upload",
+            json={"etag": "abc123"},
+        )
+    assert resp.status_code == 200
+    assert resp.json()["image_key"] == f"inspections/{_INSPECTION.id}/image.jpg"
+
+
+@pytest.mark.asyncio
+async def test_confirm_upload_s3_not_found():
+    from fastapi import HTTPException, status
+
+    with patch(
+        "app.services.inspection_service.confirm_upload",
+        new=AsyncMock(
+            side_effect=HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="S3에 업로드된 이미지를 찾을 수 없습니다. 먼저 이미지를 업로드해 주세요.",
+            )
+        ),
+    ):
+        resp = client.post(
+            f"/api/v1/inspections/{_INSPECTION.id}/confirm-upload",
+            json={"etag": "abc123"},
+        )
+    assert resp.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_confirm_upload_not_found():
+    from fastapi import HTTPException, status
+
+    with patch(
+        "app.services.inspection_service.confirm_upload",
+        new=AsyncMock(side_effect=HTTPException(status_code=status.HTTP_404_NOT_FOUND)),
+    ):
+        resp = client.post(
+            f"/api/v1/inspections/{uuid.uuid4()}/confirm-upload",
+            json={"etag": "abc123"},
+        )
+    assert resp.status_code == 404
+
+
+@pytest.mark.asyncio
 async def test_upload_image():
     updated = Inspection(
         id=_INSPECTION.id,

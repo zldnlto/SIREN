@@ -7,6 +7,7 @@ from app.models.user import User
 from app.schemas.detection import DetectionResult
 from app.schemas.guidance import GuidanceResponse
 from app.schemas.inspection import (
+    ConfirmUploadRequest,
     InspectionCreate,
     InspectionResponse,
     UploadUrlResponse,
@@ -52,6 +53,20 @@ async def get_upload_url(
     current_user: User = Depends(get_current_user),
 ):
     return await inspection_service.get_upload_url(db, inspection_id, current_user.id)
+
+
+@router.post(
+    "/inspections/{inspection_id}/confirm-upload", response_model=InspectionResponse
+)
+async def confirm_upload(
+    inspection_id: str,
+    data: ConfirmUploadRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    return await inspection_service.confirm_upload(
+        db, inspection_id, current_user.id, data.etag
+    )
 
 
 @router.post(

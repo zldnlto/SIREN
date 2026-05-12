@@ -1,0 +1,76 @@
+{
+  "표면처리": {
+    "균열": {
+      "label_types": [
+        "segmentation+bbox"
+      ],
+      "sample_count": 28255,
+      "has_bbox": true,
+      "has_seg": true,
+      "is_cls": false
+    },
+    "스크래치": {
+      "label_types": [
+        "segmentation+bbox"
+      ],
+      "sample_count": 37758,
+      "has_bbox": true,
+      "has_seg": true,
+      "is_cls": false
+    },
+    "도장흐름": {
+      "label_types": [
+        "segmentation+bbox"
+      ],
+      "sample_count": 11653,
+      "has_bbox": true,
+      "has_seg": true,
+      "is_cls": false
+    },
+    "도막떨어짐": {
+      "label_types": [
+        "segmentation+bbox"
+      ],
+      "sample_count": 11952,
+      "has_bbox": true,
+      "has_seg": true,
+      "is_cls": false
+    },
+    "도막분리": {
+      "label_types": [
+        "segmentation+bbox"
+      ],
+      "sample_count": 10721,
+      "has_bbox": true,
+      "has_seg": true,
+      "is_cls": false
+    },
+    "보온재손상": {
+      "label_types": [
+        "segmentation+bbox"
+      ],
+      "sample_count": 10982,
+      "has_bbox": true,
+      "has_seg": true,
+      "is_cls": false
+    },
+    "탱크클리닝불량": {
+      "label_types": [
+        "classification"
+      ],
+      "sample_count": 20748,
+      "has_bbox": false,
+      "has_seg": false,
+      "is_cls": true
+    },
+    "표면양품": {
+      "label_types": [
+        "classification"
+      ],
+      "sample_count": 50059,
+      "has_bbox": false,
+      "has_seg": false,
+      "is_cls": true
+    }
+  }
+}
