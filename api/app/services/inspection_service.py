@@ -73,17 +73,34 @@ async def confirm_upload(
     return await inspection_repository.update_image_keys(db, inspection, image_key=key)
 
 
+_ALLOWED_MIME_TYPES: dict[str, str] = {
+    "image/jpeg": "jpg",
+    "image/png": "png",
+}
+_MAX_FILE_SIZE = 20 * 1024 * 1024  # 20MB
+
+
 async def upload_image(db: AsyncSession, inspection_id: str, file: UploadFile):
+    content_type = file.content_type or ""
+    if content_type not in _ALLOWED_MIME_TYPES:
+        raise HTTPException(
+            status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+            detail=f"허용되지 않는 파일 형식입니다. 허용: {', '.join(_ALLOWED_MIME_TYPES)}",
+        )
+
     inspection = await get_inspection(db, inspection_id)
     content = await file.read()
-    ext = (
-        file.filename.rsplit(".", 1)[-1]
-        if file.filename and "." in file.filename
-        else "jpg"
-    )
+
+    if len(content) > _MAX_FILE_SIZE:
+        raise HTTPException(
+            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            detail=f"파일 크기가 제한({_MAX_FILE_SIZE // 1024 // 1024}MB)을 초과했습니다.",
+        )
+
+    ext = _ALLOWED_MIME_TYPES[content_type]
     key = f"inspections/{inspection_id}/image.{ext}"
 
-    await s3.upload_file(content, key, file.content_type or "image/jpeg")
+    await s3.upload_file(content, key, content_type)
     try:
         return await inspection_repository.update_image_keys(
             db, inspection, image_key=key
