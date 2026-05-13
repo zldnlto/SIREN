@@ -1,5 +1,8 @@
 # Ontology Validation Report
 
+> Archived validation evidence. The current ontology contract is documented in
+> `vision/docs/decisions/ontology_4_layer_report.md`.
+
 This report validates the ontology and canonical-label assumptions before finalizing the vision data pipeline.
 
 ## Verdict

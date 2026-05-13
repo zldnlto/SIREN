@@ -120,9 +120,9 @@ def discover_repository_sources(
 
     resized_image_count = _count_existing_images(config.resized_root)
     notes = [
-        "bbox는 COCO JSON의 annotations[].bbox에 저장된다는 전제는 ontology_validation_report.md로 확인한다.",
-        "segmentation polygon은 COCO JSON의 annotations[].segmentation에 저장된다는 전제는 ontology_validation_report.md로 확인한다.",
-        "원본 width/height는 COCO JSON의 images[].width / images[].height에 저장된다는 전제는 ontology_validation_report.md로 확인한다.",
+        "bbox는 COCO JSON의 annotations[].bbox에 저장된다는 전제는 legacy/ontology_validation_report.md로 확인한다.",
+        "segmentation polygon은 COCO JSON의 annotations[].segmentation에 저장된다는 전제는 legacy/ontology_validation_report.md로 확인한다.",
+        "원본 width/height는 COCO JSON의 images[].width / images[].height에 저장된다는 전제는 legacy/ontology_validation_report.md로 확인한다.",
         "resize 메서드는 640x640 letterbox로 문서화되어 있다.",
     ]
     if resized_image_count is None:

@@ -1,5 +1,9 @@
 # Dataset Validation Report
 
+> Archived validation evidence. Current ontology and execution contract live in
+> `vision/docs/decisions/ontology_4_layer_report.md` and the Colab/training
+> docs under `docs/`.
+
 Phase 1은 현재 저장소의 분석 파일과 메타데이터 경로를 검증해, 이후 정규화와 온톨로지 구현이 어떤 입력을 전제로 해야 하는지 고정한다.
 
 ## 확인된 입력
@@ -10,7 +14,7 @@ Phase 1은 현재 저장소의 분석 파일과 메타데이터 경로를 검증
 - `vision/data/analysis/ontology_audit.csv`
 - `vision/data/analysis/ontology_audit.md`
 - `vision/data/analysis/quality_state_audit.csv`
-- `vision/docs/decisions/ontology_validation_report.md`
+- `vision/docs/legacy/ontology_validation_report.md`
 - raw annotation zip: `vision/data/labels/`
 - raw image root: `vision/data/raw/TS/`, `vision/data/raw/VS/`
 - local resized image root fallback: `vision/data/curated`
