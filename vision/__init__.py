@@ -76,12 +76,15 @@ from vision.src.data import (  # noqa: F401
 from vision.src.paths import VisionPaths, build_default_paths
 from vision.src.training import (
     TrainingArtifacts,
+    TrainingExecutionPolicy,
     TrainingRunResult,
+    ValidatedTrainingRunResult,
     build_training_artifacts,
     build_yolo_dataset_yaml_text,
     evaluate_yolo_segmentation,
     sync_best_weight_to_drive,
     train_yolo_segmentation,
+    train_yolo_segmentation_with_validation_gate,
     write_yolo_dataset_yaml,
 )
 from vision.src.settings import VisionRuntimeConfig
@@ -101,7 +104,9 @@ __all__ = [
     "VisionPaths",
     "VisionRuntimeConfig",
     "TrainingArtifacts",
+    "TrainingExecutionPolicy",
     "TrainingRunResult",
+    "ValidatedTrainingRunResult",
     "RestorationEntry",
     "RestoredPrediction",
     "SamplingConfig",
@@ -158,6 +163,7 @@ __all__ = [
     "scale_bbox_xywh",
     "scale_polygon",
     "train_yolo_segmentation",
+    "train_yolo_segmentation_with_validation_gate",
     "write_sampling_report",
     "write_split_management_report",
     "write_dataset_validation_report",

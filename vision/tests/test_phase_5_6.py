@@ -21,6 +21,12 @@ from vision.src.data.restore_predictions import (
     build_restoration_audit_rows,
     restore_prediction_rows,
 )
+from vision.src.paths import VisionPaths
+from vision.src.settings import VisionRuntimeConfig
+from vision.src.training import (
+    TrainingExecutionPolicy,
+    train_yolo_segmentation_with_validation_gate,
+)
 
 
 def _build_label_map_records() -> list[TaskLabelMapRecord]:
@@ -237,3 +243,90 @@ def test_hierarchical_reports_are_writable(tmp_path: Path) -> None:
     assert metric_md.exists()
     assert simple_csv.exists()
     assert simple_md.exists()
+
+
+class _FakeYOLO:
+    def __init__(self, model_source: str) -> None:
+        self.model_source = model_source
+
+    def train(self, **kwargs):  # type: ignore[no-untyped-def]
+        save_dir = Path(kwargs["project"]) / kwargs["name"]
+        weights_dir = save_dir / "weights"
+        weights_dir.mkdir(parents=True, exist_ok=True)
+        (weights_dir / "best.pt").write_text("fake-weight", encoding="utf-8")
+        return {"save_dir": str(save_dir)}
+
+
+def _build_runtime(tmp_path: Path) -> VisionRuntimeConfig:
+    paths = VisionPaths(
+        repo_root=tmp_path / "repo",
+        vision_root=tmp_path / "repo" / "vision",
+        data_root=tmp_path / "repo" / "vision" / "data",
+        raw_root=tmp_path / "repo" / "vision" / "data" / "raw",
+        resized_root=tmp_path / "repo" / "vision" / "data" / "curated",
+        labels_root=tmp_path / "repo" / "vision" / "data" / "labels",
+        runs_root=tmp_path / "repo" / "vision" / "runs",
+        drive_runs_root=tmp_path / "drive" / "siren" / "runs",
+    )
+    for class_name in ("균열_도장", "표면양품_도장"):
+        (paths.resized_root / class_name / "images" / "train").mkdir(parents=True, exist_ok=True)
+        (paths.resized_root / class_name / "images" / "val").mkdir(parents=True, exist_ok=True)
+    return VisionRuntimeConfig(paths=paths, class_names=("균열_도장", "표면양품_도장"))
+
+
+def test_training_wrapper_blocks_on_unvalidated_export(tmp_path: Path) -> None:
+    runtime = _build_runtime(tmp_path)
+    policy = TrainingExecutionPolicy(export_validation_passed=False)
+
+    try:
+        train_yolo_segmentation_with_validation_gate(
+            runtime,
+            run_name="blocked-run",
+            policy=policy,
+            yolo_factory=_FakeYOLO,
+        )
+    except RuntimeError as exc:
+        assert "export validation" in str(exc)
+    else:  # pragma: no cover - guard against accidental success
+        raise AssertionError("training wrapper should block when export validation fails")
+
+
+def test_training_wrapper_uses_class_inclusion_and_writes_calibration_report(tmp_path: Path) -> None:
+    runtime = _build_runtime(tmp_path)
+    policy = TrainingExecutionPolicy(
+        export_validation_passed=True,
+        class_inclusion=("균열_도장",),
+        confidence_thresholds={"__default__": 0.8},
+    )
+
+    result = train_yolo_segmentation_with_validation_gate(
+        runtime,
+        run_name="validated-run",
+        policy=policy,
+        validation_samples=_build_evaluation_samples(),
+        calibration_csv_path=tmp_path / "calibration.csv",
+        calibration_md_path=tmp_path / "calibration.md",
+        yolo_factory=_FakeYOLO,
+    )
+
+    assert result.training_result.artifacts.class_names == ("균열_도장",)
+    assert result.training_result.best_weight_path.exists()
+    assert result.calibration_csv_path == tmp_path / "calibration.csv"
+    assert result.calibration_md_path == tmp_path / "calibration.md"
+    assert result.calibration_rows
+    assert result.calibration_rows[0]["threshold"] == 0.8
+
+
+def test_training_wrapper_skips_calibration_without_validation_samples(tmp_path: Path) -> None:
+    runtime = _build_runtime(tmp_path)
+    result = train_yolo_segmentation_with_validation_gate(
+        runtime,
+        run_name="no-calibration-run",
+        policy=TrainingExecutionPolicy(export_validation_passed=True),
+        yolo_factory=_FakeYOLO,
+    )
+
+    assert result.calibration_rows == ()
+    assert result.calibration_csv_path is None
+    assert result.calibration_md_path is None
+    assert result.training_result.best_weight_path.exists()

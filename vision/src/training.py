@@ -7,13 +7,14 @@ curated dataset, and keep the mutable output paths in one place.
 from __future__ import annotations
 
 from collections.abc import Callable, Sequence
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from shutil import copy2
 from typing import Any, Mapping
 
 from vision.src.constants import DEFAULT_YOLO_MODEL
 from vision.src.data.labels import DEFECT_CLASSES
+from vision.src.data.evaluation import EvaluationSample, build_calibration_rows, write_simple_report
 from vision.src.settings import VisionRuntimeConfig, build_default_runtime_config
 
 try:  # pragma: no cover - ultralytics is optional in the test environment
@@ -68,6 +69,45 @@ class TrainingRunResult:
     train_result: Any
     best_weight_path: Path
     drive_best_weight_path: Path | None
+
+
+@dataclass(frozen=True)
+class TrainingExecutionPolicy:
+    """Gate and calibration settings for a validated training run."""
+
+    export_validation_passed: bool = True
+    class_inclusion: tuple[str, ...] | None = None
+    confidence_thresholds: Mapping[str, float] = field(default_factory=dict)
+    calibration_enabled: bool = True
+
+
+@dataclass(frozen=True)
+class ValidatedTrainingRunResult:
+    """Training run result plus optional validation calibration output."""
+
+    training_result: TrainingRunResult
+    calibration_rows: tuple[dict[str, object], ...]
+    calibration_csv_path: Path | None
+    calibration_md_path: Path | None
+
+
+def _write_validation_calibration_report(
+    samples: Sequence[EvaluationSample],
+    *,
+    thresholds: Mapping[str, float],
+    csv_path: Path,
+    md_path: Path,
+) -> tuple[Path, Path]:
+    """Write a compact validation calibration report."""
+
+    rows = build_calibration_rows(samples, thresholds=thresholds)
+    write_simple_report(
+        [asdict(row) for row in rows],
+        csv_path=csv_path,
+        md_path=md_path,
+        title="Validation Calibration Report",
+    )
+    return csv_path, md_path
 
 
 def _resolve_yolo_factory(
@@ -256,6 +296,66 @@ def train_yolo_segmentation(
         train_result=train_result,
         best_weight_path=best_weight_path,
         drive_best_weight_path=mirrored_path,
+    )
+
+
+def train_yolo_segmentation_with_validation_gate(
+    runtime: VisionRuntimeConfig | None = None,
+    *,
+    run_name: str,
+    policy: TrainingExecutionPolicy | None = None,
+    validation_samples: Sequence[EvaluationSample] | None = None,
+    calibration_csv_path: Path | None = None,
+    calibration_md_path: Path | None = None,
+    curated_root: Path | None = None,
+    class_names: Sequence[str] | None = None,
+    model_source: str | Path | None = None,
+    yolo_factory: Callable[[str], Any] | None = None,
+) -> ValidatedTrainingRunResult:
+    """Run YOLO training only after export validation and calibration gating.
+
+    The wrapper keeps export validation explicit so Phase 6 is only reachable
+    after the task-separated export pipeline has been validated.
+    """
+
+    policy = policy or TrainingExecutionPolicy()
+    if not policy.export_validation_passed:
+        raise RuntimeError("export validation이 통과하지 않아 training을 시작할 수 없습니다.")
+
+    runtime = runtime or build_default_runtime_config()
+    resolved_class_names = tuple(policy.class_inclusion or class_names or runtime.class_names)
+    training_result = train_yolo_segmentation(
+        runtime,
+        run_name=run_name,
+        curated_root=curated_root,
+        class_names=resolved_class_names,
+        model_source=model_source,
+        yolo_factory=yolo_factory,
+    )
+
+    calibration_rows: tuple[dict[str, object], ...] = ()
+    resolved_csv_path = calibration_csv_path
+    resolved_md_path = calibration_md_path
+    if policy.calibration_enabled and validation_samples:
+        resolved_csv_path = resolved_csv_path or (
+            training_result.artifacts.local_run_dir / "reports" / "validation_calibration.csv"
+        )
+        resolved_md_path = resolved_md_path or (
+            training_result.artifacts.local_run_dir / "reports" / "validation_calibration.md"
+        )
+        rows = build_calibration_rows(validation_samples, thresholds=policy.confidence_thresholds)
+        calibration_rows = tuple(asdict(row) for row in rows)
+        _write_validation_calibration_report(
+            validation_samples,
+            thresholds=policy.confidence_thresholds,
+            csv_path=resolved_csv_path,
+            md_path=resolved_md_path,
+        )
+    return ValidatedTrainingRunResult(
+        training_result=training_result,
+        calibration_rows=calibration_rows,
+        calibration_csv_path=resolved_csv_path,
+        calibration_md_path=resolved_md_path,
     )
 
 
