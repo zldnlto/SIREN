@@ -11,6 +11,7 @@ from vision.src.data import (
     build_ontology_table,
     build_restoration_index,
     build_task_label_map,
+    label_map_records_to_dicts,
     bbox_xywh_to_yolo,
     canonical_class_name,
     clip_xyxy,
@@ -98,9 +99,15 @@ def test_task_label_maps_are_separated_and_restore_roundtrip(ontology_records) -
     assert len(classify_map) == 6
     assert len(detect_map) == 4
     assert len(segment_map) == 22
+    assert [entry.task_specific_model_class_id for entry in classify_map] == list(range(len(classify_map)))
+    assert [entry.task_specific_model_class_id for entry in detect_map] == list(range(len(detect_map)))
+    assert [entry.task_specific_model_class_id for entry in segment_map] == list(range(len(segment_map)))
     assert classify_map == sorted(classify_map, key=lambda row: row.ontology_id)
     assert detect_map == sorted(detect_map, key=lambda row: row.ontology_id)
     assert segment_map == sorted(segment_map, key=lambda row: row.ontology_id)
+    assert all(entry.model_class_id == entry.task_specific_model_class_id for entry in classify_map)
+    serialized = label_map_records_to_dicts(classify_map)
+    assert serialized[0]["task_specific_model_class_id"] == serialized[0]["model_class_id"]
 
     classify_entry = build_restoration_index(classify_map)[("surface_cls", "classify", 0)]
     detect_entry = build_restoration_index(detect_map)[("surface_det", "detect", 0)]

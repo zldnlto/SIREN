@@ -27,6 +27,7 @@
 ## Validation rule
 
 - `category_id` is metadata only.
+- training/export code must use `task_specific_model_class_id` as the local YOLO class id.
 - `taxonomy_status` must preserve review candidates instead of deleting them.
 - `domain` in downstream code should be treated as annotation domain.
 

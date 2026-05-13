@@ -34,7 +34,7 @@ def _build_label_map_records() -> list[TaskLabelMapRecord]:
         TaskLabelMapRecord(
             model_name="leaf-model",
             task_type="classify",
-            model_class_id=0,
+            task_specific_model_class_id=0,
             ontology_id="v1.표면처리.균열.도장.defect",
             display_label="표면처리_균열_도장",
             canonical_class_name="균열_도장",
@@ -49,7 +49,7 @@ def _build_label_map_records() -> list[TaskLabelMapRecord]:
         TaskLabelMapRecord(
             model_name="parent-model",
             task_type="classify",
-            model_class_id=1,
+            task_specific_model_class_id=1,
             ontology_id="v1.표면처리.균열.도장.defect",
             display_label="표면처리_균열_도장",
             canonical_class_name="균열_도장",
@@ -64,7 +64,7 @@ def _build_label_map_records() -> list[TaskLabelMapRecord]:
         TaskLabelMapRecord(
             model_name="binary-model",
             task_type="classify",
-            model_class_id=2,
+            task_specific_model_class_id=2,
             ontology_id="v1.표면처리.표면양품.도장.good",
             display_label="표면처리_표면양품_도장",
             canonical_class_name="표면양품_도장",
