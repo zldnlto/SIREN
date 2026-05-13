@@ -1,8 +1,20 @@
 from __future__ import annotations
 
 from dataclasses import asdict
+from pathlib import Path
 
 from vision.src.data.label_maps import TaskLabelMapRecord
+from vision.src.data.evaluation import (
+    EvaluationSample,
+    build_calibration_rows,
+    build_confusion_matrix_rows,
+    build_false_negative_rows,
+    build_hierarchical_metric_rows,
+    build_label_type_report,
+    build_support_bucket_report,
+    write_hierarchical_metric_report,
+    write_simple_report,
+)
 from vision.src.data.restore_predictions import (
     build_restore_prediction_index,
     build_restoration_audit_report,
@@ -133,3 +145,95 @@ def test_restoration_audit_rows_are_json_friendly() -> None:
     assert payload[0]["model_name"] == "leaf-model"
     assert payload[1]["restored_display_label"] == "표면처리"
     assert payload[2]["restored_display_label"] == "good"
+
+
+def _build_evaluation_samples() -> list[EvaluationSample]:
+    return [
+        EvaluationSample(
+            image_id="img-1",
+            file_name="sample-1.jpg",
+            task_type="classify",
+            label_type="classification",
+            support_bucket="regular",
+            true_canonical_class_name="균열_도장",
+            predicted_canonical_class_name="균열_도장",
+            true_domain="표면처리",
+            predicted_domain="표면처리",
+            true_quality_state="defect",
+            predicted_quality_state="defect",
+            confidence=0.91,
+        ),
+        EvaluationSample(
+            image_id="img-2",
+            file_name="sample-2.jpg",
+            task_type="detect",
+            label_type="bbox",
+            support_bucket="tail",
+            true_canonical_class_name="도막떨어짐_도장",
+            predicted_canonical_class_name="도막분리_도장",
+            true_domain="표면처리",
+            predicted_domain="표면처리",
+            true_quality_state="defect",
+            predicted_quality_state="defect",
+            confidence=0.65,
+        ),
+        EvaluationSample(
+            image_id="img-3",
+            file_name="sample-3.jpg",
+            task_type="segment",
+            label_type="segmentation+bbox",
+            support_bucket="regular",
+            true_canonical_class_name="표면양품_도장",
+            predicted_canonical_class_name="표면양품_도장",
+            true_domain="표면처리",
+            predicted_domain="표면처리",
+            true_quality_state="good",
+            predicted_quality_state="good",
+            confidence=0.83,
+        ),
+    ]
+
+
+def test_hierarchical_metrics_confusion_and_false_negative_reports() -> None:
+    samples = _build_evaluation_samples()
+
+    leaf_rows = build_hierarchical_metric_rows(samples, granularity="leaf")
+    parent_rows = build_hierarchical_metric_rows(samples, granularity="parent")
+    binary_rows = build_hierarchical_metric_rows(samples, granularity="binary")
+    confusion_rows = build_confusion_matrix_rows(samples, granularity="leaf")
+    false_negative_rows = build_false_negative_rows(samples, granularity="leaf")
+    label_type_rows = build_label_type_report(samples)
+    support_rows = build_support_bucket_report(samples)
+    calibration_rows = build_calibration_rows(samples, thresholds={"__default__": 0.7})
+
+    assert [row.label for row in leaf_rows] == ["균열_도장", "도막떨어짐_도장", "표면양품_도장"]
+    assert [row.label for row in parent_rows] == ["표면처리"]
+    assert [row.label for row in binary_rows] == ["defect", "good"]
+    assert any(row.true_label == "도막떨어짐_도장" and row.predicted_label == "도막분리_도장" for row in confusion_rows)
+    assert len(false_negative_rows) == 1
+    assert label_type_rows[0]["count"] == 1
+    assert support_rows[0]["support_bucket"] == "regular"
+    assert len(calibration_rows) == 3
+    assert calibration_rows[0].threshold == 0.7
+
+
+def test_hierarchical_reports_are_writable(tmp_path: Path) -> None:
+    samples = _build_evaluation_samples()
+    metric_rows = build_hierarchical_metric_rows(samples, granularity="leaf")
+
+    metric_csv, metric_md = write_hierarchical_metric_report(
+        metric_rows,
+        csv_path=tmp_path / "metrics.csv",
+        md_path=tmp_path / "metrics.md",
+    )
+    simple_csv, simple_md = write_simple_report(
+        build_label_type_report(samples),
+        csv_path=tmp_path / "label_type.csv",
+        md_path=tmp_path / "label_type.md",
+        title="Label Type Report",
+    )
+
+    assert metric_csv.exists()
+    assert metric_md.exists()
+    assert simple_csv.exists()
+    assert simple_md.exists()
