@@ -49,6 +49,16 @@ class RestoredPrediction:
     source_geometry: str
 
 
+def resolve_restored_display_label(entry: RestorationEntry) -> str:
+    """Return the restored display label for the requested granularity."""
+
+    if entry.restore_granularity == "parent":
+        return entry.domain
+    if entry.restore_granularity == "binary":
+        return entry.quality_state
+    return entry.display_label
+
+
 def build_restoration_index(
     label_map_records: Iterable[TaskLabelMapRecord],
 ) -> dict[tuple[str, str, int], RestorationEntry]:
@@ -85,6 +95,7 @@ def restore_prediction(
 ) -> RestoredPrediction:
     """Convert a raw model hit into the ontology-aware business schema."""
 
+    display_label = resolve_restored_display_label(entry)
     if entry.task_type == "classify":
         geometry_level = "image"
         bbox_xyxy = None
@@ -102,7 +113,7 @@ def restore_prediction(
         task_type=entry.task_type,
         model_class_id=entry.model_class_id,
         ontology_id=entry.ontology_id,
-        display_label=entry.display_label,
+        display_label=display_label,
         domain=entry.domain,
         defect_name=entry.defect_name,
         part_name=entry.part_name,
