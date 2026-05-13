@@ -1,3 +1,6 @@
+# Split/sampling policy is driven by the training layer contract.
+# review_train_cap = 0 means taxonomy review candidates are excluded from the
+# default train export and kept only for reports/RAG/manual review.
 support_buckets:
   regular_min_unique_images: 1000
   tail_min_unique_images: 100
