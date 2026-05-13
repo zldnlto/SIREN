@@ -116,6 +116,18 @@ from vision.src.data.split_sampling import (  # noqa: F401
     write_sampling_report,
     write_split_management_report,
 )
+from vision.src.data.classification_export import (  # noqa: F401
+    ClassificationExportResult,
+    export_classification_dataset,
+)
+from vision.src.data.detection_export import (  # noqa: F401
+    DetectionExportResult,
+    export_detection_dataset,
+)
+from vision.src.data.segmentation_export import (  # noqa: F401
+    SegmentationExportResult,
+    export_segmentation_dataset,
+)
 from vision.src.data.normalization import (  # noqa: F401
     AREA_BIN_RULES,
     GEOMETRY_LEVEL_BY_LABEL_TYPE,
@@ -257,6 +269,9 @@ __all__ = [
     "SamplingConfig",
     "SamplingReport",
     "SamplingSelectionRecord",
+    "ClassificationExportResult",
+    "DetectionExportResult",
+    "SegmentationExportResult",
     "ontology_records_to_rows",
     "OntologyRecord",
     "OntologySlugs",
@@ -283,6 +298,9 @@ __all__ = [
     "build_image_split_records",
     "build_sampling_manifest",
     "build_split_management_report",
+    "export_classification_dataset",
+    "export_detection_dataset",
+    "export_segmentation_dataset",
     "resolve_yolo_class_id",
     "write_ontology_audit_csv",
     "write_ontology_audit_markdown",
