@@ -1,0 +1,5 @@
+﻿metric,value
+total_unique_images,279320
+selected_train_images,136426
+selected_validation_images,31037
+validation_policy,natural

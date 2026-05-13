@@ -17,7 +17,7 @@ class TaskLabelMapRecord:
 
     model_name: str
     task_type: str
-    model_class_id: int
+    task_specific_model_class_id: int
     ontology_id: str
     display_label: str
     canonical_class_name: str
@@ -28,6 +28,12 @@ class TaskLabelMapRecord:
     part_name: str
     quality_state: str
     support_bucket: str
+
+    @property
+    def model_class_id(self) -> int:
+        """Backward-compatible alias for the task-specific local class id."""
+
+        return self.task_specific_model_class_id
 
 
 def build_task_label_map(
@@ -51,7 +57,7 @@ def build_task_label_map(
         TaskLabelMapRecord(
             model_name=model_name,
             task_type=task_type,
-            model_class_id=index,
+            task_specific_model_class_id=index,
             ontology_id=record.ontology_id,
             display_label=record.display_label,
             canonical_class_name=record.canonical_class_name,
@@ -72,7 +78,12 @@ def label_map_records_to_dicts(
 ) -> list[dict[str, Any]]:
     """Convert label map records into plain dictionaries."""
 
-    return [asdict(record) for record in records]
+    payload: list[dict[str, Any]] = []
+    for record in records:
+        item = asdict(record)
+        item["model_class_id"] = record.task_specific_model_class_id
+        payload.append(item)
+    return payload
 
 
 def save_task_label_map(
@@ -93,15 +104,21 @@ def save_task_label_map(
 def load_task_label_map(path: Path) -> list[dict[str, Any]]:
     """Load a previously saved task label map."""
 
-    return json.loads(path.read_text(encoding="utf-8"))
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    for item in payload:
+        if "task_specific_model_class_id" not in item and "model_class_id" in item:
+            item["task_specific_model_class_id"] = item["model_class_id"]
+        if "model_class_id" not in item and "task_specific_model_class_id" in item:
+            item["model_class_id"] = item["task_specific_model_class_id"]
+    return payload
 
 
 def build_label_map_index(
     records: Iterable[TaskLabelMapRecord],
 ) -> dict[tuple[str, str, int], TaskLabelMapRecord]:
-    """Index records by (model_name, task_type, model_class_id)."""
+    """Index records by (model_name, task_type, task_specific_model_class_id)."""
 
     index: dict[tuple[str, str, int], TaskLabelMapRecord] = {}
     for record in records:
-        index[(record.model_name, record.task_type, record.model_class_id)] = record
+        index[(record.model_name, record.task_type, record.task_specific_model_class_id)] = record
     return index

@@ -1,0 +1,5 @@
+﻿metric,value
+total_unique_images,279320
+train_unique_images,248283
+validation_unique_images,31037
+leakage_count,2405

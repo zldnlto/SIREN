@@ -23,6 +23,7 @@ QUALITY_STATE_AUDIT_FILENAME = "quality_state_audit.csv"
 ONTOLOGY_VALIDATION_REPORT_FILENAME = "ontology_validation_report.md"
 VISION_DATA_PATHS_FILENAME = "vision_data_paths.yaml"
 ONTOLOGY_SLUGS_FILENAME = "ontology_slugs.yaml"
+SAMPLING_CONFIG_FILENAME = "sampling.yaml"
 DEFAULT_SAMPLE_MANIFEST = "sample_manifest.json"
 
 DEFAULT_SAMPLE_SEED = 42
@@ -39,6 +40,20 @@ DEFAULT_DATA_ROOT = DEFAULT_PROJECT_ROOT / "data"
 DEFAULT_ANALYSIS_ROOT = DEFAULT_DATA_ROOT / "analysis"
 DEFAULT_PROCESSED_ROOT = DEFAULT_DATA_ROOT / "processed"
 DEFAULT_LABEL_MAP_ROOT = DEFAULT_PROCESSED_ROOT / "label_maps"
+DEFAULT_SPLIT_MANIFEST = "split_manifest.json"
+DEFAULT_SPLIT_AUDIT_FILENAME = "split_audit.csv"
+DEFAULT_SPLIT_AUDIT_MD_FILENAME = "split_audit.md"
+DEFAULT_SAMPLING_AUDIT_FILENAME = "sampling_audit.csv"
+DEFAULT_SAMPLING_AUDIT_MD_FILENAME = "sampling_audit.md"
+DEFAULT_CLASSIFICATION_EXPORT_ROOT = DEFAULT_PROCESSED_ROOT / "exports" / "classification"
+DEFAULT_DETECTION_EXPORT_ROOT = DEFAULT_PROCESSED_ROOT / "exports" / "detection"
+DEFAULT_SEGMENTATION_EXPORT_ROOT = DEFAULT_PROCESSED_ROOT / "exports" / "segmentation"
+DEFAULT_SPLIT_MANIFEST_PATH = DEFAULT_PROCESSED_ROOT / DEFAULT_SPLIT_MANIFEST
+DEFAULT_SPLIT_AUDIT_PATH = DEFAULT_ANALYSIS_ROOT / DEFAULT_SPLIT_AUDIT_FILENAME
+DEFAULT_SPLIT_AUDIT_MD_PATH = DEFAULT_ANALYSIS_ROOT / DEFAULT_SPLIT_AUDIT_MD_FILENAME
+DEFAULT_SAMPLING_AUDIT_PATH = DEFAULT_ANALYSIS_ROOT / DEFAULT_SAMPLING_AUDIT_FILENAME
+DEFAULT_SAMPLING_AUDIT_MD_PATH = DEFAULT_ANALYSIS_ROOT / DEFAULT_SAMPLING_AUDIT_MD_FILENAME
+DEFAULT_SAMPLING_CONFIG_PATH = Path("vision") / "configs" / SAMPLING_CONFIG_FILENAME
 DEFAULT_RAW_ROOT = DEFAULT_DATA_ROOT / "raw"
 DEFAULT_ANNOTATION_ROOT = DEFAULT_DATA_ROOT / "labels"
 DEFAULT_RESIZED_ROOT = DEFAULT_DATA_ROOT / "curated"
@@ -159,9 +174,15 @@ class DataConfig:
     quality_state_audit_path: Path = DEFAULT_QUALITY_STATE_AUDIT_PATH
     ontology_validation_report_path: Path = DEFAULT_ONTOLOGY_VALIDATION_REPORT_PATH
     manifest_path: Path = DEFAULT_MANIFEST_PATH
+    split_manifest_path: Path = DEFAULT_SPLIT_MANIFEST_PATH
+    split_audit_path: Path = DEFAULT_SPLIT_AUDIT_PATH
+    split_audit_md_path: Path = DEFAULT_SPLIT_AUDIT_MD_PATH
+    sampling_audit_path: Path = DEFAULT_SAMPLING_AUDIT_PATH
+    sampling_audit_md_path: Path = DEFAULT_SAMPLING_AUDIT_MD_PATH
     raw_root: Path = DEFAULT_RAW_ROOT
     annotation_root: Path = DEFAULT_ANNOTATION_ROOT
     resized_root: Path = DEFAULT_RESIZED_ROOT
+    sampling_config_path: Path = DEFAULT_SAMPLING_CONFIG_PATH
     processed_root: Path = DEFAULT_PROCESSED_ROOT
     label_map_root: Path = DEFAULT_LABEL_MAP_ROOT
     vision_data_paths_path: Path = DEFAULT_VISION_DATA_PATHS_PATH
@@ -241,11 +262,31 @@ def load_data_config(
         manifest_path=_resolve_path(
             yaml_data.get("manifest_path"), base=repo_root, fallback=repo_root / DEFAULT_MANIFEST_PATH
         ),
+        split_manifest_path=_resolve_path(
+            yaml_data.get("split_manifest_path"), base=repo_root, fallback=repo_root / DEFAULT_SPLIT_MANIFEST_PATH
+        ),
+        split_audit_path=_resolve_path(
+            yaml_data.get("split_audit_path"), base=repo_root, fallback=repo_root / DEFAULT_SPLIT_AUDIT_PATH
+        ),
+        split_audit_md_path=_resolve_path(
+            yaml_data.get("split_audit_md_path"), base=repo_root, fallback=repo_root / DEFAULT_SPLIT_AUDIT_MD_PATH
+        ),
+        sampling_audit_path=_resolve_path(
+            yaml_data.get("sampling_audit_path"), base=repo_root, fallback=repo_root / DEFAULT_SAMPLING_AUDIT_PATH
+        ),
+        sampling_audit_md_path=_resolve_path(
+            yaml_data.get("sampling_audit_md_path"),
+            base=repo_root,
+            fallback=repo_root / DEFAULT_SAMPLING_AUDIT_MD_PATH,
+        ),
         raw_root=_resolve_path(yaml_data.get("raw_root"), base=repo_root, fallback=repo_root / DEFAULT_RAW_ROOT),
         annotation_root=_resolve_path(
             yaml_data.get("annotation_root"), base=repo_root, fallback=repo_root / DEFAULT_ANNOTATION_ROOT
         ),
         resized_root=resized_root,
+        sampling_config_path=_resolve_path(
+            yaml_data.get("sampling_config_path"), base=repo_root, fallback=repo_root / DEFAULT_SAMPLING_CONFIG_PATH
+        ),
         processed_root=_resolve_path(
             yaml_data.get("processed_root"), base=repo_root, fallback=repo_root / DEFAULT_PROCESSED_ROOT
         ),
