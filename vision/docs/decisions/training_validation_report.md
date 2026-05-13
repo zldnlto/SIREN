@@ -5,6 +5,7 @@
 - export 검증이 통과한 경우에만 YOLO 학습을 시작한다.
 - 검증이 실패하면 학습 래퍼는 즉시 중단한다.
 - class inclusion과 confidence threshold는 코드 하드코딩이 아니라 정책 객체로 전달한다.
+- YOLO class id는 `task_specific_model_class_id`로만 해석하고, `DEFECT_CLASSES`는 사람용 분류 참고용으로만 남긴다.
 
 ## Calibration 훅
 

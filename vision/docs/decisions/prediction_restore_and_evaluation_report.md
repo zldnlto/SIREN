@@ -3,6 +3,7 @@
 ## 복원 기준
 
 - 복원 키는 `model_name + task_type + model_class_id`로 둔다.
+- 여기서 `model_class_id`는 task-specific local integer이며, 내부 구현에서는 `task_specific_model_class_id`와 동의어로 취급한다.
 - `category_id`는 복원 키나 모델 class로 쓰지 않는다.
 - leaf 학습은 leaf label로 복원한다.
 - parent 학습은 leaf label로 되돌리지 않고 domain level label로 복원한다.

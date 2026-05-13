@@ -6,6 +6,8 @@
 - TL/VL holdout is preserved and validation is left natural by default.
 - class-balanced train sampling is based on unique image counts.
 - area-aware hooks are only applied when localized geometry exists.
+- sampling keys are derived from the training layer, not from `category_id`.
+- taxonomy review rows are excluded from default train sampling and retained only for reporting/review.
 - split conflict가 있으면 `file_name` 단위로 하나의 split만 남기고, 현재 구현은 TL을 우선하는 결정적 정리 규칙을 쓴다.
 
 ## Summary

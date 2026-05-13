@@ -4,9 +4,11 @@
 
 - classification, detection, segmentation export를 완전히 분리했다.
 - `category_id`는 model class가 아니라 원본 메타데이터로만 보존한다.
+- model class는 `task_specific_model_class_id`를 사용하고, 그 값은 ontology에서 deterministic하게 파생한다.
 - classification-only sample은 detection/segmentation의 empty label로 내보내지 않는다.
 - bbox-only sample은 segmentation mask로 승격하지 않는다.
 - detection/segmentation은 `dataset_index.csv`의 width/height와 COCO JSON을 교차 확인한 뒤 640x640 letterbox transform을 적용한다.
+- taxonomy review rows는 기본 export에서 제외하고 report/RAG용으로만 남긴다.
 
 ## Export Roots
 
