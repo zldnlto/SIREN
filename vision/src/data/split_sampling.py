@@ -74,6 +74,7 @@ class ImageSplitRecord:
     canonical_class_name: str
     ontology_id: str
     quality_state: str
+    taxonomy_statuses: tuple[str, ...]
     label_types: tuple[str, ...]
     task_types: tuple[str, ...]
     original_category_ids: tuple[int, ...]
@@ -85,6 +86,7 @@ class ImageSplitRecord:
     width: int
     height: int
     has_localized_geometry: bool
+    has_taxonomy_review: bool
     area_bins: tuple[str, ...]
     max_area_ratio: float | None
     support_bucket: str
@@ -112,6 +114,7 @@ class SamplingSelectionRecord:
     canonical_class_name: str
     ontology_id: str
     support_bucket: str
+    has_taxonomy_review: bool
     area_weight: float
     selected_for_train: bool
     selected_for_validation: bool
@@ -131,6 +134,7 @@ class SamplingReport:
     selected_validation_images: int
     class_bucket_counts: dict[str, int]
     class_sample_counts: dict[str, int]
+    taxonomy_review_image_count: int
     blocked_notes: tuple[str, ...]
 
 
@@ -229,6 +233,15 @@ def build_image_split_records(
         part_name = str(_row_value(primary, "part_name_norm", _row_value(primary, "part_name", "")))
         label_types = tuple(sorted({str(_row_value(row, "label_type", "")) for row in group if _row_value(row, "label_type", "")}))
         task_types = tuple(sorted({str(_row_value(row, "task_type", "")) for row in group if _row_value(row, "task_type", "")}))
+        taxonomy_statuses = tuple(
+            sorted(
+                {
+                    str(_row_value(row, "taxonomy_status", "normal") or "normal")
+                    for row in group
+                    if _row_value(row, "taxonomy_status", "normal")
+                }
+            )
+        )
         original_category_ids = tuple(
             sorted(
                 {
@@ -259,6 +272,7 @@ def build_image_split_records(
                 canonical_class_name=str(_row_value(primary, "canonical_class_name", f"{defect_name}_{part_name}")),
                 ontology_id=ontology_id,
                 quality_state=str(_row_value(primary, "quality_state", "")),
+                taxonomy_statuses=taxonomy_statuses,
                 label_types=label_types,
                 task_types=task_types,
                 original_category_ids=original_category_ids,
@@ -270,6 +284,7 @@ def build_image_split_records(
                 width=max(widths) if widths else 0,
                 height=max(heights) if heights else 0,
                 has_localized_geometry=any(task_type in {"detect", "segment"} for task_type in task_types),
+                has_taxonomy_review=any(status != "normal" for status in taxonomy_statuses),
                 area_bins=area_bins,
                 max_area_ratio=max(area_ratios) if area_ratios else None,
                 support_bucket=support_bucket,
@@ -374,6 +389,7 @@ def build_sampling_manifest(
     ontology_records: Iterable[OntologyRecord] = (),
     *,
     sampling_config: SamplingConfig | None = None,
+    exclude_taxonomy_review: bool = True,
 ) -> tuple[list[SamplingSelectionRecord], SamplingReport]:
     """Select deterministic train/validation samples using unique-image counts."""
 
@@ -408,7 +424,7 @@ def build_sampling_manifest(
             record.file_name for record in sorted_train[: min(train_cap, len(sorted_train))]
         }
         for rank, record in enumerate(sorted_train, start=1):
-            selected = record.file_name in selected_train
+            selected = record.file_name in selected_train and not (exclude_taxonomy_review and record.has_taxonomy_review)
             if selected:
                 class_sample_counts[canonical_class_name] += 1
             selections.append(
@@ -418,10 +434,17 @@ def build_sampling_manifest(
                     canonical_class_name=canonical_class_name,
                     ontology_id=record.ontology_id,
                     support_bucket=bucket,
+                    has_taxonomy_review=record.has_taxonomy_review,
                     area_weight=_area_weight(record, sampling_config),
                     selected_for_train=selected,
                     selected_for_validation=False,
-                    selection_reason="train_cap" if selected else "train_cap_exceeded",
+                    selection_reason=(
+                        "taxonomy_review_excluded"
+                        if not selected and exclude_taxonomy_review and record.has_taxonomy_review
+                        else "train_cap"
+                        if selected
+                        else "train_cap_exceeded"
+                    ),
                     class_size=unique_image_count,
                     train_cap=train_cap,
                     rank_in_class=rank,
@@ -435,6 +458,7 @@ def build_sampling_manifest(
                     canonical_class_name=canonical_class_name,
                     ontology_id=record.ontology_id,
                     support_bucket=bucket,
+                    has_taxonomy_review=record.has_taxonomy_review,
                     area_weight=_area_weight(record, sampling_config),
                     selected_for_train=False,
                     selected_for_validation=True,
@@ -453,9 +477,11 @@ def build_sampling_manifest(
         selected_validation_images=sum(1 for record in selections if record.selected_for_validation),
         class_bucket_counts=dict(bucket_counts),
         class_sample_counts=dict(class_sample_counts),
+        taxonomy_review_image_count=sum(1 for record in records if record.has_taxonomy_review),
         blocked_notes=(
             "validation/test oversampling is disabled by default.",
             "area-aware weights only affect train selection when localized geometry exists.",
+            "taxonomy_review_required images are excluded from train sampling by default.",
         ),
     )
     return selections, report
@@ -492,6 +518,7 @@ def write_sampling_report(
             {"metric": "total_unique_images", "value": report.total_unique_images},
             {"metric": "selected_train_images", "value": report.selected_train_images},
             {"metric": "selected_validation_images", "value": report.selected_validation_images},
+            {"metric": "taxonomy_review_image_count", "value": report.taxonomy_review_image_count},
             {"metric": "validation_policy", "value": report.validation_policy},
         ],
         fieldnames=("metric", "value"),
@@ -505,6 +532,7 @@ def write_sampling_report(
         f"- total unique images: {report.total_unique_images}",
         f"- selected train images: {report.selected_train_images}",
         f"- selected validation images: {report.selected_validation_images}",
+        f"- taxonomy review images: {report.taxonomy_review_image_count}",
         "",
         "## Bucket Counts",
         "",
