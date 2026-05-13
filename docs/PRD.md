@@ -189,13 +189,16 @@ YOLOv8 출력 타입에 따라 시각화를 달리 적용한다.
 | 영역 | 상태 | 비고 |
 |------|------|------|
 | 로컬 개발 환경 (Docker Compose) | ✅ 완료 | PostgreSQL + ChromaDB |
-| FastAPI 백엔드 | ✅ 완료 | DB·JWT·S3 연동 |
+| FastAPI 백엔드 | ✅ 완료 | DB·JWT·S3 연동, usecase/application 분리 완료 |
 | Alembic 마이그레이션 | ✅ 완료 | 4개 테이블 |
 | YOLOv8 데이터셋 변환 파이프라인 | ✅ 완료 | YOLO 포맷 변환 |
-| YOLOv8 실제 학습 | 🚧 진행중 | Mock 탐지 상태 |
+| YOLOv8 Colab import / 데이터 준비 / 학습 헬퍼 | ✅ 완료 | `vision` 패키지 import, 데이터 prep, train/eval helper, 가이드 문서 포함 |
+| YOLOv8 실제 학습 | 🚧 진행중 | 실제 weight 학습/평가 실행은 아직 미완료 |
 | Grad-CAM++ 연동 | ⬜ 예정 | |
 | RAG 파이프라인 | ⬜ 예정 | ChromaDB + OpenAI API |
 | Flutter 앱 | ⬜ 예정 | |
 | EC2 배포 | ⬜ 예정 | |
+
+> 상태 기준: 2026-05-13 현재 저장소 구현과 문서 반영분을 기준으로 정리했다.
 
 **MVP 완료 목표: 2026-05-18**
