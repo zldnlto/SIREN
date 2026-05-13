@@ -93,6 +93,35 @@ def export_detection_dataset(
     for file_name in sorted(grouped):
         group = grouped[file_name]
         primary = sorted(group, key=lambda row: (row.split, row.ontology_id, row.label_type))[0]
+        if any(row.taxonomy_status != "normal" for row in group):
+            blocked_images += 1
+            records.append(
+                TaskExportRecord(
+                    task_type="detect",
+                    model_name=model_name,
+                    file_name=file_name,
+                    split=primary.split,
+                    domain=primary.domain,
+                    defect_name=primary.defect_name_norm,
+                    part_name=primary.part_name_norm,
+                    canonical_class_name=primary.canonical_class_name,
+                    ontology_id=primary.ontology_id,
+                    task_specific_model_class_id=-1,
+                    label_type=primary.label_type,
+                    geometry_level=primary.geometry_level,
+                    image_path="",
+                    label_path="",
+                    status="blocked",
+                    reason="taxonomy_review_excluded_by_default",
+                    original_width=primary.width,
+                    original_height=primary.height,
+                    target_width=640,
+                    target_height=640,
+                    resize_method="letterbox",
+                    annotation_count=len(group),
+                )
+            )
+            continue
         if primary.task_type == "classify":
             records.append(
                 TaskExportRecord(
@@ -105,7 +134,7 @@ def export_detection_dataset(
                     part_name=primary.part_name_norm,
                     canonical_class_name=primary.canonical_class_name,
                     ontology_id=primary.ontology_id,
-                    model_class_id=-1,
+                    task_specific_model_class_id=-1,
                     label_type=primary.label_type,
                     geometry_level=primary.geometry_level,
                     image_path="",
@@ -136,7 +165,7 @@ def export_detection_dataset(
                     part_name=primary.part_name_norm,
                     canonical_class_name=primary.canonical_class_name,
                     ontology_id=primary.ontology_id,
-                    model_class_id=-1,
+                    task_specific_model_class_id=-1,
                     label_type=primary.label_type,
                     geometry_level=primary.geometry_level,
                     image_path="",
@@ -167,7 +196,7 @@ def export_detection_dataset(
                     part_name=primary.part_name_norm,
                     canonical_class_name=primary.canonical_class_name,
                     ontology_id=primary.ontology_id,
-                    model_class_id=label_map.model_class_id,
+                    task_specific_model_class_id=label_map.task_specific_model_class_id,
                     label_type=primary.label_type,
                     geometry_level=primary.geometry_level,
                     image_path="",
@@ -198,7 +227,7 @@ def export_detection_dataset(
                     part_name=primary.part_name_norm,
                     canonical_class_name=primary.canonical_class_name,
                     ontology_id=primary.ontology_id,
-                    model_class_id=label_map.model_class_id,
+                    task_specific_model_class_id=label_map.task_specific_model_class_id,
                     label_type=primary.label_type,
                     geometry_level=primary.geometry_level,
                     image_path="",
@@ -224,7 +253,7 @@ def export_detection_dataset(
         annotations = json_data.get("annotations", [])
         label_lines = []
         for annotation in annotations:
-            line = _build_detection_line(annotation, transform=transform, model_class_id=label_map.model_class_id)
+            line = _build_detection_line(annotation, transform=transform, model_class_id=label_map.task_specific_model_class_id)
             if line is not None:
                 label_lines.append(line)
 
@@ -241,7 +270,7 @@ def export_detection_dataset(
                     part_name=primary.part_name_norm,
                     canonical_class_name=primary.canonical_class_name,
                     ontology_id=primary.ontology_id,
-                    model_class_id=label_map.model_class_id,
+                    task_specific_model_class_id=label_map.task_specific_model_class_id,
                     label_type=primary.label_type,
                     geometry_level=primary.geometry_level,
                     image_path="",
@@ -275,7 +304,7 @@ def export_detection_dataset(
                 part_name=primary.part_name_norm,
                 canonical_class_name=primary.canonical_class_name,
                 ontology_id=primary.ontology_id,
-                model_class_id=label_map.model_class_id,
+                task_specific_model_class_id=label_map.task_specific_model_class_id,
                 label_type=primary.label_type,
                 geometry_level=primary.geometry_level,
                 image_path=str(image_path),
@@ -302,6 +331,7 @@ def export_detection_dataset(
         notes=(
             "detection export는 bbox-backed annotation만 쓴다.",
             "classification-only sample은 empty detection label로 내보내지 않는다.",
+            "taxonomy review candidates are excluded from standard export.",
             "category_id는 model class가 아니라 ontology restoration metadata다.",
         ),
     )

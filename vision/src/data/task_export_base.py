@@ -36,7 +36,7 @@ class TaskExportRecord:
     part_name: str
     canonical_class_name: str
     ontology_id: str
-    model_class_id: int
+    task_specific_model_class_id: int
     label_type: str
     geometry_level: str
     image_path: str
@@ -49,6 +49,12 @@ class TaskExportRecord:
     target_height: int
     resize_method: str
     annotation_count: int
+
+    @property
+    def model_class_id(self) -> int:
+        """Backward-compatible alias for the task-specific local class id."""
+
+        return self.task_specific_model_class_id
 
 
 @dataclass(frozen=True)
@@ -144,7 +150,12 @@ def write_task_export_manifest(records: list[TaskExportRecord], path: Path) -> P
     """Write a deterministic export manifest."""
 
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps([asdict(record) for record in records], ensure_ascii=False, indent=2), encoding="utf-8")
+    payload: list[dict[str, Any]] = []
+    for record in records:
+        item = asdict(record)
+        item["model_class_id"] = record.task_specific_model_class_id
+        payload.append(item)
+    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
     return path
 
 

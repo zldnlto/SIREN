@@ -70,6 +70,35 @@ def export_classification_dataset(
     for file_name in sorted(grouped):
         group = grouped[file_name]
         primary = sorted(group, key=lambda row: (row.split, row.ontology_id, row.label_type))[0]
+        if any(row.taxonomy_status != "normal" for row in group):
+            blocked_images += 1
+            records.append(
+                TaskExportRecord(
+                    task_type="classify",
+                    model_name=model_name,
+                    file_name=file_name,
+                    split=primary.split,
+                    domain=primary.domain,
+                    defect_name=primary.defect_name_norm,
+                    part_name=primary.part_name_norm,
+                    canonical_class_name=primary.canonical_class_name,
+                    ontology_id=primary.ontology_id,
+                    task_specific_model_class_id=-1,
+                    label_type=primary.label_type,
+                    geometry_level=primary.geometry_level,
+                    image_path="",
+                    label_path="",
+                    status="blocked",
+                    reason="taxonomy_review_excluded_by_default",
+                    original_width=primary.width,
+                    original_height=primary.height,
+                    target_width=640,
+                    target_height=640,
+                    resize_method="copy",
+                    annotation_count=len(group),
+                )
+            )
+            continue
         if primary.task_type != "classify":
             records.append(
                 TaskExportRecord(
@@ -82,7 +111,7 @@ def export_classification_dataset(
                     part_name=primary.part_name_norm,
                     canonical_class_name=primary.canonical_class_name,
                     ontology_id=primary.ontology_id,
-                    model_class_id=-1,
+                    task_specific_model_class_id=-1,
                     label_type=primary.label_type,
                     geometry_level=primary.geometry_level,
                     image_path="",
@@ -113,7 +142,7 @@ def export_classification_dataset(
                     part_name=primary.part_name_norm,
                     canonical_class_name=primary.canonical_class_name,
                     ontology_id=primary.ontology_id,
-                    model_class_id=-1,
+                    task_specific_model_class_id=-1,
                     label_type=primary.label_type,
                     geometry_level=primary.geometry_level,
                     image_path="",
@@ -144,7 +173,7 @@ def export_classification_dataset(
                     part_name=primary.part_name_norm,
                     canonical_class_name=primary.canonical_class_name,
                     ontology_id=primary.ontology_id,
-                    model_class_id=label_map.model_class_id,
+                    task_specific_model_class_id=label_map.task_specific_model_class_id,
                     label_type=primary.label_type,
                     geometry_level=primary.geometry_level,
                     image_path="",
@@ -165,7 +194,7 @@ def export_classification_dataset(
         image_path = image_dir / file_name
         label_path = label_dir / f"{Path(file_name).stem}.txt"
         copy_resized_image(source_image, image_path)
-        label_path.write_text(f"{label_map.model_class_id}\n", encoding="utf-8")
+        label_path.write_text(f"{label_map.task_specific_model_class_id}\n", encoding="utf-8")
         exported_labels += 1
         records.append(
             TaskExportRecord(
@@ -178,7 +207,7 @@ def export_classification_dataset(
                 part_name=primary.part_name_norm,
                 canonical_class_name=primary.canonical_class_name,
                 ontology_id=primary.ontology_id,
-                model_class_id=label_map.model_class_id,
+                task_specific_model_class_id=label_map.task_specific_model_class_id,
                 label_type=primary.label_type,
                 geometry_level=primary.geometry_level,
                 image_path=str(image_path),
@@ -205,6 +234,7 @@ def export_classification_dataset(
         notes=(
             "classification export는 image-level label만 기록한다.",
             "category_id는 export model class로 사용하지 않는다.",
+            "taxonomy review candidates are excluded from standard export.",
             "classification-only sample은 detection/segmentation export에 재사용하지 않는다.",
         ),
     )
