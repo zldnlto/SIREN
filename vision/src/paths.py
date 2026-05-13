@@ -5,6 +5,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
+from vision.src.data.config import load_data_config
+
 
 @dataclass(frozen=True)
 class VisionPaths:
@@ -18,6 +20,8 @@ class VisionPaths:
     labels_root: Path
     runs_root: Path
     drive_runs_root: Path
+    analysis_root: Path | None = None
+    processed_root: Path | None = None
 
     def class_root(self, class_name: str) -> Path:
         """Return the curated directory for one class."""
@@ -39,6 +43,16 @@ class VisionPaths:
 
         return self.drive_runs_root / run_name
 
+    def analysis_dir(self) -> Path:
+        """Return the analysis directory used for validation artifacts."""
+
+        return self.analysis_root or (self.data_root / "analysis")
+
+    def processed_dir(self) -> Path:
+        """Return the processed directory used for generated artifacts."""
+
+        return self.processed_root or (self.data_root / "processed")
+
 
 def build_default_paths() -> VisionPaths:
     """Build the default path layout from the repository root.
@@ -47,6 +61,7 @@ def build_default_paths() -> VisionPaths:
     so a future directory move only needs one update here.
     """
 
+    config = load_data_config()
     repo_root = Path(__file__).resolve().parents[2]
     vision_root = repo_root / "vision"
     data_root = vision_root / "data"
@@ -54,10 +69,11 @@ def build_default_paths() -> VisionPaths:
         repo_root=repo_root,
         vision_root=vision_root,
         data_root=data_root,
-        raw_root=data_root / "raw",
-        resized_root=data_root / "resized",
-        labels_root=data_root / "labels",
+        raw_root=config.raw_root,
+        resized_root=config.resized_root,
+        labels_root=config.annotation_root,
+        analysis_root=config.dataset_index_path.parent,
+        processed_root=config.processed_root,
         runs_root=vision_root / "runs",
         drive_runs_root=Path("/content/drive/MyDrive/siren/runs"),
     )
-
