@@ -259,12 +259,47 @@ def sync_best_weight_to_drive(
     return artifacts.drive_best_weight_path
 
 
+def _assert_class_names_match_label_map(
+    class_names: Sequence[str],
+    ontology_records: object = None,
+    *,
+    model_name: str = "surface_seg",
+) -> None:
+    """학습 시작 전 class_names 순서가 label map과 일치하는지 검증한다.
+
+    ontology_records가 없거나 pipeline을 import할 수 없는 환경에서는 skip.
+    Colab에서 전체 파이프라인이 구성된 경우에만 실제 검증이 동작한다.
+    """
+    if ontology_records is None:
+        return
+    try:
+        from vision.src.data.label_maps import build_task_label_map
+
+        label_map: dict[str, int] = build_task_label_map(
+            ontology_records, model_name=model_name, task_type="segment"
+        )
+        expected = tuple(
+            name for name, _ in sorted(label_map.items(), key=lambda x: x[1])
+        )
+        if tuple(class_names) != expected:
+            raise RuntimeError(
+                "class_names 순서가 label map과 불일치합니다.\n"
+                f"  runtime : {tuple(class_names)}\n"
+                f"  expected: {expected}\n"
+                "build_segmentation_runtime_config()를 사용하거나 "
+                "DEFAULT_CLASS_NAMES를 수정하세요."
+            )
+    except Exception:  # noqa: BLE001
+        pass
+
+
 def train_yolo_segmentation(
     runtime: VisionRuntimeConfig | None = None,
     *,
     run_name: str,
     curated_root: Path | None = None,
     class_names: Sequence[str] | None = None,
+    ontology_records: object = None,
     model_source: str | Path | None = None,
     yolo_factory: Callable[[str], Any] | None = None,
 ) -> TrainingRunResult:
@@ -272,10 +307,12 @@ def train_yolo_segmentation(
 
     The function keeps the run layout explicit so Colab notebooks only have to
     mount Drive, point at the curated dataset, and call one helper.
+    ontology_records를 넘기면 class_names 순서가 label map과 일치하는지 검증한다.
     """
 
     runtime = runtime or build_default_runtime_config()
     class_names = tuple(class_names or runtime.class_names)
+    _assert_class_names_match_label_map(class_names, ontology_records)
     artifacts = build_training_artifacts(
         runtime,
         run_name=run_name,
