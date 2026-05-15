@@ -1,0 +1,21 @@
+# seg_train.yaml
+path: /content/datasets
+train: manifests/train.txt
+val: manifests/val.txt
+label_dir: labels/segmentation
+cache: /content/datasets/cache
+
+nc: 12
+names:
+  0: crack_paint
+  1: paint_peel_paint
+  2: paint_separation_paint
+  3: paint_flow_paint
+  4: insulation_damage
+  5: scratch_paint
+  6: scratch_base
+  7: scratch_insulation
+  8: cleaning_defect_base
+  9: normal_paint
+  10: normal_base
+  11: normal_insulation
