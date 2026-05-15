@@ -14,6 +14,22 @@
 - label map artifact가 학습, export, restore를 연결하는 단일 계약이다.
 - `category_id`는 metadata only이며, YOLO class id로 쓰지 않는다.
 
+## 서빙 모델 규칙
+
+- MVP 서빙 모델은 `YOLOv8n-seg` 단일 모델로 확정한다 (ADR-003).
+- 학습 기준 yaml은 `seg_train.yaml`이며, bbox는 segmentation head 출력에서 자동 파생한다.
+- `det_train.yaml`은 ablation/실험 전용으로 보존하되 서빙에는 사용하지 않는다.
+
+## 클래스 제외 규칙
+
+- 양품(Good) 클래스(`normal_*`)는 YOLO detection 학습 대상에서 제외한다 (ADR-001).
+  - 양품 이미지는 bbox label 없는 background hard negative로 투입한다.
+  - classification 전용 파이프라인이 필요하면 별도 yaml(`cls_train.yaml`)로 분리한다.
+- classification-only 결함 클래스(`label_type == classification`인 결함)는 detection/segmentation yaml에서 제외한다 (ADR-002).
+  - 해당 이미지는 bbox label 없는 hard negative로 투입한다.
+  - 미래 classification 전용 모델 학습 시 재활용한다.
+- 위 두 규칙을 바꾸고 싶다면 코드가 아니라 ADR부터 바꾼다.
+
 ## taxonomy 규칙
 
 - `taxonomy_status != normal`인 row는 기본 학습/export에서 제외한다.
