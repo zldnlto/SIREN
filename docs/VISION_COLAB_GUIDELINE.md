@@ -41,6 +41,41 @@ from vision import (
 )
 ```
 
+## 4단계 코드 셀: 데이터 설정 + dataset index 로드
+
+```python
+from pathlib import Path
+
+from vision import load_data_config, load_dataset_index_rows
+
+# Colab에서 Drive에 curated 데이터를 sync한 경우 이 값을 맞춘다.
+# 예: /content/drive/MyDrive/siren/data/curated
+# 이미 환경변수가 있으면 이 줄은 생략 가능하다.
+# import os
+# os.environ["VISION_RESIZED_IMAGE_ROOT"] = "/content/drive/MyDrive/siren/data/curated"
+
+data_config = load_data_config()
+
+print("[config] dataset_index_path:", data_config.dataset_index_path)
+print("[config] annotation_root:", data_config.annotation_root)
+print("[config] resized_root:", data_config.resized_root)
+print("[config] resized_root exists:", data_config.resized_root.exists())
+
+rows = load_dataset_index_rows(data_config.dataset_index_path)
+print("[dataset_index] row_count:", len(rows))
+
+if rows:
+    sample = rows[0]
+    print("[dataset_index] sample keys:", sorted(sample.keys()))
+    print("[dataset_index] sample file_name:", sample.get("file_name"))
+    print("[dataset_index] sample split:", sample.get("split"))
+    print("[dataset_index] sample label_type:", sample.get("label_type"))
+
+# file_name -> resized image direct mapping quick check
+missing_file_name = [r for r in rows[:200] if not r.get("file_name")]
+print("[dataset_index] missing file_name in first 200 rows:", len(missing_file_name))
+```
+
 ## 실행 예시
 
 ```python
