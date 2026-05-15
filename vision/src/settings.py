@@ -53,3 +53,34 @@ def build_default_runtime_config() -> VisionRuntimeConfig:
 
     return VisionRuntimeConfig()
 
+
+def build_segmentation_runtime_config(
+    ontology_records: object = None,
+    *,
+    model_name: str = "surface_seg",
+) -> VisionRuntimeConfig:
+    """Return a runtime config with class_names for segmentation training.
+
+    ontology_records를 넘기면 build_task_label_map()으로 class_names를 파생한다.
+    이 경우 label map 순서와 완전히 동기화됨이 보장된다.
+    ontology_records가 없으면 DEFAULT_CLASS_NAMES를 사용한다.
+
+    Colab에서 권장 사용법:
+        records = build_ontology_table(...)
+        runtime = build_segmentation_runtime_config(records)
+        train_yolo_segmentation(runtime=runtime, ontology_records=records, ...)
+    """
+    if ontology_records is not None:
+        try:
+            from vision.src.data.label_maps import build_task_label_map
+
+            label_map: dict[str, int] = build_task_label_map(
+                ontology_records, model_name=model_name, task_type="segment"
+            )
+            class_names = tuple(
+                name for name, _ in sorted(label_map.items(), key=lambda x: x[1])
+            )
+            return VisionRuntimeConfig(class_names=class_names)
+        except Exception:  # noqa: BLE001
+            pass
+    return VisionRuntimeConfig(class_names=DEFAULT_CLASS_NAMES)

@@ -23,7 +23,8 @@
 
 ```python
 from vision import (
-    build_default_runtime_config,
+    build_segmentation_runtime_config,  # 권장: class_names를 label map에서 자동으로 결정
+    build_default_runtime_config,       # 폴백: DEFAULT_CLASS_NAMES(8개 영문 canonical) 사용
     build_image_split_records,
     build_ontology_table,
     build_sampling_manifest,
@@ -41,11 +42,50 @@ from vision import (
 )
 ```
 
+> `build_segmentation_runtime_config()`는 `build_task_label_map("segmentation")`을 읽어
+> `VisionRuntimeConfig.class_names`를 결정한다. class ID가 label map에서 파생되어야 하므로
+> 학습 노트북에서는 `build_default_runtime_config()` 대신 이 함수를 사용한다.
+
+## 4단계 코드 셀: 데이터 설정 + dataset index 로드
+
+```python
+from pathlib import Path
+
+from vision import load_data_config, load_dataset_index_rows
+
+# Colab에서 Drive에 curated 데이터를 sync한 경우 이 값을 맞춘다.
+# 예: /content/drive/MyDrive/siren/data/curated
+# 이미 환경변수가 있으면 이 줄은 생략 가능하다.
+# import os
+# os.environ["VISION_RESIZED_IMAGE_ROOT"] = "/content/drive/MyDrive/siren/data/curated"
+
+data_config = load_data_config()
+
+print("[config] dataset_index_path:", data_config.dataset_index_path)
+print("[config] annotation_root:", data_config.annotation_root)
+print("[config] resized_root:", data_config.resized_root)
+print("[config] resized_root exists:", data_config.resized_root.exists())
+
+rows = load_dataset_index_rows(data_config.dataset_index_path)
+print("[dataset_index] row_count:", len(rows))
+
+if rows:
+    sample = rows[0]
+    print("[dataset_index] sample keys:", sorted(sample.keys()))
+    print("[dataset_index] sample file_name:", sample.get("file_name"))
+    print("[dataset_index] sample split:", sample.get("split"))
+    print("[dataset_index] sample label_type:", sample.get("label_type"))
+
+# file_name -> resized image direct mapping quick check
+missing_file_name = [r for r in rows[:200] if not r.get("file_name")]
+print("[dataset_index] missing file_name in first 200 rows:", len(missing_file_name))
+```
+
 ## 실행 예시
 
 ```python
 data_config = load_data_config()
-runtime = build_default_runtime_config()
+runtime = build_segmentation_runtime_config()  # label map 기반 class_names 자동 결정
 
 rows = load_dataset_index_rows(data_config.dataset_index_path)
 normalized_rows = normalize_rows(rows, slugs_path=data_config.ontology_slugs_path)
@@ -102,6 +142,8 @@ drive_weight = sync_best_weight_to_drive(result.artifacts, result.best_weight_pa
 - `DEFECT_CLASSES`는 사람이 읽는 결함 목록이며, YOLO class id의 기준이 아니다.
 - Drive의 `best.pt`가 있으면 그 경로를 서빙 기준으로 쓴다.
 - 노트북 셀은 실패 지점을 좁게 나눠서 디버깅하기 쉽게 작성한다.
+- `build_segmentation_runtime_config()`를 사용해야 class_names가 label map에서 자동 결정된다. `build_default_runtime_config()`는 폴백 전용이다.
+- `vision/src/prepare_yolo_dataset.py`는 레거시 코드(`vision/src/legacy/`로 이동됨)다. 현재 파이프라인에서 사용하지 않는다.
 
 ## 자주 보는 문제
 
