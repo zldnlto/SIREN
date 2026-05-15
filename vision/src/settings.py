@@ -53,3 +53,19 @@ def build_default_runtime_config() -> VisionRuntimeConfig:
 
     return VisionRuntimeConfig()
 
+
+def build_segmentation_runtime_config() -> VisionRuntimeConfig:
+    """Return a runtime config whose class_names are derived from the label map.
+
+    build_task_label_map("segmentation") is the single source of truth for class
+    ordering. Using this function instead of build_default_runtime_config() ensures
+    the dataset yaml names and the label .txt class IDs stay in sync automatically.
+    """
+
+    from vision.src.data.label_maps import build_task_label_map
+
+    label_map: dict[str, int] = build_task_label_map("segmentation")
+    class_names = tuple(
+        name for name, _ in sorted(label_map.items(), key=lambda x: x[1])
+    )
+    return VisionRuntimeConfig(class_names=class_names)

@@ -3,7 +3,10 @@
 Keep reusable runtime objects here so Colab notebooks stay thin.
 """
 
-from vision.src.bootstrap import build_default_runtime_config
+from vision.src.bootstrap import (
+    build_default_runtime_config,
+    build_segmentation_runtime_config,
+)
 from vision.src.constants import DEFAULT_CLASS_NAMES
 from vision.src.data import (  # noqa: F401
     ClassificationExportResult,
@@ -132,6 +135,7 @@ __all__ = [
     "build_split_management_report",
     "build_task_label_map",
     "build_default_runtime_config",
+    "build_segmentation_runtime_config",
     "build_yolo_dataset_yaml_text",
     "build_yolo_label_text",
     "bbox_xywh_to_yolo",

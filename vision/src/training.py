@@ -12,9 +12,12 @@ from pathlib import Path
 from shutil import copy2
 from typing import Any, Mapping
 
-from vision.src.constants import DEFAULT_YOLO_MODEL
-from vision.src.data.labels import DEFECT_CLASSES
-from vision.src.data.evaluation import EvaluationSample, build_calibration_rows, write_simple_report
+from vision.src.constants import DEFAULT_CLASS_NAMES, DEFAULT_YOLO_MODEL
+from vision.src.data.evaluation import (
+    EvaluationSample,
+    build_calibration_rows,
+    write_simple_report,
+)
 from vision.src.settings import VisionRuntimeConfig, build_default_runtime_config
 
 try:  # pragma: no cover - ultralytics is optional in the test environment
@@ -158,7 +161,9 @@ def build_training_artifacts(
     )
 
 
-def _resolve_image_dirs(curated_root: Path, class_names: Sequence[str], split: str) -> list[Path]:
+def _resolve_image_dirs(
+    curated_root: Path, class_names: Sequence[str], split: str
+) -> list[Path]:
     """Return curated image directories that actually exist.
 
     The curated dataset keeps each class in its own folder, so YOLO gets a list
@@ -179,7 +184,7 @@ def _resolve_image_dirs(curated_root: Path, class_names: Sequence[str], split: s
 
 def build_yolo_dataset_yaml_text(
     curated_root: Path,
-    class_names: Sequence[str] = DEFECT_CLASSES,
+    class_names: Sequence[str] = DEFAULT_CLASS_NAMES,
 ) -> str:
     """Build a YOLO dataset yaml string for the per-class curated layout."""
 
@@ -194,7 +199,9 @@ def build_yolo_dataset_yaml_text(
     lines.append("val:")
     lines.extend(f"  - {path}" for path in val_dirs)
     lines.append("names:")
-    lines.extend(f"  {index}: {class_name}" for index, class_name in enumerate(class_names))
+    lines.extend(
+        f"  {index}: {class_name}" for index, class_name in enumerate(class_names)
+    )
     lines.append("")
     return "\n".join(lines)
 
@@ -202,7 +209,9 @@ def build_yolo_dataset_yaml_text(
 def write_yolo_dataset_yaml(artifacts: TrainingArtifacts) -> Path:
     """Write the dataset yaml next to the run outputs."""
 
-    yaml_text = build_yolo_dataset_yaml_text(artifacts.curated_root, artifacts.class_names)
+    yaml_text = build_yolo_dataset_yaml_text(
+        artifacts.curated_root, artifacts.class_names
+    )
     artifacts.data_yaml_path.write_text(yaml_text, encoding="utf-8")
     return artifacts.data_yaml_path
 
@@ -320,10 +329,14 @@ def train_yolo_segmentation_with_validation_gate(
 
     policy = policy or TrainingExecutionPolicy()
     if not policy.export_validation_passed:
-        raise RuntimeError("export validation이 통과하지 않아 training을 시작할 수 없습니다.")
+        raise RuntimeError(
+            "export validation이 통과하지 않아 training을 시작할 수 없습니다."
+        )
 
     runtime = runtime or build_default_runtime_config()
-    resolved_class_names = tuple(policy.class_inclusion or class_names or runtime.class_names)
+    resolved_class_names = tuple(
+        policy.class_inclusion or class_names or runtime.class_names
+    )
     training_result = train_yolo_segmentation(
         runtime,
         run_name=run_name,
@@ -338,12 +351,18 @@ def train_yolo_segmentation_with_validation_gate(
     resolved_md_path = calibration_md_path
     if policy.calibration_enabled and validation_samples:
         resolved_csv_path = resolved_csv_path or (
-            training_result.artifacts.local_run_dir / "reports" / "validation_calibration.csv"
+            training_result.artifacts.local_run_dir
+            / "reports"
+            / "validation_calibration.csv"
         )
         resolved_md_path = resolved_md_path or (
-            training_result.artifacts.local_run_dir / "reports" / "validation_calibration.md"
+            training_result.artifacts.local_run_dir
+            / "reports"
+            / "validation_calibration.md"
         )
-        rows = build_calibration_rows(validation_samples, thresholds=policy.confidence_thresholds)
+        rows = build_calibration_rows(
+            validation_samples, thresholds=policy.confidence_thresholds
+        )
         calibration_rows = tuple(asdict(row) for row in rows)
         _write_validation_calibration_report(
             validation_samples,
