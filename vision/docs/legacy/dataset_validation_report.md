@@ -1,8 +1,8 @@
 # Dataset Validation Report
 
-> Archived validation evidence. Current ontology and execution contract live in
-> `vision/docs/decisions/ontology_4_layer_report.md` and the Colab/training
-> docs under `docs/`.
+> **[ARCHIVED]** 이 문서는 Phase 1 검증 증거로만 보존한다.
+> 현재 ontology 및 실행 계약은 `vision/docs/decisions/ontology_4_layer_report.md`와
+> `docs/` 하위 Colab/training 문서가 기준이다. 이 파일을 직접 수정하지 않는다.
 
 Phase 1은 현재 저장소의 분석 파일과 메타데이터 경로를 검증해, 이후 정규화와 온톨로지 구현이 어떤 입력을 전제로 해야 하는지 고정한다.
 

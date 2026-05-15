@@ -1,7 +1,8 @@
 # Ontology Validation Report
 
-> Archived validation evidence. The current ontology contract is documented in
-> `vision/docs/decisions/ontology_4_layer_report.md`.
+> **[ARCHIVED]** 이 문서는 ontology 결정 전 검증 증거로만 보존한다.
+> 현재 ontology 계약은 `vision/docs/decisions/ontology_4_layer_report.md`가 기준이다.
+> 이 파일을 직접 수정하지 않는다.
 
 This report validates the ontology and canonical-label assumptions before finalizing the vision data pipeline.
 
