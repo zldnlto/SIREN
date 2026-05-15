@@ -45,7 +45,7 @@ description: |
 | `part_name`            | 재질/부위명                                                                                                                       |
 | `original_category_id` | 원본 보존용, 추적용 메타데이터                                                                                                    |
 | `label_type`           | classification / bbox / segmentation+bbox                                                                                         |
-| `taxonomy_status`      | valid_taxonomy / taxonomy_review_required / cross_domain_annotation_candidate / taxonomy_extension_candidate / likely_label_error |
+| `taxonomy_status`      | normal / taxonomy_review_required / cross_domain_annotation_candidate / taxonomy_extension_candidate / likely_label_error |
 
 ### Layer 3 — Training Layer
 
