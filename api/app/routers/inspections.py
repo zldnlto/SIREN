@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, File, UploadFile
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
@@ -82,9 +82,16 @@ async def upload_image(
     return await inspection_service.upload_image(db, inspection_id, file)
 
 
-@router.get("/inspections/{inspection_id}/guidance", response_model=GuidanceResponse)
+@router.get("/guidance", response_model=GuidanceResponse)
 async def get_guidance(
-    inspection_id: str,
+    ontology_id: str,
+    db: AsyncSession = Depends(get_db),
     current_user=Depends(get_current_user),
 ):
-    return guidance_service.get_guidance(inspection_id)
+    result = await guidance_service.get_guidance(db, ontology_id)
+    if result is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"guidance not found: {ontology_id}",
+        )
+    return result

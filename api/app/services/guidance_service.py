@@ -1,13 +1,20 @@
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.application.guidance_usecase import get_guidance as get_guidance_usecase
 from app.schemas.guidance import GuidanceResponse
 
 
-def get_guidance(inspection_id: str) -> GuidanceResponse:
-    plan = get_guidance_usecase(inspection_id)
+async def get_guidance(db: AsyncSession, ontology_id: str) -> GuidanceResponse | None:
+    plan = await get_guidance_usecase(db, ontology_id)
+    if plan is None:
+        return None
     return GuidanceResponse(
-        inspection_id=plan.inspection_id,
-        defect_class=plan.defect_class,
+        ontology_id=plan.ontology_id,
+        display_label=plan.display_label,
+        quality_state=plan.quality_state,
+        cause=plan.cause,
         action_steps=plan.action_steps,
-        severity=plan.severity,
+        reinspection_criteria=plan.reinspection_criteria,
+        disclaimer=plan.disclaimer,
         referenced_doc=plan.referenced_doc,
     )

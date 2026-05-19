@@ -32,9 +32,9 @@ async def run_detection(db: AsyncSession, inspection_id: str) -> DetectionResult
         inspection_id=outcome.inspection_id,
         defects=[
             DefectItem(
-                defect_name=defect.defect_name,
+                canonical_class_name=defect.canonical_class_name,
+                quality_state=defect.quality_state,
                 confidence_score=defect.confidence_score,
-                severity=defect.severity,
                 bbox=defect.bbox,
             )
             for defect in outcome.defects

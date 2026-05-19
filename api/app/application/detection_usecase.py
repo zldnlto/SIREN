@@ -12,7 +12,6 @@ from app.domain.detection import (
     average_confidence,
     build_detection_item,
     build_persisted_defect,
-    domain_code_for,
 )
 from app.ports.repositories import (
     CreateManyDefectsFn,
@@ -54,7 +53,8 @@ async def run_detection(
     if inspection is None:
         raise NotFoundError
 
-    domain_code = domain_code_for(inspection.domain)
+    domain_code = 25  # mock — annotation_domain 기반 실 모델 연동 시 교체
+    _ = inspection.annotation_domain  # 컬럼 참조 확인용
 
     db_items = [
         build_persisted_defect(
@@ -79,6 +79,8 @@ async def run_detection(
         id=str(uuid.uuid4()),
         inspection_id=inspection_id,
         defects=response_defects,
-        confidence=average_confidence([defect["confidence"] for defect in MOCK_DETECTIONS]),
+        confidence=average_confidence(
+            [defect["confidence"] for defect in MOCK_DETECTIONS]
+        ),
         detected_at=now,
     )
