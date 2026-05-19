@@ -4,7 +4,7 @@
 
 - Colab에서 `vision` 모듈을 import해서 데이터 준비, split/sampling, task export, 학습, 평가를 순서대로 실행한다.
 - 노트북은 실행 순서만 담당하고, 반복되는 로직은 `vision/` 모듈이 맡는다.
-- YOLO 학습/라벨 export 기준은 `task_specific_model_class_id`이고, 사람용 결함 목록/RAG 기준은 `DEFECT_CLASSES` 또는 `DEFECT_FAMILIES`이다.
+- YOLO 학습/라벨 export 기준은 `task_specific_model_class_id`이고, 사람용 결함 목록/RAG 기준은 `DEFECT_CLASSES`이다.
 
 ## 준비 순서
 
@@ -85,11 +85,12 @@ print("[dataset_index] missing file_name in first 200 rows:", len(missing_file_n
 
 ```python
 data_config = load_data_config()
-runtime = build_segmentation_runtime_config()  # label map 기반 class_names 자동 결정
 
 rows = load_dataset_index_rows(data_config.dataset_index_path)
 normalized_rows = normalize_rows(rows, slugs_path=data_config.ontology_slugs_path)
 ontology_records = build_ontology_table(normalized_rows)
+
+runtime = build_segmentation_runtime_config(ontology_records)  # label map 기반 class_names 자동 결정
 
 split_records, split_report = build_image_split_records(
     normalized_rows,

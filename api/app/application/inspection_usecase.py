@@ -35,14 +35,14 @@ from app.ports.storage import (
 
 async def create_inspection(
     db: AsyncSession,
-    domain: str,
+    annotation_domain: str,
     inspector_id: uuid.UUID,
     *,
     create_fn: CreateInspectionFn,
 ):
     return await create_fn(
         db,
-        domain=domain,
+        annotation_domain=annotation_domain,
         inspector_id=inspector_id,
     )
 
@@ -99,9 +99,7 @@ async def confirm_upload(
         raise UploadVerificationError("missing")
     if server_etag != client_etag.strip('"'):
         raise UploadVerificationError("mismatch")
-    return await update_image_keys_fn(
-        db, inspection, image_key=client_key
-    )
+    return await update_image_keys_fn(db, inspection, image_key=client_key)
 
 
 async def upload_image(
@@ -127,9 +125,7 @@ async def upload_image(
 
     await upload_file_fn(content, key, content_type)
     try:
-        return await update_image_keys_fn(
-            db, inspection, image_key=key
-        )
+        return await update_image_keys_fn(db, inspection, image_key=key)
     except Exception:
         await delete_file_fn(key)
         raise

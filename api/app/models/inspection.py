@@ -16,7 +16,7 @@ class Inspection(Base):
     inspector_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("users.id"), nullable=False
     )
-    domain: Mapped[str] = mapped_column(String(50), nullable=False)
+    annotation_domain: Mapped[str] = mapped_column(String(50), nullable=False)
     # image_key는 ERD에서 NOT NULL이지만, 검사 생성 후 별도 업로드 플로우로 인해 nullable 유지
     image_key: Mapped[str | None] = mapped_column(String(512), nullable=True)
     thumbnail_key: Mapped[str | None] = mapped_column(String(512), nullable=True)

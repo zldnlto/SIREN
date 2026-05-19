@@ -4,7 +4,7 @@
 
 - Colab에서 `vision` 모듈을 import해 YOLOv8n-seg 학습과 평가를 돌리는 기준을 적는다.
 - YOLO 학습/라벨 export 기준은 `task_specific_model_class_id`다.
-- 사람이 읽는 결함 목록/RAG 기준은 `DEFECT_CLASSES` 또는 `DEFECT_FAMILIES`다.
+- 사람이 읽는 결함 목록/RAG 기준은 `DEFECT_CLASSES`다.
 - 복원/연결 기준은 `ontology_id`다.
 
 ## class id 규칙

@@ -8,10 +8,12 @@ from app.models.inspection import Inspection
 
 async def create(
     db: AsyncSession,
-    domain: str,
+    annotation_domain: str,
     inspector_id: uuid.UUID,
 ) -> Inspection:
-    inspection = Inspection(domain=domain, inspector_id=inspector_id)
+    inspection = Inspection(
+        annotation_domain=annotation_domain, inspector_id=inspector_id
+    )
     db.add(inspection)
     await db.commit()
     await db.refresh(inspection)
