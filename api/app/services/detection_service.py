@@ -33,9 +33,13 @@ async def run_detection(db: AsyncSession, inspection_id: str) -> DetectionResult
         defects=[
             DefectItem(
                 canonical_class_name=defect.canonical_class_name,
+                ontology_id=defect.ontology_id,
+                display_label=defect.display_label,
+                annotation_domain=defect.annotation_domain,
                 quality_state=defect.quality_state,
                 confidence_score=defect.confidence_score,
                 bbox=defect.bbox,
+                gradcam_key=defect.gradcam_key,
             )
             for defect in outcome.defects
         ],
