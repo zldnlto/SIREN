@@ -19,6 +19,17 @@ extension AnnotationDomainX on AnnotationDomain {
         AnnotationDomain.unknown => '기타',
       };
 
+  // enum → 백엔드 annotation_domain 문자열
+  String get apiValue => switch (this) {
+        AnnotationDomain.surfaceTreatment => 'surface_treatment',
+        AnnotationDomain.welding => 'welding',
+        AnnotationDomain.cutting => 'cutting',
+        AnnotationDomain.cable => 'cable',
+        AnnotationDomain.pipe => 'pipe',
+        AnnotationDomain.foamSpray => 'foam_spray',
+        AnnotationDomain.unknown => 'unknown',
+      };
+
   // 백엔드 annotation_domain 문자열 → enum
   static AnnotationDomain fromString(String value) => switch (value) {
         'surface_treatment' => AnnotationDomain.surfaceTreatment,

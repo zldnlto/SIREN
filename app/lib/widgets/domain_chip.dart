@@ -7,31 +7,44 @@ class DomainChip extends StatelessWidget {
   const DomainChip({
     super.key,
     required this.domain,
+    this.isSelected = false,
     this.onTap,
   });
 
   final AnnotationDomain domain;
+  final bool isSelected;
   final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     final chip = Semantics(
       label: '도메인: ${domain.label}',
+      selected: isSelected,
       button: onTap != null,
-      child: Container(
+      child: AnimatedContainer(
+        duration: AppDurations.fast,
+        curve: AppCurves.standard,
         padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.sm,
+          horizontal: AppSpacing.md,
           vertical: AppSpacing.xs,
         ),
         decoration: BoxDecoration(
-          color: AppColors.surfaceTertiary,
+          color: isSelected
+              ? AppColors.primaryContainer
+              : AppColors.surfaceTertiary,
           borderRadius: AppRadius.borderFull,
-          border: Border.all(color: AppColors.border, width: 1),
+          border: Border.all(
+            color: isSelected ? AppColors.primary : AppColors.border,
+            width: isSelected ? 1.5 : 1,
+          ),
         ),
         child: Text(
           domain.label,
           style: AppTextStyles.labelMd.copyWith(
-            color: AppColors.onSurfaceVariant,
+            color: isSelected
+                ? AppColors.primaryLight
+                : AppColors.onSurfaceVariant,
+            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
           ),
         ),
       ),
