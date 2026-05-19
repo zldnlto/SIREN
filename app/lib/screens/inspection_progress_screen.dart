@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../core/tokens.dart';
 import '../providers/inspection_provider.dart';
+import '../widgets/siren_button.dart';
 import '../widgets/toast.dart';
 
 class InspectionProgressScreen extends ConsumerStatefulWidget {
@@ -41,52 +43,59 @@ class _InspectionProgressScreenState
     });
 
     return Scaffold(
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('검사 진행 중'),
+        backgroundColor: AppColors.surface,
+        elevation: 0,
+        title: Text('검사 진행 중', style: AppTextStyles.titleMd),
         automaticallyImplyLeading: false,
       ),
       body: SafeArea(
         child: Center(
           child: Padding(
-            padding: const EdgeInsets.all(32),
+            padding: const EdgeInsets.all(AppSpacing.xl),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 if (state.isDetecting) ...[
-                  const CircularProgressIndicator(),
-                  const SizedBox(height: 24),
-                  Text(
-                    'AI 결함 분석 중...',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: 8),
+                  const CircularProgressIndicator(color: AppColors.primary),
+                  const SizedBox(height: AppSpacing.lg),
+                  Text('AI 결함 분석 중...', style: AppTextStyles.titleSm),
+                  const SizedBox(height: AppSpacing.xs),
                   Text(
                     '잠시만 기다려 주세요.',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
+                    style: AppTextStyles.bodyMd.copyWith(
+                      color: AppColors.onSurfaceVariant,
+                    ),
                   ),
                 ] else if (state.error != null) ...[
-                  const Icon(Icons.error_outline, size: 64, color: Colors.red),
-                  const SizedBox(height: 24),
-                  Text(
-                    '검사에 실패했습니다.',
-                    style: Theme.of(context).textTheme.titleMedium,
+                  const Icon(
+                    Icons.error_outline_rounded,
+                    size: 64,
+                    color: AppColors.critical,
                   ),
-                  const SizedBox(height: 24),
-                  ElevatedButton(
+                  const SizedBox(height: AppSpacing.lg),
+                  Text('검사에 실패했습니다.', style: AppTextStyles.titleSm),
+                  const SizedBox(height: AppSpacing.lg),
+                  SirenButton(
+                    label: '다시 시도',
                     onPressed: _runDetection,
-                    child: const Text('다시 시도'),
                   ),
-                  const SizedBox(height: 12),
-                  TextButton(
+                  const SizedBox(height: AppSpacing.sm),
+                  SirenButton(
+                    label: '홈으로 돌아가기',
+                    variant: SirenButtonVariant.ghost,
                     onPressed: () => context.go('/home'),
-                    child: const Text('홈으로 돌아가기'),
                   ),
                 ] else ...[
-                  const CircularProgressIndicator(),
-                  const SizedBox(height: 24),
-                  const Text('준비 중...'),
+                  const CircularProgressIndicator(color: AppColors.primary),
+                  const SizedBox(height: AppSpacing.lg),
+                  Text(
+                    '준비 중...',
+                    style: AppTextStyles.bodyMd.copyWith(
+                      color: AppColors.onSurfaceVariant,
+                    ),
+                  ),
                 ],
               ],
             ),

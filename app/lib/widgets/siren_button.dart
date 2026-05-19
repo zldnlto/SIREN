@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../core/tokens.dart';
 
-enum SirenButtonVariant { primary, secondary, ghost }
+enum SirenButtonVariant { primary, secondary, ghost, destructive }
 
 enum SirenButtonSize { md, lg }
 
@@ -53,12 +53,16 @@ class _SirenButtonState extends State<SirenButton> {
   Color get _backgroundColor => switch (widget.variant) {
         SirenButtonVariant.primary =>
           _enabled ? AppColors.primary : AppColors.disabled,
+        SirenButtonVariant.destructive =>
+          _enabled ? AppColors.destructive : AppColors.disabled,
         SirenButtonVariant.secondary => Colors.transparent,
         SirenButtonVariant.ghost => Colors.transparent,
       };
 
   Color get _foregroundColor => switch (widget.variant) {
         SirenButtonVariant.primary =>
+          _enabled ? AppColors.onPrimary : AppColors.onDisabled,
+        SirenButtonVariant.destructive =>
           _enabled ? AppColors.onPrimary : AppColors.onDisabled,
         SirenButtonVariant.secondary =>
           _enabled ? AppColors.primary : AppColors.onDisabled,

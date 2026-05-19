@@ -54,7 +54,13 @@ class DomainChip extends StatelessWidget {
 
     return GestureDetector(
       onTap: onTap,
-      child: MouseRegion(cursor: SystemMouseCursors.click, child: chip),
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: 44, minWidth: 44),
+          child: Align(alignment: Alignment.center, child: chip),
+        ),
+      ),
     );
   }
 }
