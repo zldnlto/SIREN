@@ -23,7 +23,7 @@ async def create_inspection(
 ):
     return await inspection_usecase.create_inspection(
         db,
-        domain=data.domain,
+        annotation_domain=data.annotation_domain,
         inspector_id=inspector_id,
         create_fn=inspection_repository.create,
     )

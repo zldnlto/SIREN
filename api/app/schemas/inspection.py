@@ -5,7 +5,7 @@ from pydantic import BaseModel, ConfigDict
 
 
 class InspectionCreate(BaseModel):
-    domain: str = "표면처리"
+    annotation_domain: str = "surface_treatment"
 
 
 class UploadUrlResponse(BaseModel):
@@ -23,7 +23,7 @@ class InspectionResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: uuid.UUID
-    domain: str
+    annotation_domain: str
     status: str
     inspector_id: uuid.UUID
     image_key: str | None = None

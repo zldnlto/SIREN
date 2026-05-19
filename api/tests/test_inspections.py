@@ -22,7 +22,7 @@ _USER = User(
 
 _INSPECTION = Inspection(
     id=uuid.uuid4(),
-    domain="표면처리",
+    annotation_domain="surface_treatment",
     status="pending",
     inspector_id=_USER.id,
     image_key=None,
@@ -39,9 +39,9 @@ _DETECTION_RESULT = DetectionResult(
     inspection_id=str(_INSPECTION.id),
     defects=[
         DefectItem(
-            defect_name="균열",
+            canonical_class_name="crack_paint",
+            quality_state="defect",
             confidence_score=0.92,
-            severity="HIGH",
             bbox=[10.0, 20.0, 100.0, 80.0],
         )
     ],
@@ -101,7 +101,23 @@ async def test_detect():
 
 @pytest.mark.asyncio
 async def test_guidance():
-    resp = client.get(f"/api/v1/inspections/{_INSPECTION.id}/guidance")
+    from unittest.mock import AsyncMock, patch
+    from app.schemas.guidance import GuidanceResponse
+
+    mock_response = GuidanceResponse(
+        ontology_id="surface_treatment.crack.paint",
+        display_label="균열 (도장)",
+        quality_state="defect",
+        cause="반복 하중으로 인한 균열",
+        action_steps=["작업 중단", "관리자 보고"],
+        reinspection_criteria="보수 후 재검사",
+        disclaimer="참고용입니다.",
+    )
+    with patch(
+        "app.services.guidance_service.get_guidance",
+        new=AsyncMock(return_value=mock_response),
+    ):
+        resp = client.get("/api/v1/guidance?ontology_id=surface_treatment.crack.paint")
     assert resp.status_code == 200
     assert "action_steps" in resp.json()
 
@@ -179,7 +195,7 @@ async def test_get_upload_url_forbidden():
 async def test_confirm_upload_success():
     updated = Inspection(
         id=_INSPECTION.id,
-        domain=_INSPECTION.domain,
+        annotation_domain=_INSPECTION.annotation_domain,
         status=_INSPECTION.status,
         inspector_id=_INSPECTION.inspector_id,
         image_key=f"inspections/{_INSPECTION.id}/image.jpg",
@@ -246,7 +262,7 @@ async def test_confirm_upload_not_found():
 async def test_upload_image():
     updated = Inspection(
         id=_INSPECTION.id,
-        domain=_INSPECTION.domain,
+        annotation_domain=_INSPECTION.annotation_domain,
         status=_INSPECTION.status,
         inspector_id=_INSPECTION.inspector_id,
         image_key="inspections/test/image.jpg",

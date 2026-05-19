@@ -12,7 +12,7 @@ from app.models.inspection import Inspection
 from app.models.user import User
 from app.schemas.auth import LoginRequest
 from app.schemas.detection import DetectionResult
-from app.services import auth_service, detection_service, guidance_service
+from app.services import auth_service, detection_service
 from app.services import inspection_service
 
 _USER = User(
@@ -25,7 +25,7 @@ _USER = User(
 
 _INSPECTION = Inspection(
     id=uuid.uuid4(),
-    domain="표면처리",
+    annotation_domain="surface_treatment",
     status="pending",
     inspector_id=_USER.id,
     image_key=None,
@@ -54,7 +54,10 @@ async def test_login_rejects_deleted_user():
         new=AsyncMock(return_value=deleted),
     ):
         with pytest.raises(HTTPException) as exc_info:
-            await auth_service.login(None, LoginRequest(employee_id=deleted.employee_id, password="secret1234"))
+            await auth_service.login(
+                None,
+                LoginRequest(employee_id=deleted.employee_id, password="secret1234"),
+            )
 
     assert exc_info.value.status_code == 401
 
@@ -78,7 +81,7 @@ async def test_get_upload_url_requires_owner():
     )
     other_inspection = Inspection(
         id=_INSPECTION.id,
-        domain=_INSPECTION.domain,
+        annotation_domain=_INSPECTION.annotation_domain,
         status=_INSPECTION.status,
         inspector_id=other_user.id,
         image_key=None,
@@ -120,12 +123,15 @@ async def test_confirm_upload_rejects_invalid_key_prefix():
 
 @pytest.mark.asyncio
 async def test_confirm_upload_rejects_etag_mismatch():
-    with patch(
-        "app.application.inspection_usecase.get_inspection",
-        new=AsyncMock(return_value=_INSPECTION),
-    ), patch(
-        "app.core.s3.get_object_etag",
-        new=AsyncMock(return_value="abc123"),
+    with (
+        patch(
+            "app.application.inspection_usecase.get_inspection",
+            new=AsyncMock(return_value=_INSPECTION),
+        ),
+        patch(
+            "app.core.s3.get_object_etag",
+            new=AsyncMock(return_value="abc123"),
+        ),
     ):
         with pytest.raises(HTTPException) as exc_info:
             await inspection_service.confirm_upload(
@@ -198,33 +204,19 @@ async def test_run_detection_persists_mock_detections():
     assert isinstance(result, DetectionResult)
     assert result.inspection_id == str(_INSPECTION.id)
     assert len(result.defects) == 2
-    assert result.defects[0].severity == "HIGH"
-    assert result.defects[1].severity == "MEDIUM"
+    assert result.defects[0].quality_state == "defect"
+    assert result.defects[1].quality_state == "defect"
     assert result.defects[0].bbox == [10.0, 20.0, 100.0, 80.0]
     create_many.assert_awaited_once()
     saved_items = create_many.await_args.args[1]
-    assert saved_items[0]["severity"] == "HIGH"
+    assert saved_items[0]["canonical_class_name"] == "crack_paint"
+    assert saved_items[0]["quality_state"] == "defect"
     assert saved_items[0]["bbox"] == {
         "x_min": 10.0,
         "y_min": 20.0,
         "x_max": 100.0,
         "y_max": 80.0,
     }
-    assert saved_items[1]["severity"] == "MEDIUM"
+    assert saved_items[1]["canonical_class_name"] == "scratch_paint"
     update_status.assert_awaited_once()
     db.commit.assert_awaited_once()
-
-
-def test_guidance_returns_default_action_steps():
-    result = guidance_service.get_guidance("inspection-123")
-
-    assert result.inspection_id == "inspection-123"
-    assert result.defect_class == "균열"
-    assert result.severity == "HIGH"
-    assert result.referenced_doc == "SIGTTO-LNG-TANK-INSPECTION-V3.pdf"
-    assert result.action_steps == [
-        "해당 구역 접근을 즉시 통제한다.",
-        "안전 담당자에게 보고한다.",
-        "균열 범위를 측정하고 기록한다.",
-        "승인된 보수 절차에 따라 처리한다.",
-    ]

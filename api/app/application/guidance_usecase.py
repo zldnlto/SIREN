@@ -3,11 +3,16 @@ from __future__ import annotations
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domain.guidance import GuidancePlan
-from app.repositories.guidance_repository import get_by_ontology_id
+from app.ports.repositories import GetGuidanceByOntologyIdFn
 
 
-async def get_guidance(db: AsyncSession, ontology_id: str) -> GuidancePlan | None:
-    record = await get_by_ontology_id(db, ontology_id)
+async def get_guidance(
+    db: AsyncSession,
+    ontology_id: str,
+    *,
+    get_by_ontology_id_fn: GetGuidanceByOntologyIdFn,
+) -> GuidancePlan | None:
+    record = await get_by_ontology_id_fn(db, ontology_id)
     if record is None:
         return None
     return GuidancePlan(

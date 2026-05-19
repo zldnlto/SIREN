@@ -7,4 +7,4 @@ UpdateInspectionStatusFn = Callable[..., Awaitable[Any]]
 UpdateInspectionImageKeysFn = Callable[..., Awaitable[Any]]
 CreateManyDefectsFn = Callable[..., Awaitable[Any]]
 GetUserByEmployeeIdFn = Callable[..., Awaitable[Any]]
-
+GetGuidanceByOntologyIdFn = Callable[..., Awaitable[Any]]
