@@ -31,13 +31,9 @@ class _InspectionProgressScreenState
     final state = ref.watch(inspectionProvider);
 
     ref.listen(inspectionProvider, (prev, next) {
-      if (next.result != null && prev?.result == null) {
-        final hasDefect = next.result!.hasDefect;
-        if (hasDefect) {
-          context.goNamed('result-defect', extra: widget.inspectionId);
-        } else {
-          context.goNamed('result-normal', extra: widget.inspectionId);
-        }
+      final route = next.nextRoute;
+      if (route != null && prev?.nextRoute == null) {
+        context.goNamed(route, extra: widget.inspectionId);
       }
       if (next.error != null && prev?.error == null) {
         Toast.show(context, '검사 중 오류가 발생했습니다.', type: ToastType.error);

@@ -92,8 +92,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   void _startInspection() {
-    ref.read(inspectionProvider.notifier)
-      ..reset()
-      ..createInspection(_selectedDomain);
+    ref.read(inspectionProvider.notifier).start(_selectedDomain);
   }
 }

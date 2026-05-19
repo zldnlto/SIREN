@@ -22,6 +22,11 @@ class InspectionState {
 
   bool get isLoading => isCreating || isDetecting;
 
+  String? get nextRoute {
+    if (result == null) return null;
+    return result!.hasDefect ? 'result-defect' : 'result-normal';
+  }
+
   InspectionState copyWith({
     Inspection? inspection,
     DetectionResult? result,
@@ -69,6 +74,11 @@ class InspectionNotifier extends Notifier<InspectionState> {
   }
 
   void reset() => state = const InspectionState();
+
+  Future<void> start(String annotationDomain) async {
+    reset();
+    await createInspection(annotationDomain);
+  }
 }
 
 final inspectionProvider =
