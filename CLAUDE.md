@@ -26,6 +26,18 @@ siren-dev-loop ← 비자명한 모든 구현 작업
 api-builder ← api/ 작업 시작 시
 siren-code-reviewer ← 커밋 전 + pr-ready 전
 harness-ci-guardian ← CI/hooks/settings 변경 시
+component-architect ← 새 Flutter 위젯 구현 시작 전 (설계 생성 + 검증)
+vision-runner ← YOLOv8 학습 전 데이터 검증 / 결과 해석 시
+
+## Flutter 컴포넌트 라우팅 규칙
+
+도메인 컴포넌트 (DefectBadge, StatusChip 등) 설계 시:
+  1. /business-logic → 도메인 규칙·enum 확정
+  2. component-architect → Props/State/Flow 설계 + 검증
+  3. siren-dev-loop → 구현
+
+디자인 시스템 작업 (tokens.dart, 새 화면) 시:
+  /flutter-design → ui-ux-pro-max → component-architect → siren-dev-loop
 
 ## 워크플로우
 
