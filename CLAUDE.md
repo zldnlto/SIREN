@@ -31,13 +31,20 @@ vision-runner ← YOLOv8 학습 전 데이터 검증 / 결과 해석 시
 
 ## Flutter 컴포넌트 라우팅 규칙
 
-도메인 컴포넌트 (DefectBadge, StatusChip 등) 설계 시:
+### 신규 도메인 컴포넌트 (DefectBadge, StatusChip 등)
+도메인 규칙·Props가 아직 미확정인 새 위젯:
   1. /business-logic → 도메인 규칙·enum 확정
   2. component-architect → Props/State/Flow 설계 + 검증
-  3. siren-dev-loop → 구현
+  3. 구현 → make-interfaces-feel-better 검토
 
-디자인 시스템 작업 (tokens.dart, 새 화면) 시:
-  /flutter-design → ui-ux-pro-max → component-architect → siren-dev-loop
+### 신규 화면 설계 (새 화면을 처음 만들 때)
+레이아웃·인터랙션 방향 결정이 필요한 새 화면:
+  /flutter-design screen → component-architect(필요시) → 구현 → Phase C 리뷰
+
+### 기존 화면 마이그레이션 (디자인 시스템 적용)
+토큰·컴포넌트가 이미 확정된 상태에서 기존 화면을 교체할 때:
+  구현 → make-interfaces-feel-better(선택) → flutter analyze → 커밋
+  ※ component-architect / business-logic / ui-ux-pro-max 불필요
 
 ## 워크플로우
 
