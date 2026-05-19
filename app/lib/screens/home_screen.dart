@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../core/theme.dart';
 import '../providers/inspection_provider.dart';
 import '../widgets/toast.dart';
 
@@ -73,16 +74,28 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 }).toList(),
               ),
               const Spacer(),
-              ElevatedButton.icon(
-                onPressed: inspectionState.isLoading ? null : _startInspection,
-                icon: inspectionState.isCreating
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Icon(Icons.camera_alt),
-                label: const Text('새 검사 시작'),
+              Align(
+                alignment: Alignment.center,
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxWidth: MediaQuery.of(context).size.shortestSide >=
+                            kTabletBreakpoint
+                        ? 480
+                        : double.infinity,
+                  ),
+                  child: ElevatedButton.icon(
+                    onPressed:
+                        inspectionState.isLoading ? null : _startInspection,
+                    icon: inspectionState.isCreating
+                        ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.camera_alt),
+                    label: const Text('새 검사 시작'),
+                  ),
+                ),
               ),
             ],
           ),

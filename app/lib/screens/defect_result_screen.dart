@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../core/theme.dart';
 import '../providers/guidance_provider.dart';
 import '../providers/inspection_provider.dart';
 import '../widgets/action_card.dart';
@@ -30,6 +31,50 @@ class DefectResultScreen extends ConsumerWidget {
         .map((d) => d.bbox!)
         .toList();
 
+    final isTablet =
+        MediaQuery.of(context).size.shortestSide >= kTabletBreakpoint;
+
+    final imagePane = AspectRatio(
+      aspectRatio: 4 / 3,
+      child: ImageOverlayViewer(imageUrl: imageUrl, bboxes: bboxes),
+    );
+
+    final defectHeader = Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Row(
+        children: [
+          Text(
+            '검출된 결함 ${result.defects.length}건',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const SizedBox(width: 8),
+          const QualityBadge(qualityState: 'defect'),
+        ],
+      ),
+    );
+
+    final defectList = [
+      defectHeader,
+      ...result.defects.map(
+        (defect) => _DefectCard(
+          ontologyId: defect.ontologyId,
+          displayLabel: defect.displayLabel,
+          confidenceScore: defect.confidenceScore,
+        ),
+      ),
+      const SizedBox(height: 16),
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: ElevatedButton.icon(
+          icon: const Icon(Icons.save_alt),
+          label: const Text('보고서 저장'),
+          onPressed: () =>
+              Toast.show(context, '보고서가 저장되었습니다.', type: ToastType.success),
+        ),
+      ),
+      const SizedBox(height: 16),
+    ];
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('결함 감지됨'),
@@ -42,48 +87,18 @@ class DefectResultScreen extends ConsumerWidget {
         ),
       ),
       body: SafeArea(
-        child: ListView(
-          children: [
-            AspectRatio(
-              aspectRatio: 4 / 3,
-              child: ImageOverlayViewer(
-                imageUrl: imageUrl,
-                bboxes: bboxes,
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              child: Row(
+        child: isTablet
+            ? Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    '검출된 결함 ${result.defects.length}건',
-                    style: Theme.of(context).textTheme.titleMedium,
+                  Expanded(flex: 5, child: imagePane),
+                  Expanded(
+                    flex: 4,
+                    child: ListView(children: defectList),
                   ),
-                  const SizedBox(width: 8),
-                  const QualityBadge(qualityState: 'defect'),
                 ],
-              ),
-            ),
-            ...result.defects.map(
-              (defect) => _DefectCard(
-                ontologyId: defect.ontologyId,
-                displayLabel: defect.displayLabel,
-                confidenceScore: defect.confidenceScore,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: ElevatedButton.icon(
-                icon: const Icon(Icons.save_alt),
-                label: const Text('보고서 저장'),
-                onPressed: () => Toast.show(context, '보고서가 저장되었습니다.',
-                    type: ToastType.success),
-              ),
-            ),
-            const SizedBox(height: 16),
-          ],
-        ),
+              )
+            : ListView(children: [imagePane, ...defectList]),
       ),
     );
   }

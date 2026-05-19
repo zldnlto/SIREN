@@ -4,6 +4,10 @@ const kDefectColor = Color(0xFFD32F2F);
 const kGoodColor = Color(0xFF388E3C);
 const kAccentColor = Color(0xFF1565C0);
 
+// shortestSide(dp) 기준 breakpoint — supported_devices.md 참고
+const double kTabletBreakpoint = 600;
+const double kDesktopBreakpoint = 960;
+
 ThemeData buildAppTheme() {
   return ThemeData(
     useMaterial3: true,

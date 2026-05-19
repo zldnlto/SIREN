@@ -42,6 +42,24 @@ siren/
 
 ---
 
+## 지원 기기 및 해상도
+
+> 상세 스펙: [app/docs/decisions/supported_devices.md](./app/docs/decisions/supported_devices.md)
+
+### 현장 앱 (Flutter)
+
+| 구분 | 우선순위 | 방향 | 타겟 기기 | 개발 기준 해상도 |
+|---|---|---|---|---|
+| 태블릿 | First | Landscape | Galaxy Tab S9/Active4 Pro, iPad 10th/Pro 11" | 800×500 dp |
+| 모바일 폰 | Sub | Portrait | Galaxy S24/S25, iPhone 15/16 | 360×800 dp |
+
+- 태블릿 분기점: `shortestSide >= 600 dp`
+- 최소 지원: 640×480 dp (4:3 구형 산업용 태블릿)
+- Android minSdk: **26** (Android 8.0) / targetSdk: **34**
+- 카메라·결함 촬영은 폰·태블릿 모두 지원. 폰은 대형 뷰어 대신 스크롤/탭 전환으로 처리
+
+---
+
 ## 로컬 실행
 
 ```bash
@@ -71,5 +89,6 @@ uvicorn app.main:app --reload
 ## 관련 문서
 
 - [docs/PRD.md](./docs/PRD.md) — 제품 요구사항 문서
+- [app/docs/decisions/supported_devices.md](./app/docs/decisions/supported_devices.md) — 지원 기기·해상도·SDK 버전 스펙
 - [CONTRIBUTING.md](./CONTRIBUTING.md) — 커밋/브랜치/이슈/PR 컨벤션
 - [CLAUDE.md](./CLAUDE.md) — 에이전트 작업 가이드
