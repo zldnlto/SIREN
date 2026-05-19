@@ -6,6 +6,9 @@ from pydantic import BaseModel
 
 class DefectItem(BaseModel):
     canonical_class_name: str
+    ontology_id: str
+    display_label: str
+    annotation_domain: str | None
     quality_state: Literal["defect", "good"]
     confidence_score: float
     bbox: list[float] | None = None

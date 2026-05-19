@@ -40,6 +40,9 @@ _DETECTION_RESULT = DetectionResult(
     defects=[
         DefectItem(
             canonical_class_name="crack_paint",
+            ontology_id="surface_treatment.crack.paint",
+            display_label="균열 (도장)",
+            annotation_domain="surface_treatment",
             quality_state="defect",
             confidence_score=0.92,
             bbox=[10.0, 20.0, 100.0, 80.0],

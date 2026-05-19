@@ -25,6 +25,28 @@ CANONICAL_TO_ONTOLOGY: dict[str, str] = {
     "background": "background",
 }
 
+CANONICAL_TO_DISPLAY_LABEL: dict[str, str] = {
+    "crack_paint": "균열 (도장)",
+    "coating_drop_paint": "도막떨어짐 (도장)",
+    "coating_separation_paint": "도막분리 (도장)",
+    "paint_run_paint": "도장흐름 (도장)",
+    "insulation_damage_insulation": "보온재손상 (보온재)",
+    "scratch_paint": "스크래치 (도장)",
+    "scratch_base_material": "스크래치 (모재)",
+    "scratch_insulation": "스크래치 (보온재)",
+    "tank_cleaning_defect_base_material": "탱크클리닝불량 (모재)",
+    "weld_defect_joint": "용접불량 (조인트)",
+    "weld_blowhole_joint": "용접블로우홀 (조인트)",
+    "cut_defect_base_material": "절단불량 (모재)",
+    "cut_defect_insulation": "절단불량 (보온재)",
+    "binding_defect_cable_tie": "바인딩불량 (케이블타이)",
+    "cable_install_defect_cable_gland": "케이블설치불량 (케이블그랜드)",
+    "cable_damage_cable": "케이블손상 (케이블)",
+    "bolt_defect_pipe": "볼트체결불량 (파이프)",
+    "foam_spray_defect_urethane_foam": "폼스프레이불량 (우레탄폼)",
+    "background": "양호",
+}
+
 # class_code → canonical_class_name (surface_treatment 도메인 기준 mock)
 CLASS_CODE_MAP: dict[int, str] = {
     0: "crack_paint",
@@ -48,6 +70,15 @@ def ontology_id_for(canonical_class_name: str) -> str:
     return CANONICAL_TO_ONTOLOGY.get(canonical_class_name, "unknown")
 
 
+def display_label_for(canonical_class_name: str) -> str:
+    return CANONICAL_TO_DISPLAY_LABEL.get(canonical_class_name, canonical_class_name)
+
+
+def annotation_domain_for(ontology_id: str) -> str | None:
+    segments = ontology_id.split(".")
+    return segments[0] if len(segments) >= 2 else None
+
+
 def canonical_class_for(class_code: int) -> str:
     return CLASS_CODE_MAP.get(class_code, "background")
 
@@ -66,6 +97,9 @@ def bbox_for_class(class_code: int, bbox_raw: list[float]) -> dict | None:
 @dataclass(frozen=True)
 class DetectionItemCore:
     canonical_class_name: str
+    ontology_id: str
+    display_label: str
+    annotation_domain: str | None
     quality_state: Literal["defect", "good"]
     confidence_score: float
     bbox: list[float] | None = None
@@ -76,8 +110,12 @@ def build_detection_item(
     class_code: int, confidence: float, bbox_raw: list[float]
 ) -> DetectionItemCore:
     canonical = canonical_class_for(class_code)
+    oid = ontology_id_for(canonical)
     return DetectionItemCore(
         canonical_class_name=canonical,
+        ontology_id=oid,
+        display_label=display_label_for(canonical),
+        annotation_domain=annotation_domain_for(oid),
         quality_state=quality_state_for(canonical),
         confidence_score=confidence,
         bbox=None if class_code in CLS_ONLY_CODES else bbox_raw,
