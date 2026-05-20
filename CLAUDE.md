@@ -26,6 +26,25 @@ siren-dev-loop ← 비자명한 모든 구현 작업
 api-builder ← api/ 작업 시작 시
 siren-code-reviewer ← 커밋 전 + pr-ready 전
 harness-ci-guardian ← CI/hooks/settings 변경 시
+component-architect ← 새 Flutter 위젯 구현 시작 전 (설계 생성 + 검증)
+vision-runner ← YOLOv8 학습 전 데이터 검증 / 결과 해석 시
+
+## Flutter 컴포넌트 라우팅 규칙
+
+### 신규 도메인 컴포넌트 (DefectBadge, StatusChip 등)
+도메인 규칙·Props가 아직 미확정인 새 위젯:
+  1. /business-logic → 도메인 규칙·enum 확정
+  2. component-architect → Props/State/Flow 설계 + 검증
+  3. 구현 → make-interfaces-feel-better 검토
+
+### 신규 화면 설계 (새 화면을 처음 만들 때)
+레이아웃·인터랙션 방향 결정이 필요한 새 화면:
+  /flutter-design screen → component-architect(필요시) → 구현 → Phase C 리뷰
+
+### 기존 화면 마이그레이션 (디자인 시스템 적용)
+토큰·컴포넌트가 이미 확정된 상태에서 기존 화면을 교체할 때:
+  구현 → make-interfaces-feel-better(선택) → flutter analyze → 커밋
+  ※ component-architect / business-logic / ui-ux-pro-max 불필요
 
 ## 워크플로우
 

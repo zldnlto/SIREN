@@ -2,12 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../core/theme.dart';
+import '../core/tokens.dart';
+import '../models/defect_severity.dart';
 import '../providers/guidance_provider.dart';
 import '../providers/inspection_provider.dart';
 import '../widgets/action_card.dart';
+import '../widgets/defect_badge.dart';
 import '../widgets/image_overlay_viewer.dart';
-import '../widgets/quality_badge.dart';
+import '../widgets/siren_button.dart';
+import '../widgets/siren_card.dart';
+import '../widgets/siren_section_header.dart';
 import '../widgets/toast.dart';
 
 class DefectResultScreen extends ConsumerWidget {
@@ -21,6 +25,7 @@ class DefectResultScreen extends ConsumerWidget {
 
     if (result == null) {
       return const Scaffold(
+        backgroundColor: AppColors.background,
         body: Center(child: CircularProgressIndicator()),
       );
     }
@@ -32,54 +37,65 @@ class DefectResultScreen extends ConsumerWidget {
         .toList();
 
     final isTablet =
-        MediaQuery.of(context).size.shortestSide >= kTabletBreakpoint;
+        MediaQuery.of(context).size.shortestSide >= AppBreakpoints.tablet;
 
     final imagePane = AspectRatio(
       aspectRatio: 4 / 3,
       child: ImageOverlayViewer(imageUrl: imageUrl, bboxes: bboxes),
     );
 
-    final defectHeader = Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      child: Row(
-        children: [
-          Text(
-            '검출된 결함 ${result.defects.length}건',
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-          const SizedBox(width: 8),
-          const QualityBadge(qualityState: 'defect'),
-        ],
-      ),
-    );
-
     final defectList = [
-      defectHeader,
-      ...result.defects.map(
-        (defect) => _DefectCard(
-          ontologyId: defect.ontologyId,
-          displayLabel: defect.displayLabel,
-          confidenceScore: defect.confidenceScore,
+      Padding(
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.md,
+          AppSpacing.md,
+          AppSpacing.md,
+          AppSpacing.sm,
+        ),
+        child: SirenSectionHeader(
+          title: '검출된 결함 ${result.defects.length}건',
+          trailing: const DefectBadge(severity: DefectSeverity.defect),
+          showDivider: true,
         ),
       ),
-      const SizedBox(height: 16),
+      ...result.defects.map(
+        (defect) => Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: AppSpacing.xs,
+          ),
+          child: _DefectCard(
+            ontologyId: defect.ontologyId,
+            displayLabel: defect.displayLabel,
+            confidenceScore: defect.confidenceScore,
+            severity: DefectSeverityX.fromDetection(
+              defect.qualityState,
+              defect.confidenceScore,
+            ),
+          ),
+        ),
+      ),
+      const SizedBox(height: AppSpacing.md),
       Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: ElevatedButton.icon(
-          icon: const Icon(Icons.save_alt),
-          label: const Text('보고서 저장'),
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+        child: SirenButton(
+          label: '보고서 저장',
+          icon: const Icon(Icons.save_alt_rounded),
           onPressed: () =>
               Toast.show(context, '보고서가 저장되었습니다.', type: ToastType.success),
         ),
       ),
-      const SizedBox(height: 16),
+      const SizedBox(height: AppSpacing.lg),
     ];
 
     return Scaffold(
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('결함 감지됨'),
+        backgroundColor: AppColors.surface,
+        elevation: 0,
+        title: Text('결함 감지됨', style: AppTextStyles.titleMd),
         leading: IconButton(
-          icon: const Icon(Icons.home),
+          icon: const Icon(Icons.home_rounded, color: AppColors.onSurface),
           onPressed: () {
             ref.read(inspectionProvider.notifier).reset();
             context.go('/home');
@@ -109,11 +125,13 @@ class _DefectCard extends ConsumerWidget {
     required this.ontologyId,
     required this.displayLabel,
     required this.confidenceScore,
+    required this.severity,
   });
 
   final String ontologyId;
   final String displayLabel;
   final double confidenceScore;
+  final DefectSeverity severity;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -121,46 +139,51 @@ class _DefectCard extends ConsumerWidget {
 
     return guidanceAsync.when(
       data: (guidance) => ActionCard(guidance: guidance),
-      loading: () => Card(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              const SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(strokeWidth: 2),
+      loading: () => SirenCard(
+        child: Row(
+          children: [
+            const SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: AppColors.primary,
               ),
-              const SizedBox(width: 12),
-              Text('$displayLabel 조치 정보 로딩 중...'),
-            ],
-          ),
+            ),
+            const SizedBox(width: AppSpacing.sm),
+            Text(
+              '$displayLabel 조치 정보 로딩 중...',
+              style: AppTextStyles.bodyMd,
+            ),
+          ],
         ),
       ),
-      error: (_, __) => Card(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                displayLabel,
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              const SizedBox(height: 4),
-              Text(
-                '신뢰도 ${(confidenceScore * 100).toStringAsFixed(0)}%',
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                '조치 정보를 불러올 수 없습니다.',
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+      error: (_, __) => SirenCard(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(displayLabel, style: AppTextStyles.titleSm),
                 ),
+                const SizedBox(width: AppSpacing.sm),
+                DefectBadge(severity: severity),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.xs),
+            Text(
+              '신뢰도 ${(confidenceScore * 100).toStringAsFixed(0)}%',
+              style: AppTextStyles.monoSm,
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              '조치 정보를 불러올 수 없습니다.',
+              style: AppTextStyles.bodySm.copyWith(
+                color: AppColors.onSurfaceMuted,
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

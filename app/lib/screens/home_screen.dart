@@ -2,17 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../core/theme.dart';
+import '../core/tokens.dart';
+import '../models/annotation_domain.dart';
 import '../providers/inspection_provider.dart';
+import '../widgets/domain_chip.dart';
+import '../widgets/siren_button.dart';
+import '../widgets/siren_section_header.dart';
 import '../widgets/toast.dart';
 
-const _kDomains = [
-  '표면처리',
-  '용접',
-  '절단',
-  '케이블',
-  '파이프',
-  '폼스프레이',
+const _kSelectableDomains = [
+  AnnotationDomain.surfaceTreatment,
+  AnnotationDomain.welding,
+  AnnotationDomain.cutting,
+  AnnotationDomain.cable,
+  AnnotationDomain.pipe,
+  AnnotationDomain.foamSpray,
 ];
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -23,7 +27,7 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
-  String _selectedDomain = _kDomains.first;
+  AnnotationDomain _selectedDomain = _kSelectableDomains.first;
 
   @override
   Widget build(BuildContext context) {
@@ -40,36 +44,42 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       }
     });
 
+    final isTablet =
+        MediaQuery.of(context).size.shortestSide >= AppBreakpoints.tablet;
+
     return Scaffold(
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('SIREN 검사'),
+        backgroundColor: AppColors.surface,
+        elevation: 0,
+        title: Text('SIREN', style: AppTextStyles.titleMd),
         actions: [
           IconButton(
-            icon: const Icon(Icons.history),
+            icon: const Icon(Icons.history_rounded, color: AppColors.onSurface),
             onPressed: () => context.go('/history'),
+            tooltip: '검사 이력',
           ),
         ],
       ),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(AppSpacing.lg),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(
-                '검사 영역 선택',
-                style: Theme.of(context).textTheme.titleMedium,
+              const SirenSectionHeader(
+                title: '검사 영역 선택',
+                showDivider: true,
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppSpacing.md),
               Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: _kDomains.map((domain) {
-                  final selected = domain == _selectedDomain;
-                  return ChoiceChip(
-                    label: Text(domain),
-                    selected: selected,
-                    onSelected: (_) => setState(() => _selectedDomain = domain),
+                spacing: AppSpacing.sm,
+                runSpacing: AppSpacing.sm,
+                children: _kSelectableDomains.map((domain) {
+                  return DomainChip(
+                    domain: domain,
+                    isSelected: domain == _selectedDomain,
+                    onTap: () => setState(() => _selectedDomain = domain),
                   );
                 }).toList(),
               ),
@@ -78,22 +88,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 alignment: Alignment.center,
                 child: ConstrainedBox(
                   constraints: BoxConstraints(
-                    maxWidth: MediaQuery.of(context).size.shortestSide >=
-                            kTabletBreakpoint
-                        ? 480
-                        : double.infinity,
+                    maxWidth: isTablet ? 480 : double.infinity,
                   ),
-                  child: ElevatedButton.icon(
+                  child: SirenButton(
+                    label: '새 검사 시작',
+                    icon: const Icon(Icons.camera_alt_rounded),
                     onPressed:
                         inspectionState.isLoading ? null : _startInspection,
-                    icon: inspectionState.isCreating
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Icon(Icons.camera_alt),
-                    label: const Text('새 검사 시작'),
+                    isLoading: inspectionState.isCreating,
+                    size: SirenButtonSize.lg,
                   ),
                 ),
               ),
@@ -105,6 +108,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   void _startInspection() {
-    ref.read(inspectionProvider.notifier).start(_selectedDomain);
+    ref.read(inspectionProvider.notifier).start(_selectedDomain.apiValue);
   }
 }

@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../core/theme.dart';
+import '../core/tokens.dart';
+import '../models/defect_severity.dart';
 import '../providers/inspection_provider.dart';
+import '../widgets/defect_badge.dart';
 import '../widgets/image_overlay_viewer.dart';
-import '../widgets/quality_badge.dart';
+import '../widgets/siren_button.dart';
 import '../widgets/toast.dart';
 
 class NormalResultScreen extends ConsumerWidget {
@@ -18,10 +20,13 @@ class NormalResultScreen extends ConsumerWidget {
     final imageUrl = state.inspection?.thumbnailKey;
 
     return Scaffold(
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('검사 완료'),
+        backgroundColor: AppColors.surface,
+        elevation: 0,
+        title: Text('검사 완료', style: AppTextStyles.titleMd),
         leading: IconButton(
-          icon: const Icon(Icons.home),
+          icon: const Icon(Icons.home_rounded, color: AppColors.onSurface),
           onPressed: () {
             ref.read(inspectionProvider.notifier).reset();
             context.go('/home');
@@ -36,52 +41,53 @@ class NormalResultScreen extends ConsumerWidget {
               aspectRatio: 4 / 3,
               child: ImageOverlayViewer(imageUrl: imageUrl),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: AppSpacing.lg),
             Center(
               child: Column(
                 children: [
                   const Icon(
-                    Icons.check_circle_outline,
+                    Icons.check_circle_outline_rounded,
                     size: 64,
-                    color: kGoodColor,
+                    color: AppColors.good,
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: AppSpacing.sm),
                   Text(
                     '결함이 감지되지 않았습니다.',
-                    style: Theme.of(context).textTheme.titleLarge,
+                    style: AppTextStyles.titleMd,
                   ),
-                  const SizedBox(height: 8),
-                  const QualityBadge(qualityState: 'good'),
+                  const SizedBox(height: AppSpacing.sm),
+                  const DefectBadge(severity: DefectSeverity.good),
                 ],
               ),
             ),
             const Spacer(),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  ElevatedButton.icon(
-                    icon: const Icon(Icons.save_alt),
-                    label: const Text('보고서 저장'),
+                  SirenButton(
+                    label: '보고서 저장',
+                    icon: const Icon(Icons.save_alt_rounded),
                     onPressed: () => Toast.show(
                       context,
                       '보고서가 저장되었습니다.',
                       type: ToastType.success,
                     ),
                   ),
-                  const SizedBox(height: 12),
-                  OutlinedButton(
+                  const SizedBox(height: AppSpacing.sm),
+                  SirenButton(
+                    label: '홈으로 돌아가기',
+                    variant: SirenButtonVariant.secondary,
                     onPressed: () {
                       ref.read(inspectionProvider.notifier).reset();
                       context.go('/home');
                     },
-                    child: const Text('홈으로 돌아가기'),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: AppSpacing.lg),
           ],
         ),
       ),
