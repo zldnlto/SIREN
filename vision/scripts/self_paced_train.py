@@ -12,7 +12,10 @@
 from __future__ import annotations
 
 import argparse
+import csv
+import json
 import random
+import sys
 from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
@@ -337,7 +340,63 @@ def _split_easy_hard(
 
 
 # ---------------------------------------------------------------------------
-# § 3  Entry point (curriculum loop skeleton)
+# § 4  Logging
+# ---------------------------------------------------------------------------
+
+_CSV_FIELDS = [
+    "round",
+    "train_size",
+    "easy_removed",
+    "hard_kept",
+    "val_accuracy",
+    "best_accuracy",
+    "improvement",
+    "no_improve_count",
+]
+
+
+def _open_csv_writer(
+    path: Path,
+) -> tuple[Any, Any]:
+    """Open (or append to) rounds CSV. Returns (file_handle, DictWriter)."""
+    is_new = not path.exists()
+    fh = path.open("a", newline="", encoding="utf-8")
+    writer = csv.DictWriter(fh, fieldnames=_CSV_FIELDS)
+    if is_new:
+        writer.writeheader()
+        fh.flush()
+    return fh, writer
+
+
+def _append_csv_row(writer: Any, fh: Any, row: dict[str, Any]) -> None:
+    writer.writerow(row)
+    fh.flush()
+
+
+def _save_summary(
+    cfg: SPLConfig,
+    rounds: list[dict[str, Any]],
+    best_accuracy: float,
+    best_weight: Path,
+    stopped_reason: str,
+) -> None:
+    summary = {
+        "run_name": cfg.run_name,
+        "seed": cfg.seed,
+        "total_rounds": len(rounds),
+        "best_accuracy": best_accuracy,
+        "best_weight_path": str(best_weight),
+        "stopped_reason": stopped_reason,
+        "rounds": rounds,
+    }
+    cfg.summary_json.write_text(
+        json.dumps(summary, indent=2, ensure_ascii=False), encoding="utf-8"
+    )
+    print(f"[SPL] summary → {cfg.summary_json}")
+
+
+# ---------------------------------------------------------------------------
+# § 4  Entry point — full loop with early stopping + logging + exception handling
 # ---------------------------------------------------------------------------
 
 
@@ -357,38 +416,117 @@ def main() -> None:
     )
     print(f"      artifacts → {cfg.run_dir.resolve()}")
 
-    # Round 0 — seed baseline
-    seed_images = _seed_sample(
-        _collect_images(cfg.data_root, split="train"),
-        cfg.seed_size,
-    )
-    round0_curated = _build_round_curated_dir(
-        cfg.run_dir, 0, seed_images, cfg.data_root, cfg.data_root
-    )
-    train_result, accuracy = _run_one_round(cfg, runtime, 0, round0_curated)
+    csv_fh, csv_writer = _open_csv_writer(cfg.rounds_csv)
+    rounds_log: list[dict[str, Any]] = []
+    best_accuracy = 0.0
+    best_weight: Path | None = None
+    no_improve_count = 0
+    stopped_reason = "max_rounds"
 
-    # Round 1+ — curriculum loop
-    best_accuracy = accuracy
-    best_weight = train_result.best_weight_path
+    try:
+        # ── Round 0 — seed baseline ──────────────────────────────────────────
+        try:
+            seed_images = _seed_sample(
+                _collect_images(cfg.data_root, split="train"),
+                cfg.seed_size,
+            )
+            round0_curated = _build_round_curated_dir(
+                cfg.run_dir, 0, seed_images, cfg.data_root, cfg.data_root
+            )
+            train_result, accuracy = _run_one_round(cfg, runtime, 0, round0_curated)
+        except Exception as exc:
+            print(f"[SPL] round 0 실패: {exc}", file=sys.stderr)
+            stopped_reason = "round0_error"
+            _save_summary(cfg, rounds_log, best_accuracy, Path(""), stopped_reason)
+            return
 
-    for round_idx in range(1, cfg.max_rounds):
-        scores = _score_candidates(best_weight, cfg.candidate_root, runtime)
-        _, hard = _split_easy_hard(scores, cfg.easy_ratio)
+        best_accuracy = accuracy
+        best_weight = train_result.best_weight_path
+        row: dict[str, Any] = {
+            "round": 0,
+            "train_size": len(seed_images),
+            "easy_removed": 0,
+            "hard_kept": len(seed_images),
+            "val_accuracy": round(accuracy, 6),
+            "best_accuracy": round(best_accuracy, 6),
+            "improvement": round(accuracy, 6),
+            "no_improve_count": 0,
+        }
+        _append_csv_row(csv_writer, csv_fh, row)
+        rounds_log.append(row)
 
-        if not hard:
-            print(f"[SPL] round {round_idx}: hard 샘플이 없습니다. 루프 종료.")
-            break
+        # ── Round 1+ — curriculum loop ───────────────────────────────────────
+        for round_idx in range(1, cfg.max_rounds):
+            try:
+                scores = _score_candidates(best_weight, cfg.candidate_root, runtime)
+                easy, hard = _split_easy_hard(scores, cfg.easy_ratio)
 
-        round_curated = _build_round_curated_dir(
-            cfg.run_dir, round_idx, hard, cfg.candidate_root, cfg.data_root
+                if not hard:
+                    print(f"[SPL] round {round_idx}: hard 샘플 없음 — 루프 종료.")
+                    stopped_reason = "no_hard_samples"
+                    break
+
+                round_curated = _build_round_curated_dir(
+                    cfg.run_dir, round_idx, hard, cfg.candidate_root, cfg.data_root
+                )
+                train_result, accuracy = _run_one_round(
+                    cfg, runtime, round_idx, round_curated
+                )
+            except Exception as exc:
+                print(
+                    f"[SPL] round {round_idx} 실패 (계속 진행): {exc}",
+                    file=sys.stderr,
+                )
+                continue
+
+            improvement = accuracy - best_accuracy
+            if improvement >= cfg.min_improve:
+                best_accuracy = accuracy
+                best_weight = train_result.best_weight_path
+                no_improve_count = 0
+            else:
+                no_improve_count += 1
+
+            row = {
+                "round": round_idx,
+                "train_size": len(hard),
+                "easy_removed": len(easy),
+                "hard_kept": len(hard),
+                "val_accuracy": round(accuracy, 6),
+                "best_accuracy": round(best_accuracy, 6),
+                "improvement": round(improvement, 6),
+                "no_improve_count": no_improve_count,
+            }
+            _append_csv_row(csv_writer, csv_fh, row)
+            rounds_log.append(row)
+
+            if no_improve_count >= cfg.patience:
+                print(
+                    f"[SPL] patience {cfg.patience} 회 초과 — 조기 종료 "
+                    f"(round {round_idx})"
+                )
+                stopped_reason = "patience"
+                break
+
+    except KeyboardInterrupt:
+        print("\n[SPL] 중단됨 (KeyboardInterrupt) — 로그 저장 후 종료합니다.")
+        stopped_reason = "interrupted"
+    finally:
+        csv_fh.flush()
+        csv_fh.close()
+        _save_summary(
+            cfg,
+            rounds_log,
+            best_accuracy,
+            best_weight or Path(""),
+            stopped_reason,
         )
-        train_result, accuracy = _run_one_round(cfg, runtime, round_idx, round_curated)
 
-        if accuracy > best_accuracy:
-            best_accuracy = accuracy
-            best_weight = train_result.best_weight_path
-
-    print(f"[SPL] 완료: best_accuracy={best_accuracy:.4f}  best_weight={best_weight}")
+    print(
+        f"[SPL] 완료: best_accuracy={best_accuracy:.4f}"
+        f"  best_weight={best_weight}"
+        f"  reason={stopped_reason}"
+    )
 
 
 if __name__ == "__main__":
