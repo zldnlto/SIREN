@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../core/theme.dart';
+import '../core/tokens.dart';
 
 class ImageOverlayViewer extends StatelessWidget {
   const ImageOverlayViewer({
@@ -43,7 +44,7 @@ class _Placeholder extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Theme.of(context).colorScheme.surface,
+      color: AppColors.surface,
       child: const Center(
         child: Icon(Icons.image_not_supported_outlined, size: 64),
       ),
