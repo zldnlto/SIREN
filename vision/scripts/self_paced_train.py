@@ -15,8 +15,16 @@ import argparse
 import random
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 
 import numpy as np
+
+from vision.src.settings import VisionRuntimeConfig, build_default_runtime_config
+from vision.src.training import (
+    TrainingRunResult,
+    evaluate_yolo_segmentation,
+    train_yolo_segmentation,
+)
 
 _IMAGE_EXTS: frozenset[str] = frozenset({".jpg", ".jpeg", ".png", ".bmp"})
 
@@ -131,7 +139,132 @@ def _seed_everything(seed: int) -> None:
 
 
 # ---------------------------------------------------------------------------
-# § 1  Entry point skeleton
+# § 2  Dataset helpers
+# ---------------------------------------------------------------------------
+
+
+def _collect_images(root: Path, split: str = "train") -> list[Path]:
+    """Deterministically collect image paths in {root}/**/{split}/*.ext."""
+    found = sorted(
+        p
+        for p in root.rglob("*")
+        if p.suffix.lower() in _IMAGE_EXTS and p.parent.name == split
+    )
+    if not found:
+        # fallback: flat structure
+        found = sorted(p for p in root.rglob("*") if p.suffix.lower() in _IMAGE_EXTS)
+    return found
+
+
+def _label_path_for(img: Path, root: Path) -> Path | None:
+    """Resolve {root}/.../labels/{split}/{stem}.txt from an image path."""
+    try:
+        rel = img.relative_to(root)
+    except ValueError:
+        return None
+    parts = list(rel.parts)
+    try:
+        idx = parts.index("images")
+        parts[idx] = "labels"
+    except ValueError:
+        pass
+    candidate = root / Path(*parts).with_suffix(".txt")
+    return candidate if candidate.exists() else None
+
+
+def _symlink_pair(img: Path, src_root: Path, dst_dir: Path) -> None:
+    """Symlink img (and its label) from src_root into dst_dir, preserving relative path."""
+    try:
+        rel = img.relative_to(src_root)
+    except ValueError:
+        return
+    dst_img = dst_dir / rel
+    dst_img.parent.mkdir(parents=True, exist_ok=True)
+    if not dst_img.exists():
+        dst_img.symlink_to(img)
+    label = _label_path_for(img, src_root)
+    if label:
+        lbl_rel = label.relative_to(src_root)
+        dst_lbl = dst_dir / lbl_rel
+        dst_lbl.parent.mkdir(parents=True, exist_ok=True)
+        if not dst_lbl.exists():
+            dst_lbl.symlink_to(label)
+
+
+def _build_round_curated_dir(
+    run_dir: Path,
+    round_idx: int,
+    train_images: list[Path],
+    train_root: Path,
+    data_root: Path,
+) -> Path:
+    """Create a per-round curated directory.
+
+    Train images come from train_root (symlinked subset).
+    Val images are always taken from data_root to keep evaluation stable.
+    """
+    curated = run_dir / f"round_{round_idx}" / "curated"
+    curated.mkdir(parents=True, exist_ok=True)
+    for img in train_images:
+        _symlink_pair(img, train_root, curated)
+    for img in _collect_images(data_root, split="val"):
+        _symlink_pair(img, data_root, curated)
+    return curated
+
+
+def _seed_sample(images: list[Path], n: int) -> list[Path]:
+    """Return first n from sorted list (deterministic — caller seeds RNG)."""
+    return sorted(images)[:n]
+
+
+# ---------------------------------------------------------------------------
+# § 2  Evaluate helpers
+# ---------------------------------------------------------------------------
+
+
+def _extract_val_accuracy(eval_result: Any) -> float:
+    """Extract val mAP from a YOLO evaluation result object.
+
+    TODO: Ultralytics 버전에 따라 키가 다를 수 있음. 실제 run 후 확인 필요.
+    """
+    if hasattr(eval_result, "seg") and hasattr(eval_result.seg, "map"):
+        return float(eval_result.seg.map)
+    if hasattr(eval_result, "results_dict"):
+        d = eval_result.results_dict
+        for key in ("metrics/mAP50-95(M)", "metrics/mAP50-95(B)", "metrics/mAP50(M)"):
+            if key in d:
+                return float(d[key])
+    if hasattr(eval_result, "box") and hasattr(eval_result.box, "map"):
+        return float(eval_result.box.map)
+    return 0.0
+
+
+def _run_one_round(
+    cfg: SPLConfig,
+    runtime: VisionRuntimeConfig,
+    round_idx: int,
+    curated_dir: Path,
+) -> tuple[TrainingRunResult, float]:
+    """Train + evaluate one round. Returns (train_result, val_accuracy)."""
+    round_run_name = f"{cfg.run_name}-r{round_idx}"
+    print(f"[SPL] round {round_idx}: training on {curated_dir}")
+    train_result = train_yolo_segmentation(
+        runtime,
+        run_name=round_run_name,
+        curated_root=curated_dir,
+    )
+    eval_result = evaluate_yolo_segmentation(
+        train_result.best_weight_path,
+        train_result.artifacts.data_yaml_path,
+        runtime,
+    )
+    accuracy = _extract_val_accuracy(eval_result)
+    print(f"[SPL] round {round_idx}: val_accuracy={accuracy:.4f}")
+    return train_result, accuracy
+
+
+# ---------------------------------------------------------------------------
+# § 2  Entry point
 # ---------------------------------------------------------------------------
 
 
@@ -139,15 +272,27 @@ def main() -> None:
     cfg = _parse_args()
     _seed_everything(cfg.seed)
     _setup_dirs(cfg)
+    runtime = build_default_runtime_config()
 
     print(f"[SPL] run={cfg.run_name}  seed={cfg.seed}")
     print(f"      data_root={cfg.data_root}")
     print(f"      candidate_root={cfg.candidate_root}")
     print(f"      seed_size={cfg.seed_size}  easy_ratio={cfg.easy_ratio}")
     print(
-        f"      patience={cfg.patience}  min_improve={cfg.min_improve}  max_rounds={cfg.max_rounds}"
+        f"      patience={cfg.patience}  min_improve={cfg.min_improve}"
+        f"  max_rounds={cfg.max_rounds}"
     )
     print(f"      artifacts → {cfg.run_dir.resolve()}")
+
+    # Round 0 — seed baseline
+    seed_images = _seed_sample(
+        _collect_images(cfg.data_root, split="train"),
+        cfg.seed_size,
+    )
+    round0_curated = _build_round_curated_dir(
+        cfg.run_dir, 0, seed_images, cfg.data_root, cfg.data_root
+    )
+    _run_one_round(cfg, runtime, 0, round0_curated)
 
 
 if __name__ == "__main__":
