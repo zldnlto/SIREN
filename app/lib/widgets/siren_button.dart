@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../core/tokens.dart';
 
@@ -30,6 +31,20 @@ class SirenButton extends StatefulWidget {
 
 class _SirenButtonState extends State<SirenButton> {
   bool _pressed = false;
+  bool _focused = false;
+  late final FocusNode _focusNode;
+
+  @override
+  void initState() {
+    super.initState();
+    _focusNode = FocusNode();
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
+  }
 
   bool get _enabled => widget.onPressed != null && !widget.isLoading;
 
@@ -70,13 +85,27 @@ class _SirenButtonState extends State<SirenButton> {
           _enabled ? AppColors.onSurface : AppColors.onDisabled,
       };
 
-  Border? get _border => switch (widget.variant) {
-        SirenButtonVariant.secondary => Border.all(
-            color: _enabled ? AppColors.primary : AppColors.disabled,
-            width: 1.5,
-          ),
-        _ => null,
-      };
+  Border? get _border {
+    if (_focused && _enabled) {
+      return Border.all(color: AppColors.primary, width: 2.0);
+    }
+    return switch (widget.variant) {
+      SirenButtonVariant.secondary => Border.all(
+          color: _enabled ? AppColors.primary : AppColors.disabled,
+          width: 1.5,
+        ),
+      _ => null,
+    };
+  }
+
+  void _handleKeyEvent(KeyEvent event) {
+    if (!_enabled) return;
+    if (event is KeyDownEvent &&
+        (event.logicalKey == LogicalKeyboardKey.enter ||
+            event.logicalKey == LogicalKeyboardKey.space)) {
+      widget.onPressed?.call();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -84,62 +113,70 @@ class _SirenButtonState extends State<SirenButton> {
       button: true,
       enabled: _enabled,
       label: widget.label,
-      child: GestureDetector(
-        onTapDown: _enabled ? (_) => setState(() => _pressed = true) : null,
-        onTapUp: _enabled
-            ? (_) {
-                setState(() => _pressed = false);
-                widget.onPressed?.call();
-              }
-            : null,
-        onTapCancel: _enabled ? () => setState(() => _pressed = false) : null,
-        child: AnimatedScale(
-          scale: _pressed ? 0.96 : 1.0,
-          duration: AppDurations.fast,
-          curve: AppCurves.enter,
-          child: AnimatedContainer(
+      child: Focus(
+        focusNode: _focusNode,
+        onFocusChange: (focused) => setState(() => _focused = focused),
+        onKeyEvent: (_, event) {
+          _handleKeyEvent(event);
+          return KeyEventResult.ignored;
+        },
+        child: GestureDetector(
+          onTapDown: _enabled ? (_) => setState(() => _pressed = true) : null,
+          onTapUp: _enabled
+              ? (_) {
+                  setState(() => _pressed = false);
+                  widget.onPressed?.call();
+                }
+              : null,
+          onTapCancel: _enabled ? () => setState(() => _pressed = false) : null,
+          child: AnimatedScale(
+            scale: _pressed ? 0.96 : 1.0,
             duration: AppDurations.fast,
-            curve: AppCurves.standard,
-            height: _height,
-            padding: _padding,
-            decoration: BoxDecoration(
-              color: _backgroundColor,
-              borderRadius: AppRadius.borderSm,
-              border: _border,
-              boxShadow:
-                  (!_enabled || widget.variant != SirenButtonVariant.primary)
-                      ? null
-                      : (_pressed ? null : AppShadows.primaryGlow),
-            ),
-            child: widget.isLoading
-                ? Center(
-                    child: SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: _foregroundColor,
-                      ),
-                    ),
-                  )
-                : Row(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      if (widget.icon != null) ...[
-                        IconTheme(
-                          data:
-                              IconThemeData(color: _foregroundColor, size: 20),
-                          child: widget.icon!,
+            curve: AppCurves.enter,
+            child: AnimatedContainer(
+              duration: AppDurations.fast,
+              curve: AppCurves.standard,
+              height: _height,
+              padding: _padding,
+              decoration: BoxDecoration(
+                color: _backgroundColor,
+                borderRadius: AppRadius.borderSm,
+                border: _border,
+                boxShadow:
+                    (!_enabled || widget.variant != SirenButtonVariant.primary)
+                        ? null
+                        : (_pressed ? null : AppShadows.primaryGlow),
+              ),
+              child: widget.isLoading
+                  ? Center(
+                      child: SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: _foregroundColor,
                         ),
-                        const SizedBox(width: AppSpacing.sm),
-                      ],
-                      Text(
-                        widget.label,
-                        style: _labelStyle.copyWith(color: _foregroundColor),
                       ),
-                    ],
-                  ),
+                    )
+                  : Row(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        if (widget.icon != null) ...[
+                          IconTheme(
+                            data: IconThemeData(
+                                color: _foregroundColor, size: 20),
+                            child: widget.icon!,
+                          ),
+                          const SizedBox(width: AppSpacing.sm),
+                        ],
+                        Text(
+                          widget.label,
+                          style: _labelStyle.copyWith(color: _foregroundColor),
+                        ),
+                      ],
+                    ),
+            ),
           ),
         ),
       ),
