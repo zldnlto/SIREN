@@ -87,7 +87,7 @@ from vision.src.training import (
     train_yolo_segmentation_with_validation_gate,
     write_yolo_dataset_yaml,
 )
-from vision.src.settings import VisionRuntimeConfig
+from vision.src.settings import VisionRuntimeConfig, build_segmentation_runtime_config
 
 __all__ = [
     "DEFAULT_CLASS_NAMES",
@@ -133,6 +133,7 @@ __all__ = [
     "build_split_management_report",
     "build_task_label_map",
     "build_default_runtime_config",
+    "build_segmentation_runtime_config",
     "build_yolo_dataset_yaml_text",
     "build_yolo_label_text",
     "bbox_xywh_to_yolo",

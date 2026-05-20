@@ -25,6 +25,8 @@ from vision.src.data.task_export_base import (
     write_task_export_report,
 )
 
+_SPLIT_MAP: dict[str, str] = {"TL": "train", "VL": "val"}
+
 
 @dataclass(frozen=True)
 class SegmentationExportResult:
@@ -287,7 +289,7 @@ def export_segmentation_dataset(
             )
             continue
 
-        image_dir, label_dir = resolve_task_output_dirs(output_root, primary.canonical_class_name, primary.split)
+        image_dir, label_dir = resolve_task_output_dirs(output_root,primary.canonical_class_name, _SPLIT_MAP.get(primary.split, primary.split))
         image_path = image_dir / file_name
         label_path = label_dir / f"{Path(file_name).stem}.txt"
         copy_resized_image(source_image, image_path)
