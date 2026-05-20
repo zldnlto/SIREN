@@ -25,10 +25,15 @@ extension InspectionStatusX on InspectionStatus {
       this == InspectionStatus.uploading || this == InspectionStatus.processing;
 
   // 백엔드 status 값만 매핑. uploading/processing은 클라이언트 전용 — fromString으로 설정 불가
-  static InspectionStatus fromString(String value) => switch (value) {
-        'pending' => InspectionStatus.pending,
-        'completed' => InspectionStatus.completed,
-        'failed' => InspectionStatus.failed,
-        _ => InspectionStatus.pending,
-      };
+  static InspectionStatus fromString(String value) {
+    assert(
+      const {'pending', 'completed', 'failed'}.contains(value),
+      'Unknown InspectionStatus from backend: "$value"',
+    );
+    return switch (value) {
+      'completed' => InspectionStatus.completed,
+      'failed' => InspectionStatus.failed,
+      _ => InspectionStatus.pending,
+    };
+  }
 }

@@ -46,8 +46,14 @@ abstract final class AppColors {
   static const borderSubtle =
       Color(0xFF252B45); // surfaceVariant 기준 — surface와 구분됨
 
-  // Destructive (= critical)
-  static const destructive = Color(0xFFC0392B);
+  // Destructive — UI 파괴 액션(삭제·취소)용. critical과 동일 계열이나 semantic 분리
+  static const destructive = critical;
+}
+
+// ─── Breakpoints ─────────────────────────────────────────────────────────────
+
+abstract final class AppBreakpoints {
+  static const double tablet = 600;
 }
 
 // ─── Spacing ─────────────────────────────────────────────────────────────────

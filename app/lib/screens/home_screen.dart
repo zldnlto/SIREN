@@ -44,7 +44,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       }
     });
 
-    final isTablet = MediaQuery.of(context).size.shortestSide >= 600;
+    final isTablet =
+        MediaQuery.of(context).size.shortestSide >= AppBreakpoints.tablet;
 
     return Scaffold(
       backgroundColor: AppColors.background,

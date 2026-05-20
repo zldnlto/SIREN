@@ -36,7 +36,8 @@ class DefectResultScreen extends ConsumerWidget {
         .map((d) => d.bbox!)
         .toList();
 
-    final isTablet = MediaQuery.of(context).size.shortestSide >= 600;
+    final isTablet =
+        MediaQuery.of(context).size.shortestSide >= AppBreakpoints.tablet;
 
     final imagePane = AspectRatio(
       aspectRatio: 4 / 3,
