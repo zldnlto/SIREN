@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import argparse
 import random
+from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -25,6 +26,11 @@ from vision.src.training import (
     evaluate_yolo_segmentation,
     train_yolo_segmentation,
 )
+
+try:
+    from ultralytics import YOLO as _YOLO
+except ImportError:  # pragma: no cover
+    _YOLO = None
 
 _IMAGE_EXTS: frozenset[str] = frozenset({".jpg", ".jpeg", ".png", ".bmp"})
 
@@ -264,7 +270,74 @@ def _run_one_round(
 
 
 # ---------------------------------------------------------------------------
-# § 2  Entry point
+# § 3  Confidence scoring + curriculum rebuild
+# ---------------------------------------------------------------------------
+
+
+def _score_candidates(
+    weights_path: Path,
+    candidate_root: Path,
+    runtime: VisionRuntimeConfig,
+    yolo_factory: Callable[[str], Any] | None = None,
+) -> dict[Path, float]:
+    """Run YOLO predict on all candidate images. Returns {img_path: mean_conf}.
+
+    Images with no detections receive confidence = 0.0 (treated as hardest).
+    """
+    if yolo_factory is not None:
+        yolo_cls = yolo_factory
+    elif _YOLO is None:
+        raise RuntimeError(
+            "ultralytics 패키지가 필요합니다. `pip install ultralytics` 후 실행하세요."
+        )
+    else:
+        yolo_cls = _YOLO
+
+    model = yolo_cls(str(weights_path))
+    all_images = _collect_images(candidate_root)
+    scores: dict[Path, float] = {}
+
+    for img in all_images:
+        results = model.predict(
+            source=str(img),
+            conf=runtime.confidence_threshold,
+            verbose=False,
+            save=False,
+        )
+        if results and len(results) > 0:
+            boxes = getattr(results[0], "boxes", None)
+            if boxes is not None and len(boxes) > 0:
+                confs = boxes.conf
+                arr = (
+                    confs.cpu().numpy() if hasattr(confs, "cpu") else np.asarray(confs)
+                )
+                scores[img] = float(np.mean(arr))
+            else:
+                scores[img] = 0.0
+        else:
+            scores[img] = 0.0
+
+    return scores
+
+
+def _split_easy_hard(
+    scores: dict[Path, float],
+    easy_ratio: float,
+) -> tuple[list[Path], list[Path]]:
+    """Split scored images into easy (high conf) and hard (low conf).
+
+    Sorted deterministically by (score desc, path asc) so results are
+    reproducible regardless of dict insertion order.
+    """
+    ordered = sorted(scores.keys(), key=lambda p: (-scores[p], str(p)))
+    n_easy = max(0, int(len(ordered) * easy_ratio))
+    easy = ordered[:n_easy]
+    hard = ordered[n_easy:]
+    return easy, hard
+
+
+# ---------------------------------------------------------------------------
+# § 3  Entry point (curriculum loop skeleton)
 # ---------------------------------------------------------------------------
 
 
@@ -292,7 +365,30 @@ def main() -> None:
     round0_curated = _build_round_curated_dir(
         cfg.run_dir, 0, seed_images, cfg.data_root, cfg.data_root
     )
-    _run_one_round(cfg, runtime, 0, round0_curated)
+    train_result, accuracy = _run_one_round(cfg, runtime, 0, round0_curated)
+
+    # Round 1+ — curriculum loop
+    best_accuracy = accuracy
+    best_weight = train_result.best_weight_path
+
+    for round_idx in range(1, cfg.max_rounds):
+        scores = _score_candidates(best_weight, cfg.candidate_root, runtime)
+        _, hard = _split_easy_hard(scores, cfg.easy_ratio)
+
+        if not hard:
+            print(f"[SPL] round {round_idx}: hard 샘플이 없습니다. 루프 종료.")
+            break
+
+        round_curated = _build_round_curated_dir(
+            cfg.run_dir, round_idx, hard, cfg.candidate_root, cfg.data_root
+        )
+        train_result, accuracy = _run_one_round(cfg, runtime, round_idx, round_curated)
+
+        if accuracy > best_accuracy:
+            best_accuracy = accuracy
+            best_weight = train_result.best_weight_path
+
+    print(f"[SPL] 완료: best_accuracy={best_accuracy:.4f}  best_weight={best_weight}")
 
 
 if __name__ == "__main__":
