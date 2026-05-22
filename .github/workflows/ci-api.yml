@@ -8,6 +8,7 @@ on:
       - "docker-compose.yml"
       - ".env.example"
       - ".github/workflows/ci-api.yml"
+  workflow_dispatch:
 
 jobs:
   deploy:
