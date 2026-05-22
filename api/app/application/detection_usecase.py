@@ -20,6 +20,7 @@ from app.ports.repositories import (
 )
 
 
+# TODO(#139): 실 모델 연동 시 YOLO inference 결과로 교체
 MOCK_DETECTIONS = [
     {"class_code": 0, "confidence": 0.92, "bbox": [10.0, 20.0, 100.0, 80.0]},
     {"class_code": 1, "confidence": 0.78, "bbox": [50.0, 60.0, 200.0, 150.0]},
@@ -53,7 +54,7 @@ async def run_detection(
     if inspection is None:
         raise NotFoundError
 
-    domain_code = 25  # mock — annotation_domain 기반 실 모델 연동 시 교체
+    domain_code = 25  # TODO(#139): annotation_domain 기반 실 모델 연동 시 교체
     _ = inspection.annotation_domain  # 컬럼 참조 확인용
 
     db_items = [

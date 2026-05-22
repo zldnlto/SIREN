@@ -1,5 +1,11 @@
+from pathlib import Path
+
 from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+# root .env → api/.env 순으로 탐색 (Docker는 환경변수 직접 주입되므로 env_file 불사용)
+_ROOT_ENV = Path(__file__).parent.parent.parent.parent / ".env"
+_LOCAL_ENV = Path(__file__).parent.parent.parent / ".env"
 
 
 class Settings(BaseSettings):
@@ -21,7 +27,11 @@ class Settings(BaseSettings):
     AWS_S3_BUCKET: str = "siren-inspections"
     AWS_S3_REGION: str = "ap-northeast-2"
 
-    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+    model_config = SettingsConfigDict(
+        env_file=(_ROOT_ENV, _LOCAL_ENV),
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
 
     @field_validator("SECRET_KEY")
     @classmethod
