@@ -1,0 +1,20 @@
+name: CI — Vision
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "vision/**"
+      - ".github/workflows/ci-vision.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "vision/**"
+
+# TODO: YOLOv8 smoke test 워크플로우 추가 예정
+jobs:
+  placeholder:
+    name: Placeholder
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Vision CI — not yet configured"

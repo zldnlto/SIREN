@@ -1,0 +1,20 @@
+name: CI — App
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "app/**"
+      - ".github/workflows/ci-app.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "app/**"
+
+# TODO: Flutter build/test 워크플로우 추가 예정
+jobs:
+  placeholder:
+    name: Placeholder
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Flutter CI — not yet configured"
