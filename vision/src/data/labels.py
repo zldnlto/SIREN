@@ -154,6 +154,12 @@ def find_image_file(file_name: str, raw_root: Path) -> Path | None:
 def find_label_json_file(file_name: str, zip_source: str, labels_root: Path) -> dict | None:
     """Find and load the JSON file for one image sample."""
 
+    # Fast path: flat directory of JSON files (no zips)
+    direct_json = labels_root / (Path(file_name).stem + ".json")
+    if direct_json.exists():
+        with direct_json.open("r", encoding="utf-8") as f:
+            return json.load(f)
+
     zip_name = unicodedata.normalize("NFC", zip_source)
     matches = [
         path
