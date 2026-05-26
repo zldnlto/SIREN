@@ -1,0 +1,15 @@
+# Colab experiment caps — T4 GPU single-session target.
+# For production training, use sampling.yaml instead.
+support_buckets:
+  regular_min_unique_images: 1000
+  tail_min_unique_images: 100
+train_caps:
+  regular: 500
+  tail: 100
+  review: 0
+validation_policy: natural
+area_aware_weights:
+  tiny: 2.0
+  small: 1.5
+  medium: 1.0
+  large: 0.8
