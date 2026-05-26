@@ -26,16 +26,18 @@ _USER = User(
 _INSPECTION = Inspection(
     id=uuid.uuid4(),
     annotation_domain="surface_treatment",
-    status="pending",
     inspector_id=_USER.id,
-    image_key=None,
+    image_key="inspections/test-image.jpg",
     thumbnail_key=None,
     report_flagged=False,
-    model_version="mock-v0",
-    rag_version="mock-v0",
     created_at=datetime.now(timezone.utc),
     updated_at=datetime.now(timezone.utc),
 )
+
+_MOCK_DETECTIONS = [
+    {"class_code": 0, "confidence": 0.92, "bbox": [10.0, 20.0, 100.0, 80.0]},
+    {"class_code": 1, "confidence": 0.78, "bbox": [50.0, 60.0, 200.0, 150.0]},
+]
 
 
 @pytest.mark.asyncio
@@ -82,13 +84,10 @@ async def test_get_upload_url_requires_owner():
     other_inspection = Inspection(
         id=_INSPECTION.id,
         annotation_domain=_INSPECTION.annotation_domain,
-        status=_INSPECTION.status,
         inspector_id=other_user.id,
         image_key=None,
         thumbnail_key=None,
         report_flagged=False,
-        model_version=_INSPECTION.model_version,
-        rag_version=_INSPECTION.rag_version,
         created_at=_INSPECTION.created_at,
         updated_at=_INSPECTION.updated_at,
     )
@@ -185,24 +184,40 @@ async def test_run_detection_persists_mock_detections():
 
     db = DummyDB()
 
+    import uuid as _uuid
+
+    _job_id = _uuid.uuid4()
+
+    class _FakeJob:
+        id = _job_id
+
     with (
         patch(
             "app.repositories.inspection_repository.get_by_id",
             new=AsyncMock(return_value=_INSPECTION),
         ),
         patch(
+            "app.repositories.detection_job_repository.get_active",
+            new=AsyncMock(return_value=None),
+        ),
+        patch(
+            "app.repositories.detection_job_repository.create",
+            new=AsyncMock(return_value=_FakeJob()),
+        ),
+        patch(
+            "app.repositories.detection_job_repository.update_status",
+            new=AsyncMock(return_value=_FakeJob()),
+        ) as update_job_status,
+        patch(
             "app.repositories.defect_repository.create_many",
             new=AsyncMock(return_value=[]),
         ) as create_many,
-        patch(
-            "app.repositories.inspection_repository.update_status",
-            new=AsyncMock(return_value=_INSPECTION),
-        ) as update_status,
     ):
         result = await detection_service.run_detection(db, str(_INSPECTION.id))
 
     assert isinstance(result, DetectionResult)
     assert result.inspection_id == str(_INSPECTION.id)
+    assert result.detection_job_id == str(_job_id)
     assert len(result.defects) == 2
     assert result.defects[0].quality_state == "defect"
     assert result.defects[1].quality_state == "defect"
@@ -210,6 +225,8 @@ async def test_run_detection_persists_mock_detections():
     create_many.assert_awaited_once()
     saved_items = create_many.await_args.args[1]
     assert saved_items[0]["canonical_class_name"] == "crack_paint"
+    assert saved_items[0]["ontology_id"] == "surface_treatment.crack.paint"
+    assert saved_items[0]["detection_job_id"] == _job_id
     assert saved_items[0]["quality_state"] == "defect"
     assert saved_items[0]["bbox"] == {
         "x_min": 10.0,
@@ -217,6 +234,7 @@ async def test_run_detection_persists_mock_detections():
         "x_max": 100.0,
         "y_max": 80.0,
     }
-    assert saved_items[1]["canonical_class_name"] == "scratch_paint"
-    update_status.assert_awaited_once()
+    assert saved_items[1]["canonical_class_name"] == "paint_peel_paint"
+    assert saved_items[1]["ontology_id"] == "surface_treatment.coating_drop.paint"
+    assert update_job_status.await_count == 2  # processing → completed
     db.commit.assert_awaited_once()

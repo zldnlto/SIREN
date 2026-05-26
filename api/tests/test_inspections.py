@@ -23,13 +23,10 @@ _USER = User(
 _INSPECTION = Inspection(
     id=uuid.uuid4(),
     annotation_domain="surface_treatment",
-    status="pending",
     inspector_id=_USER.id,
     image_key=None,
     thumbnail_key=None,
     report_flagged=False,
-    model_version="mock-v0",
-    rag_version="mock-v0",
     created_at=datetime.now(timezone.utc),
     updated_at=datetime.now(timezone.utc),
 )
@@ -37,6 +34,7 @@ _INSPECTION = Inspection(
 _DETECTION_RESULT = DetectionResult(
     id=str(uuid.uuid4()),
     inspection_id=str(_INSPECTION.id),
+    detection_job_id=str(uuid.uuid4()),
     defects=[
         DefectItem(
             canonical_class_name="crack_paint",
@@ -75,7 +73,7 @@ async def test_create_inspection():
     ):
         resp = client.post("/api/v1/inspections", json={"domain": "표면처리"})
     assert resp.status_code == 200
-    assert resp.json()["status"] == "pending"
+    assert resp.json()["id"] == str(_INSPECTION.id)
 
 
 @pytest.mark.asyncio
@@ -199,13 +197,10 @@ async def test_confirm_upload_success():
     updated = Inspection(
         id=_INSPECTION.id,
         annotation_domain=_INSPECTION.annotation_domain,
-        status=_INSPECTION.status,
         inspector_id=_INSPECTION.inspector_id,
         image_key=f"inspections/{_INSPECTION.id}/image.jpg",
         thumbnail_key=None,
         report_flagged=False,
-        model_version="mock-v0",
-        rag_version="mock-v0",
         created_at=_INSPECTION.created_at,
         updated_at=_INSPECTION.updated_at,
     )
@@ -266,13 +261,10 @@ async def test_upload_image():
     updated = Inspection(
         id=_INSPECTION.id,
         annotation_domain=_INSPECTION.annotation_domain,
-        status=_INSPECTION.status,
         inspector_id=_INSPECTION.inspector_id,
         image_key="inspections/test/image.jpg",
         thumbnail_key=None,
         report_flagged=False,
-        model_version="mock-v0",
-        rag_version="mock-v0",
         created_at=_INSPECTION.created_at,
         updated_at=_INSPECTION.updated_at,
     )
@@ -305,6 +297,70 @@ async def test_upload_image_unsupported_mime_type():
             files={"file": ("test.gif", b"fake", "image/gif")},
         )
     assert resp.status_code == 415
+
+
+@pytest.mark.asyncio
+async def test_detect_conflict_returns_409():
+    from fastapi import HTTPException, status
+
+    with patch(
+        "app.services.detection_service.run_detection",
+        new=AsyncMock(side_effect=HTTPException(status_code=status.HTTP_409_CONFLICT)),
+    ):
+        resp = client.post(f"/api/v1/inspections/{_INSPECTION.id}/detect")
+    assert resp.status_code == 409
+
+
+@pytest.mark.asyncio
+async def test_list_detection_jobs():
+    from app.models.detection_job import DetectionJob as JobModel
+
+    mock_job = JobModel(
+        id=uuid.uuid4(),
+        inspection_id=_INSPECTION.id,
+        model_version="mock-v0",
+        rag_version="mock-v0",
+        status="completed",
+        created_at=datetime.now(timezone.utc),
+        started_at=None,
+        completed_at=None,
+        error_message=None,
+    )
+    with (
+        patch(
+            "app.repositories.inspection_repository.get_by_id",
+            new=AsyncMock(return_value=_INSPECTION),
+        ),
+        patch(
+            "app.repositories.detection_job_repository.list_by_inspection",
+            new=AsyncMock(return_value=[mock_job]),
+        ),
+    ):
+        resp = client.get(f"/api/v1/inspections/{_INSPECTION.id}/jobs")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert len(data) == 1
+    assert data[0]["status"] == "completed"
+
+
+@pytest.mark.asyncio
+async def test_list_detection_jobs_forbidden():
+    other_inspection = Inspection(
+        id=uuid.uuid4(),
+        annotation_domain="surface_treatment",
+        inspector_id=uuid.uuid4(),
+        image_key=None,
+        thumbnail_key=None,
+        report_flagged=False,
+        created_at=datetime.now(timezone.utc),
+        updated_at=datetime.now(timezone.utc),
+    )
+    with patch(
+        "app.repositories.inspection_repository.get_by_id",
+        new=AsyncMock(return_value=other_inspection),
+    ):
+        resp = client.get(f"/api/v1/inspections/{other_inspection.id}/jobs")
+    assert resp.status_code == 403
 
 
 @pytest.mark.asyncio

@@ -33,3 +33,6 @@ class InvalidUploadKeyError(UseCaseError):
 class UploadVerificationError(UseCaseError):
     pass
 
+
+class ConflictError(UseCaseError):
+    pass
