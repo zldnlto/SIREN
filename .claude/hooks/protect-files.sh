@@ -39,6 +39,11 @@ SOFT_BLOCK=(
   "vision/checkpoints/"
 )
 
+# .env.example은 시크릿 없는 템플릿이므로 허용
+if echo "$FILE" | grep -qE "\.env\.example$"; then
+  exit 0
+fi
+
 for pattern in "${HARD_BLOCK[@]}"; do
   if echo "$FILE" | grep -qE "$pattern"; then
     echo "🚫 [protect-files] 차단: $FILE" >&2

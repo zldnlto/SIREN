@@ -1,0 +1,20 @@
+name: CI — Dashboard
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "dashboard/**"
+      - ".github/workflows/ci-dashboard.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "dashboard/**"
+
+# TODO: Next.js build/test 워크플로우 추가 예정
+jobs:
+  placeholder:
+    name: Placeholder
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Dashboard CI — not yet configured"

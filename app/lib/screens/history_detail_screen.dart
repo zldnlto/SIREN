@@ -32,7 +32,8 @@ class HistoryDetailScreen extends ConsumerWidget {
               .format(inspection.createdAt.toLocal());
           final domain =
               AnnotationDomainX.fromString(inspection.annotationDomain);
-          final status = InspectionStatusX.fromString(inspection.status);
+          final status =
+              InspectionStatusX.fromString(inspection.status ?? 'unknown');
 
           return ListView(
             children: [

@@ -4,6 +4,7 @@ class DetectionResult {
   const DetectionResult({
     required this.id,
     required this.inspectionId,
+    required this.detectionJobId,
     required this.defects,
     required this.confidence,
     required this.detectedAt,
@@ -11,6 +12,7 @@ class DetectionResult {
 
   final String id;
   final String inspectionId;
+  final String detectionJobId;
   final List<DetectedDefect> defects;
   final double confidence;
   final DateTime detectedAt;
@@ -21,6 +23,7 @@ class DetectionResult {
       DetectionResult(
         id: json['id'] as String,
         inspectionId: json['inspection_id'] as String,
+        detectionJobId: json['detection_job_id'] as String,
         defects: (json['defects'] as List<dynamic>)
             .map((e) => DetectedDefect.fromJson(e as Map<String, dynamic>))
             .toList(),
