@@ -67,14 +67,14 @@ async def list_by_inspection(
 async def update_status(
     db: AsyncSession,
     job: DetectionJob,
-    status: JobStatus,
+    new_status: JobStatus,
     *,
     error_message: str | None = None,
 ) -> DetectionJob:
-    job.status = status
-    if status == "processing":
+    job.status = new_status
+    if new_status == "processing":
         job.started_at = datetime.now(timezone.utc)
-    elif status in ("completed", "failed"):
+    elif new_status in ("completed", "failed"):
         job.completed_at = datetime.now(timezone.utc)
     if error_message is not None:
         job.error_message = error_message

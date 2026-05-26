@@ -86,8 +86,11 @@ async def run_detection(
         await update_job_status_fn(db, job, "completed")
         await commit_fn()
     except Exception as exc:
-        await update_job_status_fn(db, job, "failed", error_message=str(exc))
-        await commit_fn()
+        try:
+            await update_job_status_fn(db, job, "failed", error_message=str(exc))
+            await commit_fn()
+        except Exception:
+            pass
         raise
 
     response_defects = [
