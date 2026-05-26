@@ -18,6 +18,7 @@ class DefectItem(BaseModel):
 class DetectionResult(BaseModel):
     id: str
     inspection_id: str
+    detection_job_id: str
     defects: list[DefectItem]
     confidence: float
     detected_at: datetime

@@ -124,6 +124,7 @@ def build_detection_item(
 
 def build_persisted_defect(
     inspection_id,
+    detection_job_id,
     domain_code: int,
     class_code: int,
     confidence: float,
@@ -132,6 +133,7 @@ def build_persisted_defect(
     canonical = canonical_class_for(class_code)
     return {
         "inspection_id": inspection_id,
+        "detection_job_id": detection_job_id,
         "domain_code": domain_code,
         "class_code": class_code,
         "canonical_class_name": canonical,

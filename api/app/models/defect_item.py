@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime
 
 from sqlalchemy import DateTime, ForeignKey, SmallInteger, String, text
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
@@ -17,6 +17,9 @@ class DefectItem(Base):
     inspection_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("inspections.id"), nullable=False
     )
+    detection_job_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("detection_jobs.id"), nullable=False
+    )
     domain_code: Mapped[int] = mapped_column(SmallInteger, nullable=False)
     class_code: Mapped[int] = mapped_column(SmallInteger, nullable=False)
     canonical_class_name: Mapped[str] = mapped_column(String(100), nullable=False)
@@ -30,5 +33,8 @@ class DefectItem(Base):
     )
 
     inspection: Mapped["Inspection"] = relationship(  # noqa: F821
+        back_populates="defect_items"
+    )
+    detection_job: Mapped["DetectionJob"] = relationship(  # noqa: F821
         back_populates="defect_items"
     )

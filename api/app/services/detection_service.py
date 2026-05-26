@@ -2,8 +2,12 @@ from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.application.detection_usecase import run_detection as run_detection_usecase
-from app.application.errors import InvalidInputError, NotFoundError
-from app.repositories import defect_repository, inspection_repository
+from app.application.errors import ConflictError, InvalidInputError, NotFoundError
+from app.repositories import (
+    defect_repository,
+    detection_job_repository,
+    inspection_repository,
+)
 from app.schemas.detection import DefectItem, DetectionResult
 
 
@@ -13,8 +17,10 @@ async def run_detection(db: AsyncSession, inspection_id: str) -> DetectionResult
             db,
             inspection_id,
             get_by_id_fn=inspection_repository.get_by_id,
+            create_job_fn=detection_job_repository.create,
+            get_active_job_fn=detection_job_repository.get_active,
+            update_job_status_fn=detection_job_repository.update_status,
             create_many_fn=defect_repository.create_many,
-            update_status_fn=inspection_repository.update_status,
             commit_fn=db.commit,
         )
     except InvalidInputError:
@@ -26,10 +32,16 @@ async def run_detection(db: AsyncSession, inspection_id: str) -> DetectionResult
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Inspection not found"
         )
+    except ConflictError:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="이미 진행 중인 탐지 작업이 있습니다.",
+        )
 
     return DetectionResult(
         id=outcome.id,
         inspection_id=outcome.inspection_id,
+        detection_job_id=outcome.detection_job_id,
         defects=[
             DefectItem(
                 canonical_class_name=defect.canonical_class_name,
