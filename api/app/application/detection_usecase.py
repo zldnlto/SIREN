@@ -21,7 +21,7 @@ from app.ports.repositories import (
     UpdateDetectionJobStatusFn,
 )
 
-# TODO(#139): 실 모델 연동 시 YOLO inference 결과로 교체
+# TODO: siren-ml 추론 서버 연동 시 교체 (Feat/ml-server 이슈 참고)
 MOCK_DETECTIONS = [
     {"class_code": 0, "confidence": 0.92, "bbox": [10.0, 20.0, 100.0, 80.0]},
     {"class_code": 1, "confidence": 0.78, "bbox": [50.0, 60.0, 200.0, 150.0]},
@@ -69,7 +69,7 @@ async def run_detection(
     await update_job_status_fn(db, job, "processing")
 
     try:
-        domain_code = 25  # TODO(#139): annotation_domain 기반 실 모델 연동 시 교체
+        domain_code = 25  # surface_treatment
 
         db_items = [
             build_persisted_defect(

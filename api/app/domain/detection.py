@@ -4,15 +4,16 @@ from dataclasses import dataclass
 from typing import Literal
 
 CANONICAL_TO_ONTOLOGY: dict[str, str] = {
+    # surface_treatment — vision/src/constants.py DEFAULT_CLASS_NAMES 기준
     "crack_paint": "surface_treatment.crack.paint",
-    "coating_drop_paint": "surface_treatment.coating_drop.paint",
-    "coating_separation_paint": "surface_treatment.coating_separation.paint",
-    "paint_run_paint": "surface_treatment.paint_run.paint",
+    "paint_peel_paint": "surface_treatment.coating_drop.paint",
+    "paint_separation_paint": "surface_treatment.coating_separation.paint",
+    "paint_flow_paint": "surface_treatment.paint_run.paint",
     "insulation_damage_insulation": "surface_treatment.insulation_damage.insulation",
     "scratch_paint": "surface_treatment.scratch.paint",
-    "scratch_base_material": "surface_treatment.scratch.base_material",
+    "scratch_base": "surface_treatment.scratch.base_material",
     "scratch_insulation": "surface_treatment.scratch.insulation",
-    "tank_cleaning_defect_base_material": "surface_treatment.tank_cleaning_defect.base_material",
+    # other domains (future)
     "weld_defect_joint": "welding.weld_defect.joint",
     "weld_blowhole_joint": "welding.weld_blowhole.joint",
     "cut_defect_base_material": "cutting.cut_defect.base_material",
@@ -26,15 +27,16 @@ CANONICAL_TO_ONTOLOGY: dict[str, str] = {
 }
 
 CANONICAL_TO_DISPLAY_LABEL: dict[str, str] = {
+    # surface_treatment
     "crack_paint": "균열 (도장)",
-    "coating_drop_paint": "도막떨어짐 (도장)",
-    "coating_separation_paint": "도막분리 (도장)",
-    "paint_run_paint": "도장흐름 (도장)",
+    "paint_peel_paint": "도막떨어짐 (도장)",
+    "paint_separation_paint": "도막분리 (도장)",
+    "paint_flow_paint": "도장흐름 (도장)",
     "insulation_damage_insulation": "보온재손상 (보온재)",
     "scratch_paint": "스크래치 (도장)",
-    "scratch_base_material": "스크래치 (모재)",
+    "scratch_base": "스크래치 (모재)",
     "scratch_insulation": "스크래치 (보온재)",
-    "tank_cleaning_defect_base_material": "탱크클리닝불량 (모재)",
+    # other domains (future)
     "weld_defect_joint": "용접불량 (조인트)",
     "weld_blowhole_joint": "용접블로우홀 (조인트)",
     "cut_defect_base_material": "절단불량 (모재)",
@@ -47,19 +49,19 @@ CANONICAL_TO_DISPLAY_LABEL: dict[str, str] = {
     "background": "양호",
 }
 
-# class_code → canonical_class_name (surface_treatment 도메인 기준 mock)
+# class_code → canonical_class_name (vision/src/constants.py DEFAULT_CLASS_NAMES 순서와 동일)
 CLASS_CODE_MAP: dict[int, str] = {
     0: "crack_paint",
-    1: "scratch_paint",
-    2: "paint_run_paint",
-    3: "coating_drop_paint",
-    4: "coating_separation_paint",
-    5: "insulation_damage_insulation",
-    6: "tank_cleaning_defect_base_material",
-    7: "background",
+    1: "paint_peel_paint",
+    2: "paint_separation_paint",
+    3: "paint_flow_paint",
+    4: "insulation_damage_insulation",
+    5: "scratch_paint",
+    6: "scratch_base",
+    7: "scratch_insulation",
 }
 
-CLS_ONLY_CODES = {6, 7}
+CLS_ONLY_CODES: set[int] = set()
 
 
 def quality_state_for(canonical_class_name: str) -> Literal["defect", "good"]:

@@ -33,6 +33,6 @@ async def get_current_user(
         raise _UNAUTHORIZED
 
     user = await user_repository.get_by_id(db, user_uuid)
-    if user is None or not user.is_active:
+    if user is None or user.deleted_at is not None:
         raise _UNAUTHORIZED
     return user

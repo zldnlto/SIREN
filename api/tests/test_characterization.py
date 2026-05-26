@@ -27,12 +27,17 @@ _INSPECTION = Inspection(
     id=uuid.uuid4(),
     annotation_domain="surface_treatment",
     inspector_id=_USER.id,
-    image_key=None,
+    image_key="inspections/test-image.jpg",
     thumbnail_key=None,
     report_flagged=False,
     created_at=datetime.now(timezone.utc),
     updated_at=datetime.now(timezone.utc),
 )
+
+_MOCK_DETECTIONS = [
+    {"class_code": 0, "confidence": 0.92, "bbox": [10.0, 20.0, 100.0, 80.0]},
+    {"class_code": 1, "confidence": 0.78, "bbox": [50.0, 60.0, 200.0, 150.0]},
+]
 
 
 @pytest.mark.asyncio
@@ -229,7 +234,7 @@ async def test_run_detection_persists_mock_detections():
         "x_max": 100.0,
         "y_max": 80.0,
     }
-    assert saved_items[1]["canonical_class_name"] == "scratch_paint"
-    assert saved_items[1]["ontology_id"] == "surface_treatment.scratch.paint"
+    assert saved_items[1]["canonical_class_name"] == "paint_peel_paint"
+    assert saved_items[1]["ontology_id"] == "surface_treatment.coating_drop.paint"
     assert update_job_status.await_count == 2  # processing → completed
     db.commit.assert_awaited_once()
