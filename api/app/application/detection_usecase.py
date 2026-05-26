@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.application.errors import InvalidInputError, NotFoundError
+from app.application.errors import ConflictError, InvalidInputError, NotFoundError
 from app.domain.detection import (
     DetectionItemCore,
     average_confidence,
@@ -14,11 +14,12 @@ from app.domain.detection import (
     build_persisted_defect,
 )
 from app.ports.repositories import (
+    CreateDetectionJobFn,
     CreateManyDefectsFn,
+    GetActiveDetectionJobFn,
     GetInspectionByIdFn,
-    UpdateInspectionStatusFn,
+    UpdateDetectionJobStatusFn,
 )
-
 
 # TODO(#139): 실 모델 연동 시 YOLO inference 결과로 교체
 MOCK_DETECTIONS = [
@@ -26,11 +27,15 @@ MOCK_DETECTIONS = [
     {"class_code": 1, "confidence": 0.78, "bbox": [50.0, 60.0, 200.0, 150.0]},
 ]
 
+MODEL_VERSION = "mock-v0"
+RAG_VERSION = "mock-v0"
+
 
 @dataclass(frozen=True)
 class DetectionOutcome:
     id: str
     inspection_id: str
+    detection_job_id: str
     defects: list[DetectionItemCore]
     confidence: float
     detected_at: datetime
@@ -41,8 +46,10 @@ async def run_detection(
     inspection_id: str,
     *,
     get_by_id_fn: GetInspectionByIdFn,
+    create_job_fn: CreateDetectionJobFn,
+    get_active_job_fn: GetActiveDetectionJobFn,
+    update_job_status_fn: UpdateDetectionJobStatusFn,
     create_many_fn: CreateManyDefectsFn,
-    update_status_fn: UpdateInspectionStatusFn,
     commit_fn,
 ) -> DetectionOutcome:
     try:
@@ -54,12 +61,19 @@ async def run_detection(
     if inspection is None:
         raise NotFoundError
 
+    active_job = await get_active_job_fn(db, uid)
+    if active_job is not None:
+        raise ConflictError
+
+    job = await create_job_fn(db, uid, MODEL_VERSION, RAG_VERSION)
+    await update_job_status_fn(db, job, "processing")
+
     domain_code = 25  # TODO(#139): annotation_domain 기반 실 모델 연동 시 교체
-    _ = inspection.annotation_domain  # 컬럼 참조 확인용
 
     db_items = [
         build_persisted_defect(
             uid,
+            job.id,
             domain_code,
             defect["class_code"],
             defect["confidence"],
@@ -68,10 +82,9 @@ async def run_detection(
         for defect in MOCK_DETECTIONS
     ]
     await create_many_fn(db, db_items)
-    await update_status_fn(db, inspection, "completed")
+    await update_job_status_fn(db, job, "completed")
     await commit_fn()
 
-    now = datetime.now(timezone.utc)
     response_defects = [
         build_detection_item(defect["class_code"], defect["confidence"], defect["bbox"])
         for defect in MOCK_DETECTIONS
@@ -79,9 +92,10 @@ async def run_detection(
     return DetectionOutcome(
         id=str(uuid.uuid4()),
         inspection_id=inspection_id,
+        detection_job_id=str(job.id),
         defects=response_defects,
         confidence=average_confidence(
             [defect["confidence"] for defect in MOCK_DETECTIONS]
         ),
-        detected_at=now,
+        detected_at=datetime.now(timezone.utc),
     )

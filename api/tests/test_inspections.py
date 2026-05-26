@@ -23,13 +23,10 @@ _USER = User(
 _INSPECTION = Inspection(
     id=uuid.uuid4(),
     annotation_domain="surface_treatment",
-    status="pending",
     inspector_id=_USER.id,
     image_key=None,
     thumbnail_key=None,
     report_flagged=False,
-    model_version="mock-v0",
-    rag_version="mock-v0",
     created_at=datetime.now(timezone.utc),
     updated_at=datetime.now(timezone.utc),
 )
@@ -37,6 +34,7 @@ _INSPECTION = Inspection(
 _DETECTION_RESULT = DetectionResult(
     id=str(uuid.uuid4()),
     inspection_id=str(_INSPECTION.id),
+    detection_job_id=str(uuid.uuid4()),
     defects=[
         DefectItem(
             canonical_class_name="crack_paint",
@@ -75,7 +73,7 @@ async def test_create_inspection():
     ):
         resp = client.post("/api/v1/inspections", json={"domain": "표면처리"})
     assert resp.status_code == 200
-    assert resp.json()["status"] == "pending"
+    assert resp.json()["id"] == str(_INSPECTION.id)
 
 
 @pytest.mark.asyncio
@@ -199,13 +197,10 @@ async def test_confirm_upload_success():
     updated = Inspection(
         id=_INSPECTION.id,
         annotation_domain=_INSPECTION.annotation_domain,
-        status=_INSPECTION.status,
         inspector_id=_INSPECTION.inspector_id,
         image_key=f"inspections/{_INSPECTION.id}/image.jpg",
         thumbnail_key=None,
         report_flagged=False,
-        model_version="mock-v0",
-        rag_version="mock-v0",
         created_at=_INSPECTION.created_at,
         updated_at=_INSPECTION.updated_at,
     )
@@ -266,13 +261,10 @@ async def test_upload_image():
     updated = Inspection(
         id=_INSPECTION.id,
         annotation_domain=_INSPECTION.annotation_domain,
-        status=_INSPECTION.status,
         inspector_id=_INSPECTION.inspector_id,
         image_key="inspections/test/image.jpg",
         thumbnail_key=None,
         report_flagged=False,
-        model_version="mock-v0",
-        rag_version="mock-v0",
         created_at=_INSPECTION.created_at,
         updated_at=_INSPECTION.updated_at,
     )
