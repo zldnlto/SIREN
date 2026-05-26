@@ -25,15 +25,6 @@ async def get_by_id(db: AsyncSession, inspection_id: uuid.UUID) -> Inspection | 
     return result.scalar_one_or_none()
 
 
-async def update_status(
-    db: AsyncSession, inspection: Inspection, status: str
-) -> Inspection:
-    inspection.status = status
-    await db.flush()
-    await db.refresh(inspection)
-    return inspection
-
-
 async def update_image_keys(
     db: AsyncSession,
     inspection: Inspection,

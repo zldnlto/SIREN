@@ -85,7 +85,7 @@ class _HistoryTile extends StatelessWidget {
     final dateStr =
         DateFormat('yyyy.MM.dd HH:mm').format(inspection.createdAt.toLocal());
     final domain = AnnotationDomainX.fromString(inspection.annotationDomain);
-    final status = InspectionStatusX.fromString(inspection.status);
+    final status = InspectionStatusX.fromString(inspection.status ?? 'unknown');
 
     return SirenCard(
       onTap: () => context.pushNamed(
