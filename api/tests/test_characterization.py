@@ -210,6 +210,7 @@ async def test_run_detection_persists_mock_detections():
     create_many.assert_awaited_once()
     saved_items = create_many.await_args.args[1]
     assert saved_items[0]["canonical_class_name"] == "crack_paint"
+    assert saved_items[0]["ontology_id"] == "surface_treatment.crack.paint"
     assert saved_items[0]["quality_state"] == "defect"
     assert saved_items[0]["bbox"] == {
         "x_min": 10.0,
@@ -218,5 +219,6 @@ async def test_run_detection_persists_mock_detections():
         "y_max": 80.0,
     }
     assert saved_items[1]["canonical_class_name"] == "scratch_paint"
+    assert saved_items[1]["ontology_id"] == "surface_treatment.scratch.paint"
     update_status.assert_awaited_once()
     db.commit.assert_awaited_once()

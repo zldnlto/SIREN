@@ -135,6 +135,7 @@ def build_persisted_defect(
         "domain_code": domain_code,
         "class_code": class_code,
         "canonical_class_name": canonical,
+        "ontology_id": ontology_id_for(canonical),
         "quality_state": quality_state_for(canonical),
         "confidence_score": confidence,
         "bbox": bbox_for_class(class_code, bbox_raw),

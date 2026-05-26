@@ -20,6 +20,7 @@ class DefectItem(Base):
     domain_code: Mapped[int] = mapped_column(SmallInteger, nullable=False)
     class_code: Mapped[int] = mapped_column(SmallInteger, nullable=False)
     canonical_class_name: Mapped[str] = mapped_column(String(100), nullable=False)
+    ontology_id: Mapped[str] = mapped_column(String(100), nullable=False)
     quality_state: Mapped[str] = mapped_column(String(10), nullable=False)
     confidence_score: Mapped[float] = mapped_column(nullable=False)
     bbox: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
