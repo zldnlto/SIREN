@@ -68,22 +68,27 @@ async def run_detection(
     job = await create_job_fn(db, uid, MODEL_VERSION, RAG_VERSION)
     await update_job_status_fn(db, job, "processing")
 
-    domain_code = 25  # TODO(#139): annotation_domain 기반 실 모델 연동 시 교체
+    try:
+        domain_code = 25  # TODO(#139): annotation_domain 기반 실 모델 연동 시 교체
 
-    db_items = [
-        build_persisted_defect(
-            uid,
-            job.id,
-            domain_code,
-            defect["class_code"],
-            defect["confidence"],
-            defect["bbox"],
-        )
-        for defect in MOCK_DETECTIONS
-    ]
-    await create_many_fn(db, db_items)
-    await update_job_status_fn(db, job, "completed")
-    await commit_fn()
+        db_items = [
+            build_persisted_defect(
+                uid,
+                job.id,
+                domain_code,
+                defect["class_code"],
+                defect["confidence"],
+                defect["bbox"],
+            )
+            for defect in MOCK_DETECTIONS
+        ]
+        await create_many_fn(db, db_items)
+        await update_job_status_fn(db, job, "completed")
+        await commit_fn()
+    except Exception as exc:
+        await update_job_status_fn(db, job, "failed", error_message=str(exc))
+        await commit_fn()
+        raise
 
     response_defects = [
         build_detection_item(defect["class_code"], defect["confidence"], defect["bbox"])

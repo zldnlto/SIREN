@@ -1,10 +1,13 @@
 import uuid
 from datetime import datetime, timezone
+from typing import Literal
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.detection_job import DetectionJob
+
+JobStatus = Literal["pending", "processing", "completed", "failed"]
 
 
 async def create(
@@ -64,7 +67,7 @@ async def list_by_inspection(
 async def update_status(
     db: AsyncSession,
     job: DetectionJob,
-    status: str,
+    status: JobStatus,
     *,
     error_message: str | None = None,
 ) -> DetectionJob:

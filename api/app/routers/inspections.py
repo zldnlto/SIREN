@@ -1,3 +1,5 @@
+import uuid
+
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -12,7 +14,7 @@ from app.schemas.inspection import (
     InspectionResponse,
     UploadUrlResponse,
 )
-from app.repositories import detection_job_repository
+from app.repositories import detection_job_repository, inspection_repository
 from app.services import detection_service, guidance_service, inspection_service
 
 router = APIRouter()
@@ -93,11 +95,22 @@ async def list_detection_jobs(
     current_user=Depends(get_current_user),
 ):
     try:
-        uid = __import__("uuid").UUID(inspection_id)
+        uid = uuid.UUID(inspection_id)
     except ValueError:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="inspection_id가 유효한 UUID 형식이 아닙니다.",
+        )
+    inspection = await inspection_repository.get_by_id(db, uid)
+    if inspection is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="inspection을 찾을 수 없습니다.",
+        )
+    if inspection.inspector_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="접근 권한이 없습니다.",
         )
     return await detection_job_repository.list_by_inspection(db, uid)
 
