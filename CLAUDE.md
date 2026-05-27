@@ -24,6 +24,7 @@ settings.json / rules/ / agents/ / skills/ / hooks/
 
 siren-dev-loop ← 비자명한 모든 구현 작업
 api-builder ← api/ 작업 시작 시
+rag-builder ← ChromaDB ingest / sop_repository / sop_excerpt 연동 작업 시
 siren-code-reviewer ← 커밋 전 + pr-ready 전
 harness-ci-guardian ← CI/hooks/settings 변경 시
 component-architect ← 새 Flutter 위젯 구현 시작 전 (설계 생성 + 검증)
