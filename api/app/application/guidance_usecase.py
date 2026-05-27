@@ -19,7 +19,7 @@ async def get_guidance(
 
     sop_excerpt = None
     if get_sop_chunks_fn is not None:
-        chunks = get_sop_chunks_fn(ontology_id)
+        chunks = get_sop_chunks_fn(ontology_id, record.display_label)
         sop_excerpt = chunks if chunks else None
 
     return GuidancePlan(

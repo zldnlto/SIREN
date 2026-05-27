@@ -7,6 +7,7 @@ SOP ingest + retrieval smoke test.
   - chunk_index 오름차순 정렬
   - 존재하지 않는 ID → 빈 리스트
   - 재-ingest 후 중복 청크 없음 (upsert)
+  - query_text 전달 시 임베딩 유사도 검색 + chunk_index 정렬 유지
 """
 
 import sys
@@ -78,6 +79,25 @@ def test_retrieval_unknown_id(populated_collection):
     collection, _ = populated_collection
     result = get_by_ontology_id(collection, "unknown.does_not.exist")
     assert result == []
+
+
+def test_retrieval_with_query_text(populated_collection):
+    from app.repositories.sop_repository import get_by_ontology_id
+
+    collection, _ = populated_collection
+    chunks = get_by_ontology_id(
+        collection,
+        "welding.weld_defect.joint",
+        query_text="용접불량 (조인트)",
+    )
+
+    assert len(chunks) > 0, "query_text 모드에서 청크 없음"
+    for chunk in chunks:
+        assert chunk["section"]
+        assert chunk["content"].strip()
+    # 문서 순서(chunk_index) 정렬 유지 확인
+    indexes = [c["chunk_index"] for c in chunks]
+    assert indexes == sorted(indexes), "query 모드에서 chunk_index 정렬 깨짐"
 
 
 def test_idempotent_reingest(populated_collection):
