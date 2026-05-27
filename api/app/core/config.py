@@ -37,6 +37,10 @@ class Settings(BaseSettings):
     # ML 추론 서버
     ML_SERVER_URL: str = "http://localhost:8001"
 
+    # ChromaDB
+    CHROMA_HOST: str = "chromadb"
+    CHROMA_PORT: int = 8000
+
     model_config = SettingsConfigDict(
         env_file=(_ROOT_ENV, _LOCAL_ENV),
         env_file_encoding="utf-8",

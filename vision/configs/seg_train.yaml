@@ -8,10 +8,10 @@ cache: /content/datasets/cache
 nc: 8
 names:
   0: crack_paint
-  1: paint_peel_paint
-  2: paint_separation_paint
-  3: paint_flow_paint
+  1: coating_drop_paint
+  2: coating_separation_paint
+  3: paint_run_paint
   4: insulation_damage_insulation
   5: scratch_paint
-  6: scratch_base
+  6: scratch_base_material
   7: scratch_insulation

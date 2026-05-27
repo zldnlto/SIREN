@@ -44,12 +44,12 @@ PROCESS_MAP: dict[str, str] = {
 CLASS_MAP: dict[str, str] = {
     # surface
     "균열_도장": "crack_paint",
-    "도막떨어짐_도장": "paint_peel_paint",
-    "도막분리_도장": "paint_separation_paint",
-    "도장흐름_도장": "paint_flow_paint",
+    "도막떨어짐_도장": "coating_drop_paint",
+    "도막분리_도장": "coating_separation_paint",
+    "도장흐름_도장": "paint_run_paint",
     "보온재손상_보온재": "insulation_damage_insulation",  # fix: part_name 복원
     "스크래치_도장": "scratch_paint",
-    "스크래치_모재": "scratch_base",
+    "스크래치_모재": "scratch_base_material",
     "스크래치_보온재": "scratch_insulation",
     "탱크클리닝불량_모재": "cleaning_defect_base",
     # welding

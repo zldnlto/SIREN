@@ -3,7 +3,7 @@ from __future__ import annotations
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domain.guidance import GuidancePlan
-from app.ports.repositories import GetGuidanceByOntologyIdFn
+from app.ports.repositories import GetGuidanceByOntologyIdFn, GetSopChunksByOntologyIdFn
 
 
 async def get_guidance(
@@ -11,10 +11,17 @@ async def get_guidance(
     ontology_id: str,
     *,
     get_by_ontology_id_fn: GetGuidanceByOntologyIdFn,
+    get_sop_chunks_fn: GetSopChunksByOntologyIdFn | None = None,
 ) -> GuidancePlan | None:
     record = await get_by_ontology_id_fn(db, ontology_id)
     if record is None:
         return None
+
+    sop_excerpt = None
+    if get_sop_chunks_fn is not None:
+        chunks = get_sop_chunks_fn(ontology_id, record.display_label)
+        sop_excerpt = chunks if chunks else None
+
     return GuidancePlan(
         ontology_id=record.ontology_id,
         display_label=record.display_label,
@@ -24,4 +31,5 @@ async def get_guidance(
         reinspection_criteria=record.reinspection_criteria,
         disclaimer=record.disclaimer,
         referenced_doc=record.referenced_doc,
+        sop_excerpt=sop_excerpt,
     )

@@ -238,7 +238,7 @@ async def test_run_detection_persists_mock_detections():
         "x_max": 100.0,
         "y_max": 80.0,
     }
-    assert saved_items[1]["canonical_class_name"] == "paint_peel_paint"
+    assert saved_items[1]["canonical_class_name"] == "coating_drop_paint"
     assert saved_items[1]["ontology_id"] == "surface_treatment.coating_drop.paint"
     assert update_job_status.await_count == 2  # processing → completed
     db.commit.assert_awaited_once()

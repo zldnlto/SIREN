@@ -2,11 +2,13 @@ import uuid
 
 from typing import Any
 
+from chromadb import Collection
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.chroma import get_sop_collection
 from app.core.database import get_db
 from app.core.security import decode_access_token
 from app.repositories import user_repository
@@ -18,6 +20,10 @@ _UNAUTHORIZED = HTTPException(
     detail="인증 정보가 유효하지 않습니다.",
     headers={"WWW-Authenticate": "Bearer"},
 )
+
+
+def get_chroma_collection() -> Collection:
+    return get_sop_collection()
 
 
 async def get_current_user(

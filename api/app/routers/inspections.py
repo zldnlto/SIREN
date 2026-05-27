@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.dependencies import get_current_user
+from app.dependencies import get_chroma_collection, get_current_user
 from app.schemas.detection import DetectionResult
 from app.schemas.guidance import GuidanceResponse
 from app.schemas.inspection import (
@@ -120,8 +120,9 @@ async def get_guidance(
     ontology_id: str,
     db: AsyncSession = Depends(get_db),
     current_user=Depends(get_current_user),
+    chroma_collection=Depends(get_chroma_collection),
 ):
-    result = await guidance_service.get_guidance(db, ontology_id)
+    result = await guidance_service.get_guidance(db, ontology_id, chroma_collection)
     if result is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
