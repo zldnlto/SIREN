@@ -29,14 +29,7 @@ class HistoryListScreen extends ConsumerWidget {
       ),
       body: historyAsync.when(
         data: (list) => list.isEmpty
-            ? Center(
-                child: Text(
-                  '검사 이력이 없습니다.',
-                  style: AppTextStyles.bodyMd.copyWith(
-                    color: AppColors.onSurfaceVariant,
-                  ),
-                ),
-              )
+            ? _EmptyState(onAction: () => context.go('/home'))
             : ListView.separated(
                 padding: const EdgeInsets.all(AppSpacing.md),
                 itemCount: list.length,
@@ -70,6 +63,46 @@ class HistoryListScreen extends ConsumerWidget {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _EmptyState extends StatelessWidget {
+  const _EmptyState({required this.onAction});
+  final VoidCallback onAction;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.xl),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              Icons.history_toggle_off_rounded,
+              size: 64,
+              color: AppColors.onSurfaceMuted,
+            ),
+            const SizedBox(height: AppSpacing.md),
+            Text('검사 이력이 없습니다.', style: AppTextStyles.titleSm),
+            const SizedBox(height: AppSpacing.xs),
+            Text(
+              '검사를 실행하면 이력이 자동으로 저장됩니다.',
+              style: AppTextStyles.bodySm.copyWith(
+                color: AppColors.onSurfaceMuted,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            SirenButton(
+              label: '검사 시작',
+              size: SirenButtonSize.md,
+              onPressed: onAction,
+            ),
+          ],
         ),
       ),
     );

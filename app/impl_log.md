@@ -8,16 +8,17 @@
 - 코드 변경 없음, 커밋으로 마무리
 
 ## Sub-issue 2 (#157): 소형 컴포넌트 Hit Area + Toast 애니메이션
-- [ ] defect_badge: onTap 시 44×44pt ConstrainedBox 추가
-- [ ] toast: 커스텀 animated overlay (enter 400ms / exit 200ms)
+- ✅ defect_badge: onTap 시 44×44pt ConstrainedBox 추가
+- ✅ toast: 커스텀 animated overlay (enter 400ms / exit 200ms)
 - domain_chip: 44pt 이미 구현 ✅
 - inspection_status_chip: 탭 없음, 불필요 ✅
 
 ## Sub-issue 3 (#158): Stagger 애니메이션 + Dialog Enter
-- [ ] defect_result_screen: 결함 항목 stagger (30-50ms, translateY(8)→0 + opacity)
-- [ ] confirm_dialog: showGeneralDialog + custom scale(0.95)+opacity enter
+- ✅ defect_result_screen: _StaggeredItem 래퍼 (40ms/item, max 200ms, translateY 8px→0 + opacity)
+  - component-architect P1 피드백 반영: Transform.translate(픽셀 고정) + disableAnimations 체크 + mounted guard
+- ✅ confirm_dialog: showGeneralDialog + scale(0.95→1.0)+fade 250ms transitionBuilder
 - history_detail tabular: monoSm 이미 FontFeature.tabularFigures 포함 ✅
 
 ## Sub-issue 4 (#159): 화면 전환 + EmptyState
-- [ ] router.dart: GoRoute pageBuilder + CustomTransitionPage (250ms ease-out)
-- [ ] history_list_screen: EmptyState 위젯 (아이콘 + 메시지 + 액션)
+- ✅ router.dart: GoRoute pageBuilder + CustomTransitionPage (250ms ease-out, fade+slide 3%)
+- ✅ history_list_screen: _EmptyState 위젯 (아이콘 + 제목 + 설명 + 검사 시작 버튼)
