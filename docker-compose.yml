@@ -20,7 +20,7 @@ services:
       retries: 5
 
   chromadb:
-    image: chromadb/chroma:latest
+    image: chromadb/chroma:0.5.23
     container_name: siren-chromadb
     restart: unless-stopped
     ports:
@@ -50,6 +50,10 @@ services:
       AWS_REGION: ${AWS_REGION:-ap-northeast-2}
       S3_BUCKET_NAME: ${S3_BUCKET_NAME:-}
       ML_SERVER_URL: ${ML_SERVER_URL:-http://localhost:8001}
+      CHROMA_HOST: chromadb
+      CHROMA_PORT: "8000"
+    volumes:
+      - ./rag/docs:/rag/docs:ro
     depends_on:
       postgres:
         condition: service_healthy
