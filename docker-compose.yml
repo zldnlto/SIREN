@@ -34,7 +34,7 @@ services:
       retries: 3
 
   api:
-    build: ./api
+    image: osolgil/siren-api:latest
     container_name: siren-api
     restart: unless-stopped
     ports:
@@ -49,6 +49,7 @@ services:
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-}
       AWS_REGION: ${AWS_REGION:-ap-northeast-2}
       S3_BUCKET_NAME: ${S3_BUCKET_NAME:-}
+      ML_SERVER_URL: ${ML_SERVER_URL:-http://localhost:8001}
     depends_on:
       postgres:
         condition: service_healthy
