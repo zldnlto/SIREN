@@ -30,6 +30,9 @@ class Settings(BaseSettings):
     AWS_S3_BUCKET: str = "siren-inspections"
     AWS_S3_REGION: str = "ap-northeast-2"
 
+    # ML 추론 서버
+    ML_SERVER_URL: str = "http://localhost:8001"
+
     model_config = SettingsConfigDict(
         env_file=(_ROOT_ENV, _LOCAL_ENV),
         env_file_encoding="utf-8",

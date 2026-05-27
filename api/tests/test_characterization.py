@@ -212,6 +212,10 @@ async def test_run_detection_persists_mock_detections():
             "app.repositories.defect_repository.create_many",
             new=AsyncMock(return_value=[]),
         ) as create_many,
+        patch(
+            "app.services.detection_service._call_ml_server",
+            new=AsyncMock(return_value=_MOCK_DETECTIONS),
+        ),
     ):
         result = await detection_service.run_detection(db, str(_INSPECTION.id))
 
