@@ -107,3 +107,72 @@ def chunk_by_h2(body: str) -> list[tuple[str, str]]:
         sections.append((current_section, "\n".join(current_lines).strip()))
 
     return [(s, c) for s, c in sections if s not in SKIP_SECTIONS and c]
+
+
+def ingest_file(path: Path, collection, *, dry_run: bool) -> int:
+    text = path.read_text(encoding="utf-8")
+    meta, body = parse_frontmatter(text)
+
+    ontology_id = to_ontology_id(
+        meta.get("domain", ""),
+        meta.get("defect_name", ""),
+        meta.get("part_name", ""),
+    )
+    sections = chunk_by_h2(body)
+    doc_id = path.stem
+
+    for idx, (section, content) in enumerate(sections):
+        chunk_id = f"{ontology_id}::{section}"
+        if dry_run:
+            print(f"  [dry-run] {chunk_id} ({len(content)} chars)")
+            continue
+        collection.upsert(
+            ids=[chunk_id],
+            documents=[content],
+            metadatas=[
+                {
+                    "ontology_id": ontology_id,
+                    "section": section,
+                    "chunk_index": idx,
+                    "doc_id": doc_id,
+                }
+            ],
+        )
+
+    return len(sections)
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="SOP 문서를 ChromaDB에 인덱싱합니다.")
+    parser.add_argument(
+        "--dry-run", action="store_true", help="ingest 없이 청크 목록만 출력"
+    )
+    args = parser.parse_args()
+
+    docs_root = Path(__file__).resolve().parents[2] / "rag" / "docs"
+    md_files = sorted(docs_root.rglob("*.md"))
+
+    if not md_files:
+        print(f"[error] SOP 문서가 없습니다: {docs_root}")
+        sys.exit(1)
+
+    collection = None
+    if not args.dry_run:
+        from app.core.chroma import get_sop_collection
+
+        collection = get_sop_collection()
+
+    total_chunks = 0
+    for path in md_files:
+        count = ingest_file(path, collection, dry_run=args.dry_run)
+        total_chunks += count
+        print(
+            f"{'[dry-run] ' if args.dry_run else ''}✅ {path.parent.name}/{path.name} — {count}개 청크"
+        )
+
+    label = "확인" if args.dry_run else "인덱싱"
+    print(f"\n총 {len(md_files)}개 문서, {total_chunks}개 청크 {label} 완료")
+
+
+if __name__ == "__main__":
+    main()
