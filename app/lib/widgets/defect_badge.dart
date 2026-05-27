@@ -56,7 +56,13 @@ class DefectBadge extends StatelessWidget {
 
     return GestureDetector(
       onTap: onTap,
-      child: MouseRegion(cursor: SystemMouseCursors.click, child: badge),
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
+          child: Align(alignment: Alignment.center, child: badge),
+        ),
+      ),
     );
   }
 }
