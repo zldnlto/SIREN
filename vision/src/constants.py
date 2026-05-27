@@ -9,12 +9,12 @@ from pathlib import Path
 # → ADR-001, ADR-002 참고
 DEFAULT_CLASS_NAMES: tuple[str, ...] = (
     "crack_paint",
-    "paint_peel_paint",
-    "paint_separation_paint",
-    "paint_flow_paint",
+    "coating_drop_paint",
+    "coating_separation_paint",
+    "paint_run_paint",
     "insulation_damage_insulation",
     "scratch_paint",
-    "scratch_base",
+    "scratch_base_material",
     "scratch_insulation",
 )
 
