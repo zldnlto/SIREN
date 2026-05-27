@@ -22,7 +22,11 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
 
     # CORS
-    CORS_ORIGINS: list[str] = ["http://localhost:3000", "http://localhost:8080"]
+    CORS_ORIGINS: list[str] = [
+        "http://localhost:3000",
+        "http://localhost:8080",
+        "https://sirenflutter.vercel.app",
+    ]
 
     # S3 (Sub-issue 5)
     AWS_ACCESS_KEY_ID: str = ""

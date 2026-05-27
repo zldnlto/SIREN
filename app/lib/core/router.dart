@@ -9,13 +9,35 @@ import '../screens/history_list_screen.dart';
 import '../screens/history_detail_screen.dart';
 import '../screens/profile_screen.dart';
 
+Page<T> _fadeSlidePage<T>(GoRouterState state, Widget child) {
+  return CustomTransitionPage<T>(
+    key: state.pageKey,
+    child: child,
+    transitionDuration: const Duration(milliseconds: 250),
+    reverseTransitionDuration: const Duration(milliseconds: 200),
+    transitionsBuilder: (context, animation, _, child) {
+      final curved = CurvedAnimation(parent: animation, curve: Curves.easeOut);
+      return FadeTransition(
+        opacity: curved,
+        child: SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(0.03, 0),
+            end: Offset.zero,
+          ).animate(curved),
+          child: child,
+        ),
+      );
+    },
+  );
+}
+
 final appRouter = GoRouter(
   initialLocation: '/login',
   routes: [
     GoRoute(
       path: '/login',
       name: 'login',
-      builder: (_, __) => const LoginScreen(),
+      pageBuilder: (_, state) => _fadeSlidePage(state, const LoginScreen()),
     ),
     ShellRoute(
       builder: (context, state, child) => MainShell(child: child),
@@ -23,27 +45,30 @@ final appRouter = GoRouter(
         GoRoute(
           path: '/home',
           name: 'home',
-          builder: (_, __) => const HomeScreen(),
+          pageBuilder: (_, state) => _fadeSlidePage(state, const HomeScreen()),
           routes: [
             GoRoute(
               path: 'progress',
               name: 'progress',
-              builder: (_, state) => InspectionProgressScreen(
-                inspectionId: state.extra as String,
+              pageBuilder: (_, state) => _fadeSlidePage(
+                state,
+                InspectionProgressScreen(inspectionId: state.extra as String),
               ),
             ),
             GoRoute(
               path: 'result/defect',
               name: 'result-defect',
-              builder: (_, state) => DefectResultScreen(
-                inspectionId: state.extra as String,
+              pageBuilder: (_, state) => _fadeSlidePage(
+                state,
+                DefectResultScreen(inspectionId: state.extra as String),
               ),
             ),
             GoRoute(
               path: 'result/normal',
               name: 'result-normal',
-              builder: (_, state) => NormalResultScreen(
-                inspectionId: state.extra as String,
+              pageBuilder: (_, state) => _fadeSlidePage(
+                state,
+                NormalResultScreen(inspectionId: state.extra as String),
               ),
             ),
           ],
@@ -51,13 +76,17 @@ final appRouter = GoRouter(
         GoRoute(
           path: '/history',
           name: 'history',
-          builder: (_, __) => const HistoryListScreen(),
+          pageBuilder: (_, state) =>
+              _fadeSlidePage(state, const HistoryListScreen()),
           routes: [
             GoRoute(
               path: ':id',
               name: 'history-detail',
-              builder: (_, state) => HistoryDetailScreen(
-                inspectionId: state.pathParameters['id']!,
+              pageBuilder: (_, state) => _fadeSlidePage(
+                state,
+                HistoryDetailScreen(
+                  inspectionId: state.pathParameters['id']!,
+                ),
               ),
             ),
           ],
@@ -65,7 +94,8 @@ final appRouter = GoRouter(
         GoRoute(
           path: '/profile',
           name: 'profile',
-          builder: (_, __) => const ProfileScreen(),
+          pageBuilder: (_, state) =>
+              _fadeSlidePage(state, const ProfileScreen()),
         ),
       ],
     ),

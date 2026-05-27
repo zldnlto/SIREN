@@ -65,6 +65,21 @@ RAG: 변경 시 retrieval smoke check
 YOLO: 변경 시 inference smoke check
 PR: validation evidence + Closes 목록 포함
 
+## Agent Pipeline — SIREN UI Polish
+
+### 사용 스킬 맵
+- `make-interfaces-feel-better` → defect_badge 터치영역, confirm_dialog
+- `emil-design-eng` → toast 비대칭 타이밍, stagger 구현, 화면전환
+- `component-architect` → stagger 구조 설계 검증 (구현 전 반드시 먼저)
+- `ui-ux-pro-max` → EmptyState 위젯
+- `siren-code-reviewer` → 최종 PR 검토
+
+### 자율 실행 규칙
+- 중간 확인 질문 금지
+- 판단 필요 시 보수적 선택 후 진행, impl_log.md에 기록
+- 에러 발생 시 3회 재시도 후 skip하고 다음 단계 진행
+- 각 단계 완료 시 impl_log.md에 ✅ 체크 추가
+
 ## 절대 금지
 
 - .env\* / secrets / 모델 가중치 읽기·수정

@@ -27,9 +27,23 @@ class ConfirmDialog extends StatelessWidget {
     String cancelLabel = '취소',
     bool destructive = false,
   }) async {
-    final result = await showDialog<bool>(
+    final result = await showGeneralDialog<bool>(
       context: context,
-      builder: (_) => ConfirmDialog(
+      barrierDismissible: true,
+      barrierLabel: '닫기',
+      barrierColor: Colors.black54,
+      transitionDuration: const Duration(milliseconds: 250),
+      transitionBuilder: (ctx, animation, _, child) {
+        final curved = CurvedAnimation(parent: animation, curve: Curves.easeOut);
+        return FadeTransition(
+          opacity: curved,
+          child: ScaleTransition(
+            scale: Tween<double>(begin: 0.95, end: 1.0).animate(curved),
+            child: child,
+          ),
+        );
+      },
+      pageBuilder: (ctx, _, __) => ConfirmDialog(
         title: title,
         message: message,
         confirmLabel: confirmLabel,
