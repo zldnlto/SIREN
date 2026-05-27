@@ -14,3 +14,4 @@ class GuidancePlan:
     reinspection_criteria: str = ""
     disclaimer: str = ""
     referenced_doc: str | None = None
+    sop_excerpt: list[dict] | None = None
