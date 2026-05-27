@@ -16,7 +16,7 @@ ThemeData buildAppTheme() {
       seedColor: kAccentColor,
       brightness: Brightness.dark,
     ),
-    cardTheme: const CardTheme(
+    cardTheme: const CardThemeData(
       elevation: 2,
       margin: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
     ),
