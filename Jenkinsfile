@@ -12,11 +12,12 @@ pipeline {
             steps {
                 sh '''
                     docker run --rm \
-                      -v "${WORKSPACE}/api:/workspace" \
-                      -w /workspace \
+                      -v "${WORKSPACE}:/repo" \
+                      -w /repo/api \
                       python:3.11-slim \
                       sh -c "pip install -r requirements.txt -q && \
                              pytest tests/test_health.py tests/test_import_boundaries.py \
+                               tests/test_sop_smoke.py \
                                -v --tb=short"
                 '''
             }

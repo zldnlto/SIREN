@@ -109,14 +109,23 @@ def chunk_by_h2(body: str) -> list[tuple[str, str]]:
     return [(s, c) for s, c in sections if s not in SKIP_SECTIONS and c]
 
 
+REQUIRED_FRONTMATTER = {"domain", "defect_name", "part_name"}
+
+
 def ingest_file(path: Path, collection, *, dry_run: bool) -> int:
     text = path.read_text(encoding="utf-8")
     meta, body = parse_frontmatter(text)
 
+    missing = REQUIRED_FRONTMATTER - set(meta.keys())
+    if missing:
+        raise ValueError(
+            f"{path.name}: frontmatter에 필수 필드 없음 — {sorted(missing)}"
+        )
+
     ontology_id = to_ontology_id(
-        meta.get("domain", ""),
-        meta.get("defect_name", ""),
-        meta.get("part_name", ""),
+        meta["domain"],
+        meta["defect_name"],
+        meta["part_name"],
     )
     sections = chunk_by_h2(body)
     doc_id = path.stem

@@ -14,9 +14,11 @@ async def get_guidance(
 ) -> GuidanceResponse | None:
     get_sop_chunks_fn = None
     if chroma_collection is not None:
-        get_sop_chunks_fn = lambda oid, qt: sop_repository.get_by_ontology_id(
-            chroma_collection, oid, query_text=qt
-        )
+
+        def get_sop_chunks_fn(oid: str, qt: str | None):
+            return sop_repository.get_by_ontology_id(
+                chroma_collection, oid, query_text=qt
+            )
 
     plan = await get_guidance_usecase(
         db,
