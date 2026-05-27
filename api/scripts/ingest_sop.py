@@ -68,3 +68,42 @@ PART_SLUGS: dict[str, str] = {
 SKIP_SECTIONS = {"RAG 검색 키워드"}
 
 SECTION_ORDER = ["결함 개요", "원인", "조치 방법", "주의사항", "참고 기준"]
+
+
+def to_ontology_id(domain: str, defect: str, part: str) -> str:
+    d = DOMAIN_SLUGS.get(domain, domain)
+    f = DEFECT_SLUGS.get(defect, defect)
+    p = PART_SLUGS.get(part, part)
+    return f"{d}.{f}.{p}"
+
+
+def parse_frontmatter(text: str) -> tuple[dict, str]:
+    match = re.match(r"^---\n(.*?)\n---\n", text, re.DOTALL)
+    if not match:
+        return {}, text
+    meta = yaml.safe_load(match.group(1))
+    body = text[match.end() :]
+    return meta, body
+
+
+def chunk_by_h2(body: str) -> list[tuple[str, str]]:
+    """H2 헤딩 기준으로 섹션 분리. (section_name, content) 리스트 반환."""
+    sections: list[tuple[str, str]] = []
+    current_section: str | None = None
+    current_lines: list[str] = []
+
+    for line in body.splitlines():
+        h2 = re.match(r"^## (.+)$", line)
+        if h2:
+            if current_section is not None:
+                sections.append((current_section, "\n".join(current_lines).strip()))
+            current_section = h2.group(1).strip()
+            current_lines = []
+        else:
+            if current_section is not None:
+                current_lines.append(line)
+
+    if current_section is not None:
+        sections.append((current_section, "\n".join(current_lines).strip()))
+
+    return [(s, c) for s, c in sections if s not in SKIP_SECTIONS and c]
