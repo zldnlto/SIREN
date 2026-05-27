@@ -3,6 +3,7 @@ from __future__ import annotations
 import uuid
 from dataclasses import dataclass
 from datetime import datetime, timezone
+from typing import Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -20,14 +21,9 @@ from app.ports.repositories import (
     GetInspectionByIdFn,
     UpdateDetectionJobStatusFn,
 )
+from app.ports.storage import RunInferenceFn
 
-# TODO: siren-ml 추론 서버 연동 시 교체 (Feat/ml-server 이슈 참고)
-MOCK_DETECTIONS = [
-    {"class_code": 0, "confidence": 0.92, "bbox": [10.0, 20.0, 100.0, 80.0]},
-    {"class_code": 1, "confidence": 0.78, "bbox": [50.0, 60.0, 200.0, 150.0]},
-]
-
-MODEL_VERSION = "mock-v0"
+MODEL_VERSION = "siren-seg-v1"
 RAG_VERSION = "mock-v0"
 
 
@@ -51,6 +47,7 @@ async def run_detection(
     update_job_status_fn: UpdateDetectionJobStatusFn,
     create_many_fn: CreateManyDefectsFn,
     commit_fn,
+    run_inference_fn: RunInferenceFn,
 ) -> DetectionOutcome:
     try:
         uid = uuid.UUID(inspection_id)
@@ -69,6 +66,8 @@ async def run_detection(
     await update_job_status_fn(db, job, "processing")
 
     try:
+        raw_detections: list[Any] = await run_inference_fn(inspection.image_key)
+
         domain_code = 25  # surface_treatment
 
         db_items = [
@@ -76,11 +75,11 @@ async def run_detection(
                 uid,
                 job.id,
                 domain_code,
-                defect["class_code"],
-                defect["confidence"],
-                defect["bbox"],
+                d["class_code"],
+                d["confidence"],
+                d["bbox"],
             )
-            for defect in MOCK_DETECTIONS
+            for d in raw_detections
         ]
         await create_many_fn(db, db_items)
         await update_job_status_fn(db, job, "completed")
@@ -94,16 +93,14 @@ async def run_detection(
         raise
 
     response_defects = [
-        build_detection_item(defect["class_code"], defect["confidence"], defect["bbox"])
-        for defect in MOCK_DETECTIONS
+        build_detection_item(d["class_code"], d["confidence"], d["bbox"])
+        for d in raw_detections
     ]
     return DetectionOutcome(
         id=str(uuid.uuid4()),
         inspection_id=inspection_id,
         detection_job_id=str(job.id),
         defects=response_defects,
-        confidence=average_confidence(
-            [defect["confidence"] for defect in MOCK_DETECTIONS]
-        ),
+        confidence=average_confidence([d["confidence"] for d in raw_detections]),
         detected_at=datetime.now(timezone.utc),
     )

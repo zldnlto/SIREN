@@ -1,0 +1,23 @@
+services:
+  siren-ml:
+    build: .
+    container_name: siren-ml
+    restart: unless-stopped
+    ports:
+      - "8001:8001"
+    environment:
+      MODEL_PATH: /app/models/best.pt
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-}
+      AWS_S3_BUCKET: ${AWS_S3_BUCKET:-siren-inspections}
+      AWS_S3_REGION: ${AWS_S3_REGION:-ap-northeast-2}
+      CONFIDENCE_THRESHOLD: ${CONFIDENCE_THRESHOLD:-0.5}
+    volumes:
+      - ./models:/app/models:ro
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
