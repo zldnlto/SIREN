@@ -58,19 +58,22 @@ class DefectResultScreen extends ConsumerWidget {
           showDivider: true,
         ),
       ),
-      ...result.defects.map(
-        (defect) => Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.md,
-            vertical: AppSpacing.xs,
-          ),
-          child: _DefectCard(
-            ontologyId: defect.ontologyId,
-            displayLabel: defect.displayLabel,
-            confidenceScore: defect.confidenceScore,
-            severity: DefectSeverityX.fromDetection(
-              defect.qualityState,
-              defect.confidenceScore,
+      ...result.defects.indexed.map(
+        (entry) => _StaggeredItem(
+          index: entry.$1,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.md,
+              vertical: AppSpacing.xs,
+            ),
+            child: _DefectCard(
+              ontologyId: entry.$2.ontologyId,
+              displayLabel: entry.$2.displayLabel,
+              confidenceScore: entry.$2.confidenceScore,
+              severity: DefectSeverityX.fromDetection(
+                entry.$2.qualityState,
+                entry.$2.confidenceScore,
+              ),
             ),
           ),
         ),
@@ -116,6 +119,63 @@ class DefectResultScreen extends ConsumerWidget {
               )
             : ListView(children: [imagePane, ...defectList]),
       ),
+    );
+  }
+}
+
+class _StaggeredItem extends StatefulWidget {
+  const _StaggeredItem({required this.index, required this.child});
+  final int index;
+  final Widget child;
+
+  @override
+  State<_StaggeredItem> createState() => _StaggeredItemState();
+}
+
+class _StaggeredItemState extends State<_StaggeredItem>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+  late final Animation<double> _opacity;
+  late final Animation<double> _translate;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(vsync: this, duration: AppDurations.slow);
+    _opacity = CurvedAnimation(parent: _ctrl, curve: AppCurves.enter);
+    _translate = Tween<double>(begin: 8.0, end: 0.0).animate(
+      CurvedAnimation(parent: _ctrl, curve: AppCurves.enter),
+    );
+
+    final delay = Duration(milliseconds: (widget.index * 40).clamp(0, 200));
+    Future.delayed(delay, () {
+      if (!mounted) return;
+      if (MediaQuery.of(context).disableAnimations) {
+        _ctrl.value = 1.0;
+      } else {
+        _ctrl.forward();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _ctrl,
+      builder: (_, child) => Opacity(
+        opacity: _opacity.value,
+        child: Transform.translate(
+          offset: Offset(0, _translate.value),
+          child: child,
+        ),
+      ),
+      child: widget.child,
     );
   }
 }
