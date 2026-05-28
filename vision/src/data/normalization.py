@@ -223,7 +223,7 @@ def normalize_row(
         part_name_raw=normalize_text(row.get("part_name", "")),
         defect_name_norm=defect_name_raw,
         part_name_norm=part_name_raw,
-        canonical_class_name=canonical_class_name(defect_name_raw, part_name_raw),
+        canonical_class_name=canonical_class_name(defect_name_raw, part_name_raw, slugs=slugs),
         original_category_id=source_category_id,
         label_type=label_type,
         task_type=task_type,

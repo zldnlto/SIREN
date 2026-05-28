@@ -114,9 +114,19 @@ def load_ontology_slugs(path: Path | None = None) -> OntologySlugs:
     )
 
 
-def canonical_class_name(defect_name: str, part_name: str) -> str:
-    """Return the defect-part leaf class name."""
+def canonical_class_name(
+    defect_name: str,
+    part_name: str,
+    *,
+    slugs: "OntologySlugs | None" = None,
+) -> str:
+    """Return the defect-part leaf class name.
 
+    slugs가 주어지면 영문 slug 기반 이름을 반환한다 (예: coating_drop_paint).
+    slugs가 None이면 원본 문자열 그대로 반환한다 (하위 호환).
+    """
+    if slugs is not None:
+        return f"{slugs.defect_slug(defect_name)}_{slugs.part_slug(part_name)}"
     return f"{defect_name}_{part_name}"
 
 
@@ -192,7 +202,7 @@ def build_ontology_table(
 
     records: list[OntologyRecord] = []
     for (domain, defect_name, part_name), group in sorted(grouped.items()):
-        canonical = canonical_class_name(defect_name, part_name)
+        canonical = canonical_class_name(defect_name, part_name, slugs=slugs)
         quality_states = {str(_row_value(row, "quality_state", "")) for row in group}
         if not quality_states:
             quality_states = {""}

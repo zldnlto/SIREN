@@ -74,11 +74,14 @@ def build_segmentation_runtime_config(
         try:
             from vision.src.data.label_maps import build_task_label_map
 
-            label_map: dict[str, int] = build_task_label_map(
+            label_map_records = build_task_label_map(
                 ontology_records, model_name=model_name, task_type="segment"
             )
             class_names = tuple(
-                name for name, _ in sorted(label_map.items(), key=lambda x: x[1])
+                rec.canonical_class_name
+                for rec in sorted(
+                    label_map_records, key=lambda r: r.task_specific_model_class_id
+                )
             )
             return VisionRuntimeConfig(class_names=class_names)
         except Exception:  # noqa: BLE001

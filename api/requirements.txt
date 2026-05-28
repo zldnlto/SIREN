@@ -24,4 +24,3 @@ python-multipart==0.0.12
 
 # RAG (#167)
 chromadb==0.5.23
-pysqlite3-binary==0.5.3

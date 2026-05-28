@@ -24,6 +24,7 @@ from vision.src.data import (
     scale_polygon,
     write_dataset_validation_report,
 )
+from vision.src.data.ontology import load_ontology_slugs
 
 
 @pytest.fixture(scope="module")
@@ -63,7 +64,7 @@ def test_normalization_and_ontology_rules_hold(normalized_rows, ontology_records
         category_to_canonical[row.original_category_id].add(row.canonical_class_name)
         canonical_to_domains[row.canonical_class_name].add(row.domain)
         assert row.canonical_class_name == canonical_class_name(
-            row.defect_name_norm, row.part_name_norm
+            row.defect_name_norm, row.part_name_norm, slugs=load_ontology_slugs()
         )
         assert row.quality_state == ("good" if "양품" in row.defect_name_norm else "defect")
         if row.label_type == "classification":
