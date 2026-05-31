@@ -8,6 +8,7 @@ from vision.src.training import (
     build_training_artifacts,
     build_yolo_dataset_yaml_text,
     evaluate_yolo_segmentation,
+    resolve_best_weight_path,
     train_yolo_segmentation,
 )
 
@@ -112,6 +113,7 @@ def test_train_and_evaluate_yolo_segmentation_mirror_best_weight(tmp_path: Path)
     assert run_result.best_weight_path.exists()
     assert run_result.drive_best_weight_path is not None
     assert run_result.drive_best_weight_path.exists()
+    assert run_result.yolo_save_dir == run_result.artifacts.local_run_dir
     assert run_result.best_weight_path.read_text(encoding="utf-8") == "best from fake-yolo.pt"
     assert run_result.drive_best_weight_path.read_text(encoding="utf-8") == "best from fake-yolo.pt"
     assert run_result.artifacts.serving_weight_path == run_result.drive_best_weight_path
@@ -128,3 +130,44 @@ def test_train_and_evaluate_yolo_segmentation_mirror_best_weight(tmp_path: Path)
     assert factory.instances[1].val_kwargs is not None
     assert factory.instances[1].val_kwargs["data"] == str(run_result.artifacts.data_yaml_path)
     assert eval_result["weights"] == str(run_result.best_weight_path)
+
+
+def test_resolve_best_weight_path_falls_back_to_drive_copy(tmp_path: Path) -> None:
+    runtime = _build_runtime(tmp_path)
+    artifacts = build_training_artifacts(
+        runtime,
+        run_name="surface-run-v2",
+        curated_root=runtime.paths.resized_root,
+        class_names=runtime.class_names,
+    )
+    artifacts.drive_weights_dir.mkdir(parents=True, exist_ok=True)
+    artifacts.drive_best_weight_path.write_text("drive best", encoding="utf-8")
+
+    resolved = resolve_best_weight_path(
+        artifacts,
+        {"save_dir": str(runtime.paths.runs_root / "unexpected-exp")},
+    )
+
+    assert resolved == artifacts.drive_best_weight_path
+
+
+def test_resolve_best_weight_path_error_lists_checked_paths(tmp_path: Path) -> None:
+    runtime = _build_runtime(tmp_path)
+    artifacts = build_training_artifacts(
+        runtime,
+        run_name="surface-run-v3",
+        curated_root=runtime.paths.resized_root,
+        class_names=runtime.class_names,
+    )
+
+    try:
+        resolve_best_weight_path(artifacts, {"save_dir": "/content/runs/exp-v2"})
+    except FileNotFoundError as exc:
+        message = str(exc)
+    else:
+        raise AssertionError("resolve_best_weight_path should fail when no best.pt exists")
+
+    assert "run_name=surface-run-v3" in message
+    assert "/content/runs/exp-v2/weights/best.pt" in message
+    assert str(artifacts.best_weight_path) in message
+    assert str(artifacts.drive_best_weight_path) in message

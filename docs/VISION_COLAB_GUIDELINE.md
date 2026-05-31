@@ -28,6 +28,7 @@ from vision import (
     build_image_split_records,
     build_ontology_table,
     build_sampling_manifest,
+    build_training_artifacts,
     build_yolo_dataset_yaml_text,
     evaluate_yolo_segmentation,
     export_classification_dataset,
@@ -36,6 +37,7 @@ from vision import (
     load_data_config,
     load_dataset_index_rows,
     normalize_rows,
+    resolve_best_weight_path,
     sync_best_weight_to_drive,
     train_yolo_segmentation,
     train_yolo_segmentation_with_validation_gate,
@@ -132,6 +134,41 @@ metrics = evaluate_yolo_segmentation(
     runtime,
 )
 drive_weight = sync_best_weight_to_drive(result.artifacts, result.best_weight_path)
+```
+
+## 실험 v2 경로 확인 셀
+
+`exp v2`처럼 기존 셀을 복사해서 새 실험을 돌릴 때는 `run_name`만 바꾸고 아래 셀을 먼저 실행한다.
+
+```python
+run_name = "surface-seg-v2"
+
+result = train_yolo_segmentation(
+    runtime,
+    run_name=run_name,
+    curated_root=data_config.resized_root,
+)
+
+print("[run_name]", result.artifacts.run_name)
+print("[yolo_save_dir]", result.yolo_save_dir)
+print("[local_best]", result.best_weight_path)
+print("[drive_best]", result.drive_best_weight_path)
+print("[serving_weight]", result.artifacts.serving_weight_path)
+print("[exists]", result.best_weight_path.exists())
+```
+
+이미 학습은 끝났는데 `best.pt`만 못 찾는 경우:
+
+```python
+artifacts = build_training_artifacts(
+    runtime,
+    run_name="surface-seg-v2",
+    curated_root=data_config.resized_root,
+    class_names=runtime.class_names,
+)
+
+best_weight = resolve_best_weight_path(artifacts)
+print(best_weight)
 ```
 
 ## 실행 원칙

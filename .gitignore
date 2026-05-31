@@ -17,6 +17,4 @@ node_modules/
 .claude/settings.local.json
 .claude/logs/
 # model weights
-models/*.pt
-models/*.onnx
-models/*.pth
+models/

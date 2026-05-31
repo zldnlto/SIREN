@@ -72,6 +72,7 @@ class TrainingRunResult:
     train_result: Any
     best_weight_path: Path
     drive_best_weight_path: Path | None
+    yolo_save_dir: Path
 
 
 @dataclass(frozen=True)
@@ -228,21 +229,81 @@ def _extract_save_dir(train_result: Any, fallback_dir: Path) -> Path:
     return fallback_dir
 
 
+def _candidate_best_weight_paths(
+    train_result: Any,
+    artifacts: TrainingArtifacts,
+) -> tuple[Path, ...]:
+    """Return every best.pt location that can belong to this run."""
+
+    save_dir = _extract_save_dir(train_result, artifacts.local_run_dir)
+    candidates = (
+        save_dir / "weights" / "best.pt",
+        artifacts.best_weight_path,
+        artifacts.drive_best_weight_path,
+    )
+    deduped: list[Path] = []
+    seen: set[str] = set()
+    for path in candidates:
+        key = str(path)
+        if key not in seen:
+            deduped.append(path)
+            seen.add(key)
+    return tuple(deduped)
+
+
+def _recent_best_weight_paths(
+    artifacts: TrainingArtifacts, *, limit: int = 8
+) -> tuple[Path, ...]:
+    """Return recent best.pt files near this run for actionable diagnostics."""
+
+    roots = (artifacts.local_run_dir.parent, artifacts.drive_run_dir.parent)
+    found: list[Path] = []
+    for root in roots:
+        if not root.exists():
+            continue
+        found.extend(path for path in root.glob("*/weights/best.pt") if path.exists())
+    found.sort(key=lambda path: path.stat().st_mtime, reverse=True)
+    return tuple(found[:limit])
+
+
+def resolve_best_weight_path(
+    artifacts: TrainingArtifacts,
+    train_result: Any | None = None,
+) -> Path:
+    """Resolve best.pt across local, Ultralytics, and Drive run layouts.
+
+    Colab experiments often fail here after copying an older exp cell because
+    ``run_name`` and the actual Ultralytics ``save_dir`` drift apart. This helper
+    keeps that failure narrow and prints the exact paths to check.
+    """
+
+    train_result = train_result or {}
+    for candidate in _candidate_best_weight_paths(train_result, artifacts):
+        if candidate.exists():
+            return candidate
+
+    checked = "\n".join(
+        f"  - {path}" for path in _candidate_best_weight_paths(train_result, artifacts)
+    )
+    recent = "\n".join(f"  - {path}" for path in _recent_best_weight_paths(artifacts))
+    recent_block = f"\n최근 발견한 best.pt:\n{recent}" if recent else ""
+    raise FileNotFoundError(
+        "best.pt를 찾지 못했습니다.\n"
+        f"run_name={artifacts.run_name}\n"
+        f"확인한 경로:\n{checked}"
+        f"{recent_block}\n"
+        "Colab에서는 result.artifacts.run_name, result.yolo_save_dir, "
+        "runtime.paths.runs_root가 같은 실험을 가리키는지 확인하세요."
+    )
+
+
 def _resolve_best_weight_path(train_result: Any, artifacts: TrainingArtifacts) -> Path:
     """Resolve the best.pt path produced by Ultralytics.
 
     The returned path is used both for local verification and for Drive mirroring.
     """
 
-    save_dir = _extract_save_dir(train_result, artifacts.local_run_dir)
-    candidate = save_dir / "weights" / "best.pt"
-    if candidate.exists():
-        return candidate
-    if artifacts.best_weight_path.exists():
-        return artifacts.best_weight_path
-    raise FileNotFoundError(
-        f"best.pt를 찾지 못했습니다. 확인한 경로: {candidate} / {artifacts.best_weight_path}"
-    )
+    return resolve_best_weight_path(artifacts, train_result)
 
 
 def sync_best_weight_to_drive(
@@ -337,11 +398,13 @@ def train_yolo_segmentation(
 
     best_weight_path = _resolve_best_weight_path(train_result, artifacts)
     mirrored_path = sync_best_weight_to_drive(artifacts, best_weight_path)
+    yolo_save_dir = _extract_save_dir(train_result, artifacts.local_run_dir)
     return TrainingRunResult(
         artifacts=artifacts,
         train_result=train_result,
         best_weight_path=best_weight_path,
         drive_best_weight_path=mirrored_path,
+        yolo_save_dir=yolo_save_dir,
     )
 
 
