@@ -41,6 +41,8 @@ async def _call_ml_server(image_key: str) -> list[dict]:
     return [
         {
             "class_code": d["class_code"],
+            # ML 서버가 class_name을 포함하면 CLASS_CODE_MAP 우회 (없으면 None)
+            "class_name": d.get("class_name"),
             "confidence": d["confidence"],
             "bbox": d["bbox"],
         }
