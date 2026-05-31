@@ -78,6 +78,7 @@ async def run_detection(
                 d["class_code"],
                 d["confidence"],
                 d["bbox"],
+                class_name=d.get("class_name"),
             )
             for d in raw_detections
         ]
@@ -93,7 +94,12 @@ async def run_detection(
         raise
 
     response_defects = [
-        build_detection_item(d["class_code"], d["confidence"], d["bbox"])
+        build_detection_item(
+            d["class_code"],
+            d["confidence"],
+            d["bbox"],
+            class_name=d.get("class_name"),
+        )
         for d in raw_detections
     ]
     return DetectionOutcome(

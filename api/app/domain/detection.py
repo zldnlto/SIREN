@@ -4,15 +4,18 @@ from dataclasses import dataclass
 from typing import Literal
 
 CANONICAL_TO_ONTOLOGY: dict[str, str] = {
-    # surface_treatment — vision/src/constants.py DEFAULT_CLASS_NAMES 기준
-    "crack_paint": "surface_treatment.crack.paint",
+    # surface_treatment — ontology_id 알파벳 정렬 기준 (build_task_label_map 파생 순서와 일치)
     "coating_drop_paint": "surface_treatment.coating_drop.paint",
     "coating_separation_paint": "surface_treatment.coating_separation.paint",
-    "paint_run_paint": "surface_treatment.paint_run.paint",
+    "crack_paint": "surface_treatment.crack.paint",
     "insulation_damage_insulation": "surface_treatment.insulation_damage.insulation",
-    "scratch_paint": "surface_treatment.scratch.paint",
+    "paint_run_paint": "surface_treatment.paint_run.paint",
     "scratch_base_material": "surface_treatment.scratch.base_material",
     "scratch_insulation": "surface_treatment.scratch.insulation",
+    # scratch_joint: cross_domain_annotation_candidate (조인트는 용접 도메인 부위)
+    # v2 모델이 이 클래스를 포함하여 학습됨 — unknown fallback 방지용으로만 등록
+    "scratch_joint": "surface_treatment.scratch.joint",
+    "scratch_paint": "surface_treatment.scratch.paint",
     # other domains (future)
     "weld_defect_joint": "welding.weld_defect.joint",
     "weld_blowhole_joint": "welding.weld_blowhole.joint",
@@ -28,14 +31,15 @@ CANONICAL_TO_ONTOLOGY: dict[str, str] = {
 
 CANONICAL_TO_DISPLAY_LABEL: dict[str, str] = {
     # surface_treatment
-    "crack_paint": "균열 (도장)",
     "coating_drop_paint": "도막떨어짐 (도장)",
     "coating_separation_paint": "도막분리 (도장)",
-    "paint_run_paint": "도장흐름 (도장)",
+    "crack_paint": "균열 (도장)",
     "insulation_damage_insulation": "보온재손상 (보온재)",
-    "scratch_paint": "스크래치 (도장)",
+    "paint_run_paint": "도장흐름 (도장)",
     "scratch_base_material": "스크래치 (모재)",
     "scratch_insulation": "스크래치 (보온재)",
+    "scratch_joint": "스크래치 (조인트)",
+    "scratch_paint": "스크래치 (도장)",
     # other domains (future)
     "weld_defect_joint": "용접불량 (조인트)",
     "weld_blowhole_joint": "용접블로우홀 (조인트)",
@@ -49,16 +53,18 @@ CANONICAL_TO_DISPLAY_LABEL: dict[str, str] = {
     "background": "양호",
 }
 
-# class_code → canonical_class_name (vision/src/constants.py DEFAULT_CLASS_NAMES 순서와 동일)
+# class_code → canonical_class_name
+# 순서는 build_task_label_map() 파생 기준: ontology_id 알파벳 정렬
+# ⚠️ ML 서버가 class_name string을 응답에 포함하면 이 맵은 사용되지 않음 (detection_service.py 참조)
 CLASS_CODE_MAP: dict[int, str] = {
-    0: "crack_paint",
-    1: "coating_drop_paint",
-    2: "coating_separation_paint",
-    3: "paint_run_paint",
-    4: "insulation_damage_insulation",
-    5: "scratch_paint",
-    6: "scratch_base_material",
-    7: "scratch_insulation",
+    0: "coating_drop_paint",
+    1: "coating_separation_paint",
+    2: "crack_paint",
+    3: "insulation_damage_insulation",
+    4: "paint_run_paint",
+    5: "scratch_base_material",
+    6: "scratch_insulation",
+    7: "scratch_paint",
 }
 
 CLS_ONLY_CODES: set[int] = set()
@@ -109,9 +115,14 @@ class DetectionItemCore:
 
 
 def build_detection_item(
-    class_code: int, confidence: float, bbox_raw: list[float]
+    class_code: int,
+    confidence: float,
+    bbox_raw: list[float],
+    *,
+    class_name: str | None = None,
 ) -> DetectionItemCore:
-    canonical = canonical_class_for(class_code)
+    # ML 서버가 class_name을 보내면 CLASS_CODE_MAP을 우회
+    canonical = class_name if class_name else canonical_class_for(class_code)
     oid = ontology_id_for(canonical)
     return DetectionItemCore(
         canonical_class_name=canonical,
@@ -131,8 +142,10 @@ def build_persisted_defect(
     class_code: int,
     confidence: float,
     bbox_raw: list[float],
+    *,
+    class_name: str | None = None,
 ) -> dict:
-    canonical = canonical_class_for(class_code)
+    canonical = class_name if class_name else canonical_class_for(class_code)
     return {
         "inspection_id": inspection_id,
         "detection_job_id": detection_job_id,

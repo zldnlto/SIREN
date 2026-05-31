@@ -17,6 +17,7 @@ class PredictRequest(BaseModel):
 
 class Detection(BaseModel):
     class_code: int
+    class_name: str
     confidence: float
     bbox: list[float]
 
