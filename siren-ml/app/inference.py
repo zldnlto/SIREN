@@ -39,9 +39,11 @@ def run_inference(image_bytes: bytes) -> list[dict]:
             continue
         for box in result.boxes:
             x1, y1, x2, y2 = box.xyxy[0].tolist()
+            cls_id = int(box.cls[0].item())
             detections.append(
                 {
-                    "class_code": int(box.cls[0].item()),
+                    "class_code": cls_id,
+                    "class_name": model.names[cls_id],
                     "confidence": round(float(box.conf[0].item()), 4),
                     "bbox": [x1, y1, x2, y2],
                 }
