@@ -55,7 +55,7 @@ def export_classification_dataset(
         ontology_records,
         model_name=model_name,
         task_type="classify",
-        include_review=True,
+        include_review=False,
     )
     label_map_index = build_task_label_map_index(label_map_records)
     label_map_path = save_task_label_map(
