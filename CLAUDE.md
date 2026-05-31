@@ -2,6 +2,7 @@
 
 @AGENTS.md
 @.claude/rules/git-workflow.md
+@.claude/rules/vision-colab.md
 
 ## 프로젝트 개요
 
