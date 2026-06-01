@@ -47,7 +47,13 @@ class _InspectionProgressScreenState
       appBar: AppBar(
         backgroundColor: AppColors.surface,
         elevation: 0,
-        title: Text('검사 진행 중', style: AppTextStyles.titleMd),
+        title: Text(
+          '검사 진행 중',
+          style: AppTextStyles.headlineSm.copyWith(
+            fontWeight: FontWeight.w300,
+            letterSpacing: 1.0,
+          ),
+        ),
         automaticallyImplyLeading: false,
       ),
       body: SafeArea(
@@ -70,7 +76,7 @@ class _InspectionProgressScreenState
                   ),
                 ] else if (state.error != null) ...[
                   const Icon(
-                    Icons.error_outline_rounded,
+                    Icons.error_outline,
                     size: 64,
                     color: AppColors.critical,
                   ),
