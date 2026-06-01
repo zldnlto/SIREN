@@ -152,29 +152,33 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             Stack(
               alignment: Alignment.center,
               children: [
-                // Soft Lavender-Blue Ambient Aura behind the logo
+                // 1. glow 컨테이너 크기 키우기 (로고 네온 번짐 수용)
                 Container(
-                  width: 160,
-                  height: 160,
+                  width: 220,  // 160 → 220
+                  height: 220,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     gradient: RadialGradient(
                       colors: [
-                        AppColors.primary.withValues(alpha: 0.15), // soft lavender core
-                        AppColors.primary.withValues(alpha: 0.05),
-                        Colors.transparent, // smooth fade out
+                        AppColors.primary.withValues(alpha: 0.20),
+                        AppColors.primary.withValues(alpha: 0.08),
+                        AppColors.primary.withValues(alpha: 0.02),
+                        Colors.transparent,
                       ],
-                      stops: const [0.0, 0.5, 1.0],
+                      stops: const [0.0, 0.4, 0.7, 1.0],  // stop 하나 추가해서 더 부드럽게
                     ),
                   ),
                 ),
-                // The boxless logo asset itself
+                // 2. BlendMode로 흰 잔상 흡수
                 SizedBox(
                   width: 130,
                   height: 130,
                   child: Image.asset(
                     'assets/images/logo.png',
                     fit: BoxFit.contain,
+                    // 네온 흰 잔상을 어두운 배경에 블렌딩
+                    color: Colors.white.withValues(alpha: 0.95),
+                    colorBlendMode: BlendMode.modulate,
                   ),
                 ),
               ],
@@ -261,28 +265,32 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             Stack(
               alignment: Alignment.center,
               children: [
-                // Soft Micro Glow for mobile
+                // 1. 모바일 glow 컨테이너 확대 및 stops 부드럽게 매칭
                 Container(
-                  width: 60,
-                  height: 60,
+                  width: 90,  // 60 → 90
+                  height: 90,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     gradient: RadialGradient(
                       colors: [
-                        AppColors.primary.withValues(alpha: 0.15),
-                        AppColors.primary.withValues(alpha: 0.03),
+                        AppColors.primary.withValues(alpha: 0.20),
+                        AppColors.primary.withValues(alpha: 0.08),
+                        AppColors.primary.withValues(alpha: 0.02),
                         Colors.transparent,
                       ],
-                      stops: const [0.0, 0.6, 1.0],
+                      stops: const [0.0, 0.4, 0.7, 1.0],
                     ),
                   ),
                 ),
+                // 2. 모바일 로고 이미지에 BlendMode 필터 튜닝 적용
                 SizedBox(
                   width: 46,
                   height: 46,
                   child: Image.asset(
                     'assets/images/logo.png',
                     fit: BoxFit.contain,
+                    color: Colors.white.withValues(alpha: 0.95),
+                    colorBlendMode: BlendMode.modulate,
                   ),
                 ),
               ],
