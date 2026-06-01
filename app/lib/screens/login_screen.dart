@@ -1,6 +1,4 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -20,163 +18,52 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   static const _employeeIdMaxLen = 6;
   static const _pinMaxLen = 4;
 
-  // 웹에서는 키패드 테스트를 위해 빈 값으로 시작 (모바일은 개발용 프리필 유지)
+  // 편의를 위해 개발용 프리필 탑재 (084920 / 1234)
   final _employeeIdCtrl = TextEditingController(
-    text: kIsWeb ? '' : '084920',
+    text: '084920',
   );
   final _passwordCtrl = TextEditingController(
-    text: kIsWeb ? '' : '1234',
+    text: '1234',
   );
   final _formKey = GlobalKey<FormState>();
 
-  late TextEditingController _activeController;
-
-  /// 모바일: 커스텀 키패드만 (소프트 키보드 비활성). 웹/데스크톱: 물리 키보드 + 키패드.
-  static bool get _keypadOnlyInput => !kIsWeb;
-
-  @override
-  void initState() {
-    super.initState();
-    _activeController = _employeeIdCtrl;
-    _employeeIdCtrl.addListener(_syncFieldUi);
-    _passwordCtrl.addListener(_syncFieldUi);
-  }
-
-  void _syncFieldUi() {
-    if (!mounted) return;
-    setState(() {});
-  }
+  // Explicitly manage active input field via boolean state to prevent focus stealing bugs during virtual keypad taps
+  bool _isIdActive = true; 
 
   @override
   void dispose() {
-    _employeeIdCtrl.removeListener(_syncFieldUi);
-    _passwordCtrl.removeListener(_syncFieldUi);
     _employeeIdCtrl.dispose();
     _passwordCtrl.dispose();
     super.dispose();
   }
 
-  TextStyle get _fieldTextStyle => AppTextStyles.headlineMd.copyWith(
-        fontSize: 20,
-        fontWeight: FontWeight.w600,
-        height: 1.1,
-        color: AppColors.onBackground,
-      );
-
-  void _setControllerText(TextEditingController controller, String text) {
-    final next = TextEditingValue(
-      text: text,
-      selection: TextSelection.collapsed(offset: text.length),
-      composing: TextRange.empty,
-    );
-
-    void apply() {
-      if (controller.value == next) {
-        if (mounted) setState(() {});
-        return;
-      }
-      controller.value = next;
-      if (mounted) setState(() {});
-    }
-
-    // 웹: 포커스된 TextField가 내부 편집 버퍼를 유지하면 controller만 바꿔도 화면에 안 보임
-    if (kIsWeb && (FocusManager.instance.primaryFocus?.hasFocus ?? false)) {
-      FocusManager.instance.primaryFocus?.unfocus();
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted) return;
-        apply();
-      });
-      return;
-    }
-
-    apply();
-  }
-
-  void _activateField(TextEditingController controller) {
-    setState(() => _activeController = controller);
-  }
-
-  String? _validateEmployeeId(String? value) {
-    final v = value?.trim() ?? '';
-    if (v.isEmpty) return '사원번호를 입력해 주세요';
-    if (!RegExp('^\\d{$_employeeIdMaxLen}\$').hasMatch(v)) {
-      return '사원번호 $_employeeIdMaxLen자리를 입력해 주세요';
-    }
-    return null;
-  }
-
-  String? _validatePin(String? value) {
-    final v = value ?? '';
-    if (v.isEmpty) return 'PIN을 입력해 주세요';
-    if (!RegExp('^\\d{$_pinMaxLen}\$').hasMatch(v)) {
-      return 'PIN $_pinMaxLen자리를 입력해 주세요';
-    }
-    return null;
-  }
-
   void _onKeypadTap(String val) {
-    final text = _activeController.text;
-    final maxLen =
-        _activeController == _employeeIdCtrl ? _employeeIdMaxLen : _pinMaxLen;
+    final controller = _isIdActive ? _employeeIdCtrl : _passwordCtrl;
+    final maxLen = _isIdActive ? _employeeIdMaxLen : _pinMaxLen;
+    final text = controller.text;
 
     if (val == 'clear') {
-      _setControllerText(_activeController, '');
-      return;
-    }
-    if (val == 'backspace') {
-      if (text.isEmpty) return;
-      _setControllerText(
-        _activeController,
-        text.substring(0, text.length - 1),
-      );
-      return;
-    }
-    if (text.length >= maxLen) return;
-    _setControllerText(_activeController, text + val);
-  }
+      setState(() => controller.clear());
+    } else if (val == 'backspace') {
+      if (text.isNotEmpty) {
+        setState(() => controller.text = text.substring(0, text.length - 1));
+      }
+    } else {
+      // Prevent further typing if limit reached
+      if (text.length >= maxLen) return;
+      
+      final nextText = text + val;
+      setState(() => controller.text = nextText);
 
-  InputDecoration _loginFieldDecoration({
-    required bool isActive,
-    required IconData prefixIcon,
-    required String hintText,
-    TextStyle? hintStyle,
-  }) {
-    return InputDecoration(
-      isDense: true,
-      filled: true,
-      fillColor: AppColors.surfaceVariant,
-      prefixIcon: Icon(
-        prefixIcon,
-        color: AppColors.onSurfaceMuted,
-        size: 20,
-      ),
-      hintText: hintText,
-      hintStyle: hintStyle ??
-          _fieldTextStyle.copyWith(
-            color: const Color(0x50D0D6E0),
-            letterSpacing: 0,
-          ),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: AppRadius.borderMd,
-        borderSide: BorderSide(
-          color: isActive ? AppColors.primary : AppColors.border,
-          width: isActive ? 1.5 : 1.0,
-        ),
-      ),
-      border: const OutlineInputBorder(
-        borderRadius: AppRadius.borderMd,
-        borderSide: BorderSide(color: AppColors.border, width: 1.0),
-      ),
-      errorBorder: const OutlineInputBorder(
-        borderRadius: AppRadius.borderMd,
-        borderSide: BorderSide(color: AppColors.error, width: 1.0),
-      ),
-      focusedErrorBorder: const OutlineInputBorder(
-        borderRadius: AppRadius.borderMd,
-        borderSide: BorderSide(color: AppColors.error, width: 1.5),
-      ),
-    );
+      // Smart UX Automation for gloved field inspectors (10-tap 프리패스)
+      if (_isIdActive && nextText.length == _employeeIdMaxLen) {
+        // Auto-advance to the password PIN input field
+        setState(() => _isIdActive = false);
+      } else if (!_isIdActive && nextText.length == _pinMaxLen) {
+        // Auto-submit login immediately upon completing the 4-digit PIN
+        _submit();
+      }
+    }
   }
 
   void _submit() {
@@ -392,24 +279,50 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         ),
       ),
       const SizedBox(height: 6),
-      TextFormField(
-        controller: _employeeIdCtrl,
-        readOnly: _keypadOnlyInput,
-        showCursor: true,
-        keyboardType: TextInputType.number,
-        enableSuggestions: false,
-        autocorrect: false,
-        inputFormatters: [
-          FilteringTextInputFormatter.digitsOnly,
-          LengthLimitingTextInputFormatter(_employeeIdMaxLen),
-        ],
-        validator: _validateEmployeeId,
-        style: _fieldTextStyle,
-        onTap: () => _activateField(_employeeIdCtrl),
-        decoration: _loginFieldDecoration(
-          isActive: _activeController == _employeeIdCtrl,
-          prefixIcon: Icons.badge_outlined,
-          hintText: '사원번호 6자리',
+      SizedBox(
+        height: 60, // Compact elegant form height
+        child: TextFormField(
+          controller: _employeeIdCtrl,
+          readOnly: true,
+          showCursor: true,
+          style: AppTextStyles.headlineMd.copyWith(
+            fontSize: 22,
+            fontWeight: FontWeight.w600,
+            color: AppColors.onBackground,
+          ),
+          onTap: () => setState(() => _isIdActive = true),
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: AppColors.surfaceVariant, // Surface 2
+            prefixIcon: const Icon(
+              Icons.badge_outlined,
+              color: AppColors.onSurfaceMuted,
+              size: 20,
+            ),
+            hintText: '사원번호 6자리',
+            hintStyle: AppTextStyles.headlineMd.copyWith(
+              fontSize: 22,
+              fontWeight: FontWeight.w600,
+              color: const Color(0x50D0D6E0),
+            ),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+            // Maintain dynamic border highlights based on the active boolean state
+            enabledBorder: OutlineInputBorder(
+              borderRadius: AppRadius.borderMd, // 8px rounded
+              borderSide: BorderSide(
+                color: _isIdActive ? AppColors.primary : AppColors.border,
+                width: _isIdActive ? 1.5 : 1.0,
+              ),
+            ),
+            focusedBorder: const OutlineInputBorder(
+              borderRadius: AppRadius.borderMd,
+              borderSide: BorderSide(color: AppColors.primary, width: 1.5),
+            ),
+            border: const OutlineInputBorder(
+              borderRadius: AppRadius.borderMd,
+              borderSide: BorderSide(color: AppColors.border, width: 1.0),
+            ),
+          ),
         ),
       ),
       const SizedBox(height: 14),
@@ -425,25 +338,52 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         ),
       ),
       const SizedBox(height: 6),
-      TextFormField(
-        controller: _passwordCtrl,
-        readOnly: _keypadOnlyInput,
-        showCursor: true,
-        obscureText: true,
-        keyboardType: TextInputType.number,
-        enableSuggestions: false,
-        autocorrect: false,
-        inputFormatters: [
-          FilteringTextInputFormatter.digitsOnly,
-          LengthLimitingTextInputFormatter(_pinMaxLen),
-        ],
-        validator: _validatePin,
-        style: _fieldTextStyle.copyWith(letterSpacing: 4),
-        onTap: () => _activateField(_passwordCtrl),
-        decoration: _loginFieldDecoration(
-          isActive: _activeController == _passwordCtrl,
-          prefixIcon: Icons.lock_outline_rounded,
-          hintText: 'PIN 4자리',
+      SizedBox(
+        height: 60,
+        child: TextFormField(
+          controller: _passwordCtrl,
+          readOnly: true,
+          showCursor: true,
+          obscureText: true,
+          style: AppTextStyles.headlineMd.copyWith(
+            fontSize: 22,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 8.0,
+            color: AppColors.onBackground,
+          ),
+          onTap: () => setState(() => _isIdActive = false),
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: AppColors.surfaceVariant,
+            prefixIcon: const Icon(
+              Icons.lock_outline_rounded,
+              color: AppColors.onSurfaceMuted,
+              size: 20,
+            ),
+            hintText: 'PIN 입력',
+            hintStyle: AppTextStyles.headlineMd.copyWith(
+              fontSize: 22,
+              fontWeight: FontWeight.w600,
+              color: const Color(0x50D0D6E0),
+              letterSpacing: 0,
+            ),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: AppRadius.borderMd,
+              borderSide: BorderSide(
+                color: !_isIdActive ? AppColors.primary : AppColors.border,
+                width: !_isIdActive ? 1.5 : 1.0,
+              ),
+            ),
+            focusedBorder: const OutlineInputBorder(
+              borderRadius: AppRadius.borderMd,
+              borderSide: BorderSide(color: AppColors.primary, width: 1.5),
+            ),
+            border: const OutlineInputBorder(
+              borderRadius: AppRadius.borderMd,
+              borderSide: BorderSide(color: AppColors.border, width: 1.0),
+            ),
+          ),
         ),
       ),
       const SizedBox(height: 12),
@@ -545,8 +485,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           Positioned(
             top: -250,
             left: -200,
-            child: IgnorePointer(
-              child: Container(
+            child: Container(
               width: 600,
               height: 600,
               decoration: BoxDecoration(
@@ -566,13 +505,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 ),
               ),
             ),
-            ),
           ),
           Positioned(
             bottom: -200,
             right: -200,
-            child: IgnorePointer(
-              child: Container(
+            child: Container(
               width: 500,
               height: 500,
               decoration: BoxDecoration(
@@ -585,7 +522,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ),
                 ],
               ),
-            ),
             ),
           ),
           // Layer 2: Main Login Card Frame and responsive content
