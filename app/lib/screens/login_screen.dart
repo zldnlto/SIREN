@@ -154,14 +154,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               decoration: BoxDecoration(
                 color: AppColors.surfaceVariant, // Surface 2
                 borderRadius: AppRadius.borderMd, // 8px rounded
-                border: Border.all(color: AppColors.primary, width: 1.5), // elegant lavender accent
+                border: Border.all(color: AppColors.primary.withValues(alpha: 0.3), width: 1.0), // subtle elegant border
               ),
-              child: const Center(
-                child: Icon(
-                  Icons.precision_manufacturing_rounded,
-                  color: AppColors.primary,
-                  size: 44,
-                ),
+              padding: const EdgeInsets.all(AppSpacing.md),
+              child: Image.asset(
+                'assets/images/logo.png',
+                fit: BoxFit.contain,
               ),
             ),
             const SizedBox(height: AppSpacing.md),
@@ -248,14 +246,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               decoration: BoxDecoration(
                 color: AppColors.surfaceVariant,
                 borderRadius: const BorderRadius.all(Radius.circular(6)),
-                border: Border.all(color: AppColors.primary, width: 1.0),
+                border: Border.all(color: AppColors.primary.withValues(alpha: 0.3), width: 1.0),
               ),
-              child: const Center(
-                child: Icon(
-                  Icons.precision_manufacturing_rounded,
-                  color: AppColors.primary,
-                  size: 18,
-                ),
+              padding: const EdgeInsets.all(6),
+              child: Image.asset(
+                'assets/images/logo.png',
+                fit: BoxFit.contain,
               ),
             ),
             const SizedBox(width: 10),
