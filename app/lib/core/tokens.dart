@@ -104,89 +104,100 @@ abstract final class AppRadius {
 // JetBrains Mono — inspection IDs, metric values, code blocks
 
 abstract final class AppTextStyles {
-  // Display & Headline (Inter at weights 500-700 with negative tracking)
-  static final TextStyle displayHero = GoogleFonts.inter(
+  // Display & Headline (LINE Seed Sans KR at weights 400-800)
+  static final TextStyle displayHero = const TextStyle(
+    fontFamily: 'LINE Seed Sans KR',
     fontSize: 80,
-    fontWeight: FontWeight.w600,
+    fontWeight: FontWeight.w700,
     color: AppColors.onBackground,
     height: 1.05,
-    letterSpacing: -3.0, // Aggressive negative tracking
+    letterSpacing: -2.0,
   );
 
-  static final TextStyle displayLarge = GoogleFonts.inter(
+  static final TextStyle displayLarge = const TextStyle(
+    fontFamily: 'LINE Seed Sans KR',
     fontSize: 56,
-    fontWeight: FontWeight.w600,
+    fontWeight: FontWeight.w700,
     color: AppColors.onBackground,
     height: 1.1,
-    letterSpacing: -1.8,
+    letterSpacing: -1.5,
   );
 
-  static final TextStyle headlineXl = GoogleFonts.inter(
+  static final TextStyle headlineXl = const TextStyle(
+    fontFamily: 'LINE Seed Sans KR',
     fontSize: 40,
-    fontWeight: FontWeight.w600,
+    fontWeight: FontWeight.w700,
     color: AppColors.onBackground,
     height: 1.15,
-    letterSpacing: -1.0,
+    letterSpacing: -0.8,
   );
 
-  static final TextStyle headlineLg = GoogleFonts.inter(
+  static final TextStyle headlineLg = const TextStyle(
+    fontFamily: 'LINE Seed Sans KR',
     fontSize: 28,
-    fontWeight: FontWeight.w600,
+    fontWeight: FontWeight.w700,
     color: AppColors.onBackground,
     height: 1.2,
-    letterSpacing: -0.6,
+    letterSpacing: -0.5,
   );
 
-  static final TextStyle headlineMd = GoogleFonts.inter(
+  static final TextStyle headlineMd = const TextStyle(
+    fontFamily: 'LINE Seed Sans KR',
     fontSize: 22,
     fontWeight: FontWeight.w500,
     color: AppColors.onBackground,
     height: 1.25,
-    letterSpacing: -0.4,
+    letterSpacing: -0.3,
   );
 
-  static final TextStyle headlineSm = GoogleFonts.inter(
+  static final TextStyle headlineSm = const TextStyle(
+    fontFamily: 'LINE Seed Sans KR',
     fontSize: 20,
     fontWeight: FontWeight.w400,
     color: AppColors.onSurface,
     height: 1.4,
-    letterSpacing: -0.2,
+    letterSpacing: -0.1,
   );
 
-  // Section header — eyebrow above headings (+0.4px taxonomy tracking)
-  static final TextStyle sectionHeader = GoogleFonts.inter(
+  // Section header — eyebrow above headings
+  static final TextStyle sectionHeader = const TextStyle(
+    fontFamily: 'LINE Seed Sans KR',
     fontSize: 13,
-    fontWeight: FontWeight.w500,
+    fontWeight: FontWeight.w700,
     color: AppColors.primary, // Eyebrow in signature lavender-blue
     height: 1.3,
-    letterSpacing: 0.4,
+    letterSpacing: 0.3,
   );
 
   // Body
-  static final TextStyle bodyLg = GoogleFonts.inter(
+  static final TextStyle bodyLg = const TextStyle(
+    fontFamily: 'LINE Seed Sans KR',
     fontSize: 18,
     fontWeight: FontWeight.w400,
     color: AppColors.onSurface,
     height: 1.5,
-    letterSpacing: -0.1,
+    letterSpacing: -0.05,
   );
 
-  static final TextStyle bodyStrong = GoogleFonts.inter(
+  static final TextStyle bodyStrong = const TextStyle(
+    fontFamily: 'LINE Seed Sans KR',
     fontSize: 14,
-    fontWeight: FontWeight.w500,
+    fontWeight: FontWeight.w700,
     color: AppColors.onSurface,
     height: 1.5,
   );
 
-  static final TextStyle bodyMd = GoogleFonts.inter(
+  static final TextStyle bodyMd = const TextStyle(
+    fontFamily: 'LINE Seed Sans KR',
     fontSize: 16,
     fontWeight: FontWeight.w400,
     color: AppColors.onSurface,
     height: 1.5,
-    letterSpacing: -0.05, // Subtle negative tracking for readability
+    letterSpacing: 0,
   );
 
-  static final TextStyle bodySm = GoogleFonts.inter(
+  static final TextStyle bodySm = const TextStyle(
+    fontFamily: 'LINE Seed Sans KR',
     fontSize: 14,
     fontWeight: FontWeight.w400,
     color: AppColors.onSurfaceVariant,
@@ -195,15 +206,17 @@ abstract final class AppTextStyles {
   );
 
   // Label
-  static final TextStyle labelLg = GoogleFonts.inter(
+  static final TextStyle labelLg = const TextStyle(
+    fontFamily: 'LINE Seed Sans KR',
     fontSize: 14,
-    fontWeight: FontWeight.w500,
+    fontWeight: FontWeight.w700,
     color: AppColors.onSurface,
     height: 1.2,
     letterSpacing: 0,
   );
 
-  static final TextStyle labelMd = GoogleFonts.inter(
+  static final TextStyle labelMd = const TextStyle(
+    fontFamily: 'LINE Seed Sans KR',
     fontSize: 12,
     fontWeight: FontWeight.w400,
     color: AppColors.onSurfaceVariant,
@@ -211,7 +224,8 @@ abstract final class AppTextStyles {
     letterSpacing: 0,
   );
 
-  static final TextStyle labelSm = GoogleFonts.inter(
+  static final TextStyle labelSm = const TextStyle(
+    fontFamily: 'LINE Seed Sans KR',
     fontSize: 12,
     fontWeight: FontWeight.w400,
     color: AppColors.onSurfaceMuted,
@@ -240,17 +254,19 @@ abstract final class AppTextStyles {
   );
 
   // Button
-  static final TextStyle buttonLg = GoogleFonts.inter(
+  static final TextStyle buttonLg = const TextStyle(
+    fontFamily: 'LINE Seed Sans KR',
     fontSize: 14,
-    fontWeight: FontWeight.w500,
+    fontWeight: FontWeight.w700,
     color: AppColors.onPrimary,
     letterSpacing: 0,
     height: 1.2,
   );
 
-  static final TextStyle buttonMd = GoogleFonts.inter(
+  static final TextStyle buttonMd = const TextStyle(
+    fontFamily: 'LINE Seed Sans KR',
     fontSize: 14,
-    fontWeight: FontWeight.w500,
+    fontWeight: FontWeight.w700,
     color: AppColors.onPrimary,
     letterSpacing: 0,
     height: 1.2,
