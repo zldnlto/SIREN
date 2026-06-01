@@ -4,23 +4,29 @@ import 'package:google_fonts/google_fonts.dart';
 // ─── Colors ──────────────────────────────────────────────────────────────────
 
 abstract final class AppColors {
-  // Surface hierarchy (OLED dark, navy-tinted layers)
+  // Surface hierarchy (OLED dark, utilitarian sharp layers)
   static const background = Color(0xFF0E0E0E);
-  static const surface = Color(0xFF1E233D);
-  static const surfaceVariant = Color(0xFF252B45);
-  static const surfaceTertiary = Color(0xFF2D3354);
+  static const surface = Color(0xFF131313);
+  static const surfaceVariant = Color(0xFF1C1B1B); // low
+  static const surfaceTertiary = Color(0xFF201F1F); // container
+  static const surfaceOverlay = Color(0xFF2A2A2A); // high
 
-  // Primary — Steel Blue
+  // Primary — Steel Blue (overridePrimaryColor #3498DB)
   static const primary = Color(0xFF3498DB);
   static const primaryDark = Color(0xFF2980B9);
   static const primaryLight = Color(0xFF5DADE2);
   static const primaryContainer = Color(0xFF1A3A5C);
 
-  // Severity
-  static const good = Color(0xFF2ECC71); // 양호
-  static const warning = Color(0xFFFFD60A); // 주의
-  static const defect = Color(0xFFE74C3C); // 결함
-  static const critical = Color(0xFFC0392B); // 위험
+  // Secondary — Deep Navy (overrideSecondaryColor #1E233D)
+  static const secondary = Color(0xFF1E233D);
+  static const secondaryDark = Color(0xFF13172B);
+  static const secondaryLight = Color(0xFF2D3354);
+
+  // Severity & Accent
+  static const good = Color(0xFF2ECC71); // 양호 (Green)
+  static const warning = Color(0xFFFFD60A); // 주의 (Safety Yellow / overrideTertiaryColor #FFD60A)
+  static const defect = Color(0xFFFF3B30); // 결함 (Danger Red)
+  static const critical = Color(0xFFC0392B); // 위험 (Dark Red)
 
   static const severityGoodContainer = Color(0xFF1A3D2B);
   static const severityWarningContainer = Color(0xFF3D3300);
@@ -28,26 +34,25 @@ abstract final class AppColors {
   static const severityCriticalContainer = Color(0xFF2D0F0F);
 
   // Content on surfaces
-  static const onBackground = Color(0xFFF0F4F8);
-  static const onSurface = Color(0xFFE2E8F0);
-  static const onSurfaceVariant = Color(0xFF94A3B8);
-  static const onSurfaceMuted = Color(0xFF64748B);
+  static const onBackground = Color(0xFFE5E2E1);
+  static const onSurface = Color(0xFFE5E2E1);
+  static const onSurfaceVariant = Color(0xFFBFC7D2);
+  static const onSurfaceMuted = Color(0xFF89929B);
   static const onPrimary = Color(0xFFFFFFFF); // primary 버튼 위 텍스트
 
-  // Accent — Safety Yellow (CTA / warning 겸용)
+  // Accent — Safety Yellow (overrideTertiaryColor #FFD60A)
   static const accent = Color(0xFFFFD60A);
 
   // Disabled
-  static const disabled = Color(0xFF3D4460);
-  static const onDisabled = Color(0xFF64748B);
+  static const disabled = Color(0xFF353534);
+  static const onDisabled = Color(0xFF89929B);
 
   // Border / divider
-  static const border = Color(0xFF2D3354); // surfaceTertiary 기준
-  static const borderSubtle =
-      Color(0xFF252B45); // surfaceVariant 기준 — surface와 구분됨
+  static const border = Color(0xFF3F4850); // outlineVariant
+  static const borderSubtle = Color(0xFF1E233D); // secondary
 
-  // Destructive — UI 파괴 액션(삭제·취소)용. critical과 동일 계열이나 semantic 분리
-  static const destructive = critical;
+  // Destructive — UI 파괴 액션용
+  static const destructive = defect;
 }
 
 // ─── Breakpoints ─────────────────────────────────────────────────────────────
@@ -60,96 +65,90 @@ abstract final class AppBreakpoints {
 
 abstract final class AppSpacing {
   static const double xs = 4;
-  static const double sm = 8;
-  static const double md = 16;
-  static const double lg = 24;
-  static const double xl = 32;
+  static const double sm = 8; // stack-sm
+  static const double md = 16; // gutter, stack-md
+  static const double lg = 24; // stack-lg
+  static const double xl = 32; // margin-tablet
   static const double x2l = 48;
   static const double x3l = 64;
+
+  static const double touchTargetMin = 56.0; // touch-target-min
+  static const double marginMobile = 20.0; // margin-mobile
 }
 
 // ─── Border Radius ────────────────────────────────────────────────────────────
 
 abstract final class AppRadius {
-  static const double xs = 4;
-  static const double sm = 8;
-  static const double md = 12;
-  static const double lg = 16;
-  static const double xl = 24;
-  static const double full = 999;
+  // Sharp (0px) corners for all industrial components
+  static const double xs = 0;
+  static const double sm = 0;
+  static const double md = 0;
+  static const double lg = 0;
+  static const double xl = 0;
+  static const double full = 0;
 
-  static const borderXs = BorderRadius.all(Radius.circular(xs));
-  static const borderSm = BorderRadius.all(Radius.circular(sm));
-  static const borderMd = BorderRadius.all(Radius.circular(md));
-  static const borderLg = BorderRadius.all(Radius.circular(lg));
-  static const borderXl = BorderRadius.all(Radius.circular(xl));
-  static const borderFull = BorderRadius.all(Radius.circular(full));
+  static const borderXs = BorderRadius.zero;
+  static const borderSm = BorderRadius.zero;
+  static const borderMd = BorderRadius.zero;
+  static const borderLg = BorderRadius.zero;
+  static const borderXl = BorderRadius.zero;
+  static const borderFull = BorderRadius.zero;
 }
 
 // ─── Text Styles ──────────────────────────────────────────────────────────────
 //
-// IBM Plex Sans  — body, labels, UI
-// IBM Plex Mono  — inspection IDs, metric values, defect codes
+// Work Sans  — body, labels, UI
+// JetBrains Mono  — inspection IDs, metric values, defect codes (Stitch labelFont)
 
 abstract final class AppTextStyles {
-  // Display
-  static final TextStyle displayLg = GoogleFonts.ibmPlexSans(
-    fontSize: 40,
+  // Display & Headline
+  static final TextStyle headlineLg = GoogleFonts.workSans(
+    fontSize: 34,
     fontWeight: FontWeight.w700,
     color: AppColors.onBackground,
-    letterSpacing: -0.5,
+    height: 40 / 34,
+    letterSpacing: -0.02 * 34,
   );
 
-  static final TextStyle displaySm = GoogleFonts.ibmPlexSans(
-    fontSize: 32,
+  static final TextStyle headlineMd = GoogleFonts.workSans(
+    fontSize: 28,
     fontWeight: FontWeight.w700,
     color: AppColors.onBackground,
-    letterSpacing: -0.3,
+    height: 34 / 28,
+    letterSpacing: -0.01 * 28,
   );
 
-  // Title
-  static final TextStyle titleLg = GoogleFonts.ibmPlexSans(
-    fontSize: 24,
-    fontWeight: FontWeight.w600,
-    color: AppColors.onBackground,
-  );
-
-  static final TextStyle titleMd = GoogleFonts.ibmPlexSans(
-    fontSize: 20,
-    fontWeight: FontWeight.w600,
-    color: AppColors.onBackground,
-  );
-
-  static final TextStyle titleSm = GoogleFonts.ibmPlexSans(
-    fontSize: 16,
-    fontWeight: FontWeight.w600,
+  static final TextStyle headlineSm = GoogleFonts.workSans(
+    fontSize: 22,
+    fontWeight: FontWeight.w700,
     color: AppColors.onSurface,
+    height: 28 / 22,
   );
 
   // Section header — used in report sections
-  static final TextStyle sectionHeader = GoogleFonts.ibmPlexSans(
+  static final TextStyle sectionHeader = GoogleFonts.workSans(
     fontSize: 13,
-    fontWeight: FontWeight.w600,
+    fontWeight: FontWeight.w700,
     color: AppColors.onSurfaceVariant,
     letterSpacing: 0.8,
   );
 
   // Body
-  static final TextStyle bodyLg = GoogleFonts.ibmPlexSans(
+  static final TextStyle bodyLg = GoogleFonts.workSans(
+    fontSize: 18,
+    fontWeight: FontWeight.w500,
+    color: AppColors.onSurface,
+    height: 26 / 18,
+  );
+
+  static final TextStyle bodyMd = GoogleFonts.workSans(
     fontSize: 16,
     fontWeight: FontWeight.w400,
     color: AppColors.onSurface,
-    height: 1.6,
+    height: 24 / 16,
   );
 
-  static final TextStyle bodyMd = GoogleFonts.ibmPlexSans(
-    fontSize: 14,
-    fontWeight: FontWeight.w400,
-    color: AppColors.onSurface,
-    height: 1.5,
-  );
-
-  static final TextStyle bodySm = GoogleFonts.ibmPlexSans(
+  static final TextStyle bodySm = GoogleFonts.workSans(
     fontSize: 12,
     fontWeight: FontWeight.w400,
     color: AppColors.onSurfaceVariant,
@@ -157,41 +156,27 @@ abstract final class AppTextStyles {
   );
 
   // Label
-  static final TextStyle labelLg = GoogleFonts.ibmPlexSans(
+  static final TextStyle labelLg = GoogleFonts.workSans(
     fontSize: 14,
-    fontWeight: FontWeight.w500,
+    fontWeight: FontWeight.w700,
     color: AppColors.onSurface,
+    height: 20 / 14,
   );
 
-  static final TextStyle labelMd = GoogleFonts.ibmPlexSans(
+  static final TextStyle labelMd = GoogleFonts.workSans(
     fontSize: 12,
-    fontWeight: FontWeight.w500,
+    fontWeight: FontWeight.w600,
     color: AppColors.onSurfaceVariant,
+    height: 16 / 12,
   );
 
-  static final TextStyle labelSm = GoogleFonts.ibmPlexSans(
+  static final TextStyle labelSm = GoogleFonts.workSans(
     fontSize: 11,
-    fontWeight: FontWeight.w500,
+    fontWeight: FontWeight.w600,
     color: AppColors.onSurfaceMuted,
     letterSpacing: 0.3,
   );
 
-  // Mono — inspection IDs, metric values, defect codes
-  static final TextStyle monoLg = GoogleFonts.ibmPlexMono(
-    fontSize: 16,
-    fontWeight: FontWeight.w500,
-    color: AppColors.onSurface,
-    fontFeatures: const [FontFeature.tabularFigures()],
-  );
-
-  static final TextStyle monoMd = GoogleFonts.ibmPlexMono(
-    fontSize: 14,
-    fontWeight: FontWeight.w400,
-    color: AppColors.onSurface,
-    fontFeatures: const [FontFeature.tabularFigures()],
-  );
-
-  static final TextStyle monoSm = GoogleFonts.ibmPlexMono(
     fontSize: 12,
     fontWeight: FontWeight.w400,
     color: AppColors.onSurfaceVariant,
