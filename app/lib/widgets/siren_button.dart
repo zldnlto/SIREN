@@ -49,8 +49,8 @@ class _SirenButtonState extends State<SirenButton> {
   bool get _enabled => widget.onPressed != null && !widget.isLoading;
 
   double get _height => switch (widget.size) {
-        SirenButtonSize.md => 36,
-        SirenButtonSize.lg => 48, // IBM Carbon touch target min (48px)
+        SirenButtonSize.md => 32,
+        SirenButtonSize.lg => 40, // linear.app compact target min (40px)
       };
 
   EdgeInsets get _padding => switch (widget.size) {
@@ -73,7 +73,7 @@ class _SirenButtonState extends State<SirenButton> {
             ? (_pressed ? const Color(0xFF8A131A) : AppColors.defect)
             : AppColors.disabled,
         SirenButtonVariant.secondary => _enabled
-            ? (_pressed ? const Color(0xFF161616) : AppColors.secondary)
+            ? (_pressed ? AppColors.surfaceVariant : AppColors.surface)
             : AppColors.disabled,
         SirenButtonVariant.ghost => Colors.transparent,
       };
@@ -86,12 +86,12 @@ class _SirenButtonState extends State<SirenButton> {
         SirenButtonVariant.secondary =>
           _enabled ? AppColors.onSurface : AppColors.onDisabled,
         SirenButtonVariant.ghost =>
-          _enabled ? AppColors.primary : AppColors.onDisabled, // IBM Blue for active ghost links
+          _enabled ? AppColors.primary : AppColors.onDisabled, // Lavender active ghost
       };
 
   Border? get _border {
     if (_focused && _enabled) {
-      return Border.all(color: AppColors.primary, width: 2.0); // IBM Blue focus ring
+      return Border.all(color: AppColors.primary, width: 2.0); // Focus ring
     }
     return switch (widget.variant) {
       SirenButtonVariant.secondary => Border.all(
@@ -141,7 +141,7 @@ class _SirenButtonState extends State<SirenButton> {
             alignment: Alignment.center,
             decoration: BoxDecoration(
               color: _backgroundColor,
-              borderRadius: BorderRadius.zero, // IBM Carbon 0px Sharp corners
+              borderRadius: AppRadius.borderMd, // linear.app 8px rounded corners
               border: _border,
             ),
             child: widget.isLoading

@@ -28,8 +28,8 @@ class HistoryListScreen extends ConsumerWidget {
         title: Text(
           '검사 이력',
           style: AppTextStyles.headlineSm.copyWith(
-            fontWeight: FontWeight.w300,
-            letterSpacing: 1.0,
+            fontWeight: FontWeight.w400, // linear.app display-md/subhead weight
+            letterSpacing: -0.2, // negative letterSpacing
           ),
         ),
       ),
@@ -39,10 +39,8 @@ class HistoryListScreen extends ConsumerWidget {
             : ListView.separated(
                 padding: const EdgeInsets.all(AppSpacing.md),
                 itemCount: list.length,
-                separatorBuilder: (_, __) => const Divider(
-                  color: AppColors.border,
-                  height: AppSpacing.md,
-                  thickness: 1,
+                separatorBuilder: (_, __) => const SizedBox(
+                  height: AppSpacing.sm, // simple clean spacing gaps for linear.app
                 ),
                 itemBuilder: (context, i) => _HistoryTile(inspection: list[i]),
               ),
@@ -53,7 +51,7 @@ class HistoryListScreen extends ConsumerWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               const Icon(
-                Icons.error_outline, // Sharp icon
+                Icons.error_outline_rounded, // Rounded icon
                 size: 48,
                 color: AppColors.critical,
               ),
@@ -91,7 +89,7 @@ class _EmptyState extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             const Icon(
-              Icons.history_toggle_off, // Sharp icon
+              Icons.history_toggle_off_rounded, // Rounded icon
               size: 64,
               color: AppColors.onSurfaceMuted,
             ),

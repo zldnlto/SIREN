@@ -57,15 +57,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    // IBM Carbon-inspired display title using IBM Plex Sans light display style
+                    // linear.app-inspired display title using Inter Display with negative tracking
                     Center(
                       child: Text(
                         'SIREN',
                         style: AppTextStyles.displayLarge.copyWith(
                           fontSize: 48,
-                          color: AppColors.primary, // Confident IBM Blue brand signature
-                          letterSpacing: 4.0,
-                          fontWeight: FontWeight.w300, // Light display treatment
+                          color: AppColors.primary, // Signature Lavender
+                          letterSpacing: -1.8, // Linear Display negative tracking
+                          fontWeight: FontWeight.w600, // Linear custom display weight (600)
                         ),
                       ),
                     ),
@@ -80,7 +80,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
                     const SizedBox(height: AppSpacing.xxl),
                     
-                    // Carbon-dark rigid card polarity (0px sharp corners, 1px Gray-80 hairline)
+                    // linear.app product card polarity (12px rounded, 1px hairline border)
                     Card(
                       margin: EdgeInsets.zero,
                       child: Padding(

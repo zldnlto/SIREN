@@ -35,35 +35,35 @@ ThemeData buildAppTheme() {
     ),
     cardTheme: const CardThemeData(
       elevation: 0,
-      color: AppColors.surface, // Carbon Inverse Surface 1
+      color: AppColors.surface, // Linear Surface 1 (#0F1011)
       margin: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.zero, // IBM Carbon 0px Sharp corners
-        side: BorderSide(color: AppColors.border, width: 1), // 1px Gray-80 hairline
+        borderRadius: AppRadius.borderLg, // Linear cards use rounded.lg (12px)
+        side: BorderSide(color: AppColors.border, width: 1), // 1px hairline border (#23252A)
       ),
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
         elevation: 0,
-        backgroundColor: AppColors.primary, // Confident IBM Blue primary CTA
+        backgroundColor: AppColors.primary, // Signature Lavender primary CTA
         foregroundColor: AppColors.onPrimary,
-        minimumSize: const Size.fromHeight(AppSpacing.touchTargetMin), // 48px Touch target
+        minimumSize: const Size.fromHeight(AppSpacing.touchTargetMin), // 40px compact target
         textStyle: AppTextStyles.buttonLg,
         shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.zero, // IBM Carbon 0px Sharp corners
+          borderRadius: AppRadius.borderMd, // linear.app buttons use rounded.md (8px)
         ),
       ),
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
         elevation: 0,
-        backgroundColor: Colors.transparent, // Ghost / Tertiary button transparent fill
-        minimumSize: const Size.fromHeight(AppSpacing.touchTargetMin), // 48px Touch target
-        foregroundColor: AppColors.primary, // IBM Blue text
+        backgroundColor: AppColors.surface, // button-secondary uses surface-1
+        minimumSize: const Size.fromHeight(AppSpacing.touchTargetMin), // 40px compact target
+        foregroundColor: AppColors.onSurface, // Light Ink text
         textStyle: AppTextStyles.buttonMd,
-        side: const BorderSide(color: AppColors.primary, width: 1), // Blue 1px hairline border
+        side: const BorderSide(color: AppColors.border, width: 1), // 1px hairline border
         shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.zero, // IBM Carbon 0px Sharp corners
+          borderRadius: AppRadius.borderMd, // linear.app buttons use rounded.md (8px)
         ),
       ),
     ),
@@ -71,26 +71,26 @@ ThemeData buildAppTheme() {
       filled: true,
       fillColor: AppColors.surface,
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.zero, // IBM Carbon 0px Sharp corners
-        borderSide: BorderSide(color: AppColors.border, width: 1), // 1px Gray-80 hairline
+        borderRadius: AppRadius.borderMd, // linear.app inputs use rounded.md (8px)
+        borderSide: BorderSide(color: AppColors.border, width: 1), // 1px hairline border
       ),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.zero,
+        borderRadius: AppRadius.borderMd,
         borderSide: BorderSide(color: AppColors.border, width: 1),
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.zero,
-        borderSide: BorderSide(color: AppColors.primary, width: 2), // Carbon's 2px focus border
+        borderRadius: AppRadius.borderMd,
+        borderSide: BorderSide(color: AppColors.primary, width: 1.5), // Lavender focus ring
       ),
       errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.zero,
-        borderSide: BorderSide(color: AppColors.error, width: 2), // Carbon's 2px error border
+        borderRadius: AppRadius.borderMd,
+        borderSide: BorderSide(color: AppColors.error, width: 1.5),
       ),
       focusedErrorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.zero,
-        borderSide: BorderSide(color: AppColors.error, width: 2),
+        borderRadius: AppRadius.borderMd,
+        borderSide: BorderSide(color: AppColors.error, width: 1.5),
       ),
-      contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 11), // Carbon spec vertical 11px
+      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8), // linear.app compact padding
     ),
   );
 }

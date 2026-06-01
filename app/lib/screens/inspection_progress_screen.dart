@@ -50,8 +50,8 @@ class _InspectionProgressScreenState
         title: Text(
           '검사 진행 중',
           style: AppTextStyles.headlineSm.copyWith(
-            fontWeight: FontWeight.w300,
-            letterSpacing: 1.0,
+            fontWeight: FontWeight.w400, // linear.app display-md/subhead weight
+            letterSpacing: -0.2, // negative tracking
           ),
         ),
         automaticallyImplyLeading: false,
@@ -76,7 +76,7 @@ class _InspectionProgressScreenState
                   ),
                 ] else if (state.error != null) ...[
                   const Icon(
-                    Icons.error_outline,
+                    Icons.error_outline_rounded, // Rounded icon
                     size: 64,
                     color: AppColors.critical,
                   ),

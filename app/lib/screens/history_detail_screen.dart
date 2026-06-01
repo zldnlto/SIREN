@@ -27,8 +27,8 @@ class HistoryDetailScreen extends ConsumerWidget {
         title: Text(
           '검사 상세',
           style: AppTextStyles.headlineSm.copyWith(
-            fontWeight: FontWeight.w300,
-            letterSpacing: 1.0,
+            fontWeight: FontWeight.w400, // linear.app display-md/subhead weight
+            letterSpacing: -0.2, // negative letterSpacing
           ),
         ),
       ),

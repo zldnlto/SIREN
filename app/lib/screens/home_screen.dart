@@ -55,14 +55,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         title: Text(
           'SIREN',
           style: AppTextStyles.headlineMd.copyWith(
-            color: AppColors.primary,
-            fontWeight: FontWeight.w300,
-            letterSpacing: 2.0,
+            color: AppColors.primary, // Signature Lavender
+            fontWeight: FontWeight.w600, // Linear custom display weight
+            letterSpacing: -0.4, // Linear Display negative tracking
           ),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.history, color: AppColors.onSurface),
+            icon: const Icon(Icons.history_rounded, color: AppColors.onSurface),
             onPressed: () => context.go('/history'),
             tooltip: '검사 이력',
           ),

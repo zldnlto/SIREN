@@ -24,7 +24,7 @@ class SirenCard extends StatelessWidget {
       padding: padding ?? const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
         color: AppColors.surface, // Inverse Surface 1
-        borderRadius: BorderRadius.zero, // IBM Carbon 0px sharp corners
+        borderRadius: AppRadius.borderLg, // linear.app 12px rounded corners
         border: Border.all(color: AppColors.border, width: 1), // 1px hairline Gray-80
       ),
       child: child,

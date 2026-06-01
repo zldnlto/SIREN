@@ -30,9 +30,9 @@ class DomainChip extends StatelessWidget {
         ),
         decoration: BoxDecoration(
           color: isSelected
-              ? AppColors.primary // IBM Blue for selected
-              : AppColors.surface, // Charcoal surface for unselected
-          borderRadius: BorderRadius.zero, // IBM Carbon 0px sharp corners
+              ? AppColors.primary // Linear Lavender for selected
+              : AppColors.surface, // Surface 1 for unselected
+          borderRadius: AppRadius.borderSm, // linear.app 6px rounded corners
           border: Border.all(
             color: isSelected ? AppColors.primary : AppColors.border,
             width: 1, // 1px hairline
