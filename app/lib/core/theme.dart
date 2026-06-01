@@ -35,35 +35,35 @@ ThemeData buildAppTheme() {
     ),
     cardTheme: const CardThemeData(
       elevation: 0,
-      color: AppColors.surface, // Night surface
+      color: AppColors.surface, // Carbon Inverse Surface 1
       margin: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       shape: RoundedRectangleBorder(
-        borderRadius: AppRadius.borderXl, // Sentry rounded.xl (12px)
-        side: BorderSide(color: AppColors.border, width: 1), // 1px Hairline Violet
+        borderRadius: BorderRadius.zero, // IBM Carbon 0px Sharp corners
+        side: BorderSide(color: AppColors.border, width: 1), // 1px Gray-80 hairline
       ),
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
         elevation: 0,
-        backgroundColor: Colors.white, // Inverted Primary CTA (White on dark)
-        foregroundColor: AppColors.background, // Deep Violet Midnight text
-        minimumSize: const Size.fromHeight(AppSpacing.touchTargetMin), // 44px
+        backgroundColor: AppColors.primary, // Confident IBM Blue primary CTA
+        foregroundColor: AppColors.onPrimary,
+        minimumSize: const Size.fromHeight(AppSpacing.touchTargetMin), // 48px Touch target
         textStyle: AppTextStyles.buttonLg,
         shape: const RoundedRectangleBorder(
-          borderRadius: AppRadius.borderMd, // Sentry rounded.md (8px)
+          borderRadius: BorderRadius.zero, // IBM Carbon 0px Sharp corners
         ),
       ),
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
         elevation: 0,
-        backgroundColor: AppColors.primaryContainer, // Ghost button fill (rgba(255,255,255,0.18))
-        minimumSize: const Size.fromHeight(AppSpacing.touchTargetMin), // 44px
-        foregroundColor: AppColors.onSurface,
+        backgroundColor: Colors.transparent, // Ghost / Tertiary button transparent fill
+        minimumSize: const Size.fromHeight(AppSpacing.touchTargetMin), // 48px Touch target
+        foregroundColor: AppColors.primary, // IBM Blue text
         textStyle: AppTextStyles.buttonMd,
-        side: BorderSide.none, // Ghost button has no borders
+        side: const BorderSide(color: AppColors.primary, width: 1), // Blue 1px hairline border
         shape: const RoundedRectangleBorder(
-          borderRadius: AppRadius.borderMd, // Sentry rounded.md (8px)
+          borderRadius: BorderRadius.zero, // IBM Carbon 0px Sharp corners
         ),
       ),
     ),
@@ -71,26 +71,26 @@ ThemeData buildAppTheme() {
       filled: true,
       fillColor: AppColors.surface,
       border: OutlineInputBorder(
-        borderRadius: AppRadius.borderSm, // Sentry rounded.sm (6px)
-        borderSide: BorderSide(color: AppColors.borderSubtle, width: 1), // 1px Hairline Cool
+        borderRadius: BorderRadius.zero, // IBM Carbon 0px Sharp corners
+        borderSide: BorderSide(color: AppColors.border, width: 1), // 1px Gray-80 hairline
       ),
       enabledBorder: OutlineInputBorder(
-        borderRadius: AppRadius.borderSm,
-        borderSide: BorderSide(color: AppColors.borderSubtle, width: 1),
+        borderRadius: BorderRadius.zero,
+        borderSide: BorderSide(color: AppColors.border, width: 1),
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: AppRadius.borderSm,
-        borderSide: BorderSide(color: AppColors.secondary, width: 1.5), // Violet focus outline
+        borderRadius: BorderRadius.zero,
+        borderSide: BorderSide(color: AppColors.primary, width: 2), // Carbon's 2px focus border
       ),
       errorBorder: OutlineInputBorder(
-        borderRadius: AppRadius.borderSm,
-        borderSide: BorderSide(color: AppColors.error, width: 1.5), // Pink error outline
+        borderRadius: BorderRadius.zero,
+        borderSide: BorderSide(color: AppColors.error, width: 2), // Carbon's 2px error border
       ),
       focusedErrorBorder: OutlineInputBorder(
-        borderRadius: AppRadius.borderSm,
-        borderSide: BorderSide(color: AppColors.error, width: 1.5),
+        borderRadius: BorderRadius.zero,
+        borderSide: BorderSide(color: AppColors.error, width: 2),
       ),
-      contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+      contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 11), // Carbon spec vertical 11px
     ),
   );
 }
