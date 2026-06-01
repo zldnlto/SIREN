@@ -174,7 +174,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   width: 130,
                   height: 130,
                   child: Image.asset(
-                    'assets/images/logo.png',
+                    'assets/images/logo@2x.png',
                     fit: BoxFit.contain,
                     // 네온 흰 잔상을 어두운 배경에 블렌딩
                     color: Colors.white.withValues(alpha: 0.95),
@@ -287,7 +287,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   width: 46,
                   height: 46,
                   child: Image.asset(
-                    'assets/images/logo.png',
+                    'assets/images/logo@2x.png',
                     fit: BoxFit.contain,
                     color: Colors.white.withValues(alpha: 0.95),
                     colorBlendMode: BlendMode.modulate,
