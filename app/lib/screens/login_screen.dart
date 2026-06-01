@@ -228,21 +228,21 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             const SizedBox(height: AppSpacing.md),
             Text(
               'LNG TANK',
-              style: AppTextStyles.displayLarge.copyWith(
-                fontSize: 30,
-                fontWeight: FontWeight.w700,
-                height: 1.1,
-                letterSpacing: -1.0,
+              style: GoogleFonts.unbounded(
+                fontSize: 26,
+                fontWeight: FontWeight.w900, // Heavy / Black 900
+                height: 1.15,
+                letterSpacing: -1.2, // 대담한 밀착 자간
                 color: AppColors.onBackground,
               ),
             ),
             Text(
               'INSPECTOR',
-              style: AppTextStyles.displayLarge.copyWith(
-                fontSize: 30,
-                fontWeight: FontWeight.w700,
-                height: 1.1,
-                letterSpacing: -1.0,
+              style: GoogleFonts.unbounded(
+                fontSize: 26,
+                fontWeight: FontWeight.w900,
+                height: 1.15,
+                letterSpacing: -1.2,
                 color: AppColors.primary, // signature lavender
               ),
             ),
@@ -388,19 +388,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   children: [
                     Text(
                       'LNG TANK ',
-                      style: GoogleFonts.inter(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: -0.5,
+                      style: GoogleFonts.unbounded(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w900, // Heavy 900
+                        letterSpacing: -0.6,
                         color: AppColors.onBackground,
                       ),
                     ),
                     Text(
                       'INSPECTOR',
-                      style: GoogleFonts.inter(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: -0.5,
+                      style: GoogleFonts.unbounded(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -0.6,
                         color: AppColors.primary, // signature lavender
                       ),
                     ),
