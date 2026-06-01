@@ -7,24 +7,6 @@ import '../core/tokens.dart';
 import '../providers/auth_provider.dart';
 import '../widgets/toast.dart';
 
-// Stitch industrial theme colors specifically defined for the login screen
-abstract final class _StitchColors {
-  static const primary = Color(0xFF92CCFF); // Light blue brand color
-  static const primaryContainer = Color(0xFF3498DB); // Blue action color
-  static const onPrimary = Color(0xFF003351); // Dark blue text on action buttons
-  static const background = Color(0xFF131313); // Deep industrial grey
-  static const surfaceContainerLowest = Color(0xFF0E0E0E); // Deepest background gradient target
-  static const surfaceContainerLow = Color(0xFF1C1B1B); // Card container background
-  static const surfaceContainerHigh = Color(0xFF2A2A2A); // Active card element or key buttons
-  static const surfaceContainerHighest = Color(0xFF353534); // Special keypad keys (Clear / Backspace)
-  static const surfaceContainer = Color(0xFF201F1F); // Form input backgrounds
-  static const outlineVariant = Color(0xFF3F4850); // Industrial borders
-  static const onBackground = Color(0xFFE5E2E1); // High contrast text
-  static const onSurface = Color(0xFFE5E2E1); // Card text
-  static const onSurfaceVariant = Color(0xFFBFC7D2); // Secondary text
-  static const tertiary = Color(0xFFE9C400); // Yellow warnings
-}
-
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
@@ -98,91 +80,93 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final isTablet =
         MediaQuery.of(context).size.shortestSide >= AppBreakpoints.tablet;
 
-    // Left Branding Section (Perfect sync with Stitch branding column)
+    // Left Branding Section (Stitch skeleton + linear.app typography & tokens)
     final brandingSection = Expanded(
       flex: isTablet ? 1 : 0,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // precision_manufacturing icon container
+          // precision_manufacturing icon container (8px rounded, lavender outline)
           Container(
-            width: 128,
-            height: 128,
+            width: 120,
+            height: 120,
             decoration: BoxDecoration(
-              color: _StitchColors.primaryContainer,
-              border: Border.all(color: _StitchColors.onBackground, width: 4),
+              color: AppColors.surfaceVariant, // Surface 2
+              borderRadius: AppRadius.borderMd, // 8px rounded
+              border: Border.all(color: AppColors.primary, width: 2), // Lavender accent outline
             ),
             child: const Center(
               child: Icon(
-                Icons.precision_manufacturing,
-                color: _StitchColors.onPrimary,
-                size: 64,
+                Icons.precision_manufacturing_rounded,
+                color: AppColors.primary,
+                size: 56,
               ),
             ),
           ),
-          const SizedBox(height: 24), // space-y-stack-lg (24px)
+          const SizedBox(height: AppSpacing.lg), // space-y-stack-lg (24px)
           Text(
             'LNG TANK',
-            style: GoogleFonts.workSans(
+            style: AppTextStyles.displayLarge.copyWith(
               fontSize: 34,
               fontWeight: FontWeight.w700,
-              height: 40 / 34,
-              letterSpacing: -0.02 * 34,
-              color: _StitchColors.onBackground,
+              height: 1.1,
+              letterSpacing: -1.2,
+              color: AppColors.onBackground,
             ),
           ),
           Text(
             'INSPECTOR',
-            style: GoogleFonts.workSans(
+            style: AppTextStyles.displayLarge.copyWith(
               fontSize: 34,
               fontWeight: FontWeight.w700,
-              height: 40 / 34,
-              letterSpacing: -0.02 * 34,
-              color: _StitchColors.primary,
+              height: 1.1,
+              letterSpacing: -1.2,
+              color: AppColors.primary, // signature lavender
             ),
           ),
-          const SizedBox(height: 16), // my-stack-md (16px)
+          const SizedBox(height: AppSpacing.md), // my-stack-md (16px)
           Container(
             height: 4,
-            width: 96,
-            color: _StitchColors.primary,
+            width: 80,
+            decoration: const BoxDecoration(
+              color: AppColors.primary,
+              borderRadius: BorderRadius.all(Radius.circular(2)),
+            ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.md),
           Text(
             '고위험 산업 환경용 검사 시스템. 허가된 작업자만 로그인할 수 있습니다.',
-            style: GoogleFonts.workSans(
-              fontSize: 18,
-              fontWeight: FontWeight.w500,
-              height: 26 / 18,
-              color: _StitchColors.onSurfaceVariant,
+            style: AppTextStyles.bodyLg.copyWith(
+              color: AppColors.onSurfaceVariant,
+              fontSize: 16,
+              height: 1.5,
             ),
           ),
           if (isTablet) const Spacer(),
-          if (!isTablet) const SizedBox(height: 24),
-          // Device Info Warning Chip
+          if (!isTablet) const SizedBox(height: AppSpacing.lg),
+          // Device Info Warning Chip (linear.app styled pill badge)
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: _StitchColors.surfaceContainerHigh,
-              border: Border.all(color: _StitchColors.outlineVariant, width: 1),
+              color: AppColors.surfaceVariant,
+              borderRadius: AppRadius.borderSm, // 6px rounded
+              border: Border.all(color: AppColors.border, width: 1), // 1px hairline border
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 const Icon(
-                  Icons.warning,
-                  color: _StitchColors.tertiary,
-                  size: 20,
+                  Icons.warning_amber_rounded,
+                  color: AppColors.warning,
+                  size: 18,
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: 12),
                 Text(
                   '기기 ID: TERM-X9-204',
-                  style: GoogleFonts.workSans(
-                    fontSize: 12,
+                  style: AppTextStyles.labelMd.copyWith(
+                    color: AppColors.onSurface,
                     fontWeight: FontWeight.w600,
-                    height: 16 / 12,
-                    color: _StitchColors.onSurface,
                   ),
                 ),
               ],
@@ -192,7 +176,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       ),
     );
 
-    // Right Login Input & Keypad Section (Perfect sync with Stitch fields and numeric pad)
+    // Right Login Input & Keypad Section (Stitch layout + linear.app form elements)
     final loginInputSection = Expanded(
       flex: isTablet ? 1 : 0,
       child: Column(
@@ -202,12 +186,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           // Operator ID Input Label
           Text(
             '작업자 ID',
-            style: GoogleFonts.workSans(
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-              height: 20 / 14,
-              letterSpacing: 0.1 * 14,
-              color: _StitchColors.onSurface,
+            style: AppTextStyles.labelLg.copyWith(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.5,
+              color: AppColors.onSurfaceMuted,
             ),
           ),
           const SizedBox(height: 8), // space-y-stack-sm (8px)
@@ -217,53 +200,55 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               controller: _employeeIdCtrl,
               readOnly: true,
               showCursor: true,
-              style: GoogleFonts.workSans(
-                fontSize: 28,
-                fontWeight: FontWeight.w700,
-                height: 34 / 28,
-                letterSpacing: -0.01 * 28,
-                color: _StitchColors.onBackground,
+              style: AppTextStyles.headlineMd.copyWith(
+                fontSize: 26,
+                fontWeight: FontWeight.w600,
+                color: AppColors.onBackground,
               ),
               onTap: () => setState(() => _activeController = _employeeIdCtrl),
               decoration: InputDecoration(
                 filled: true,
-                fillColor: _StitchColors.surfaceContainer,
+                fillColor: AppColors.surfaceVariant, // Surface 2
                 prefixIcon: const Icon(
-                  Icons.badge,
-                  color: _StitchColors.onSurfaceVariant,
-                  size: 24,
+                  Icons.badge_outlined,
+                  color: AppColors.onSurfaceMuted,
+                  size: 22,
                 ),
                 hintText: '사원번호 6자리',
-                hintStyle: GoogleFonts.workSans(
-                  fontSize: 28,
-                  fontWeight: FontWeight.w700,
-                  color: const Color(0x80BFC7D2), // exact 50% opacity representation
-                  letterSpacing: 0,
+                hintStyle: AppTextStyles.headlineMd.copyWith(
+                  fontSize: 26,
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0x50D0D6E0), // muted opacity
                 ),
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
-                enabledBorder: const UnderlineInputBorder(
-                  borderSide: BorderSide(color: _StitchColors.outlineVariant, width: 2.0),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: AppRadius.borderMd, // 8px rounded
+                  borderSide: BorderSide(
+                    color: _activeController == _employeeIdCtrl ? AppColors.primary : AppColors.border,
+                    width: _activeController == _employeeIdCtrl ? 1.5 : 1.0,
+                  ),
                 ),
-                focusedBorder: const UnderlineInputBorder(
-                  borderSide: BorderSide(color: _StitchColors.primary, width: 2.0),
+                focusedBorder: const OutlineInputBorder(
+                  borderRadius: AppRadius.borderMd,
+                  borderSide: BorderSide(color: AppColors.primary, width: 1.5),
                 ),
-                border: const UnderlineInputBorder(
-                  borderSide: BorderSide(color: _StitchColors.outlineVariant, width: 2.0),
+                border: const OutlineInputBorder(
+                  borderRadius: AppRadius.borderMd,
+                  borderSide: BorderSide(color: AppColors.border, width: 1.0),
                 ),
               ),
             ),
           ),
-          const SizedBox(height: 24), // space-y-stack-lg (24px)
+          const SizedBox(height: AppSpacing.lg), // space-y-stack-lg (24px)
 
           // Password (PIN) Input Label
           Text(
             '비밀번호 (PIN)',
-            style: GoogleFonts.workSans(
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-              height: 20 / 14,
-              letterSpacing: 0.1 * 14,
-              color: _StitchColors.onSurface,
+            style: AppTextStyles.labelLg.copyWith(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.5,
+              color: AppColors.onSurfaceMuted,
             ),
           ),
           const SizedBox(height: 8),
@@ -274,52 +259,57 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               readOnly: true,
               showCursor: true,
               obscureText: true,
-              style: GoogleFonts.workSans(
-                fontSize: 28,
-                fontWeight: FontWeight.w700,
-                height: 34 / 28,
-                letterSpacing: 14.0, // tracking-[0.5em] for passwords
-                color: _StitchColors.onBackground,
+              style: AppTextStyles.headlineMd.copyWith(
+                fontSize: 26,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 10.0, // balanced password dots spacing
+                color: AppColors.onBackground,
               ),
               onTap: () => setState(() => _activeController = _passwordCtrl),
               decoration: InputDecoration(
                 filled: true,
-                fillColor: _StitchColors.surfaceContainer,
+                fillColor: AppColors.surfaceVariant,
                 prefixIcon: const Icon(
-                  Icons.lock,
-                  color: _StitchColors.onSurfaceVariant,
-                  size: 24,
+                  Icons.lock_outline_rounded,
+                  color: AppColors.onSurfaceMuted,
+                  size: 22,
                 ),
                 hintText: 'PIN 입력',
-                hintStyle: GoogleFonts.workSans(
-                  fontSize: 28,
-                  fontWeight: FontWeight.w700,
-                  color: const Color(0x80BFC7D2), // exact 50% opacity representation
+                hintStyle: AppTextStyles.headlineMd.copyWith(
+                  fontSize: 26,
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0x50D0D6E0),
                   letterSpacing: 0,
                 ),
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
-                enabledBorder: const UnderlineInputBorder(
-                  borderSide: BorderSide(color: _StitchColors.outlineVariant, width: 2.0),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: AppRadius.borderMd,
+                  borderSide: BorderSide(
+                    color: _activeController == _passwordCtrl ? AppColors.primary : AppColors.border,
+                    width: _activeController == _passwordCtrl ? 1.5 : 1.0,
+                  ),
                 ),
-                focusedBorder: const UnderlineInputBorder(
-                  borderSide: BorderSide(color: _StitchColors.primary, width: 2.0),
+                focusedBorder: const OutlineInputBorder(
+                  borderRadius: AppRadius.borderMd,
+                  borderSide: BorderSide(color: AppColors.primary, width: 1.5),
                 ),
-                border: const UnderlineInputBorder(
-                  borderSide: BorderSide(color: _StitchColors.outlineVariant, width: 2.0),
+                border: const OutlineInputBorder(
+                  borderRadius: AppRadius.borderMd,
+                  borderSide: BorderSide(color: AppColors.border, width: 1.0),
                 ),
               ),
             ),
           ),
-          const SizedBox(height: 16), // pt-stack-md (16px)
+          const SizedBox(height: AppSpacing.md), // pt-stack-md (16px)
 
-          // Numeric Keypad Grid
+          // Numeric Keypad Grid (linear.app styled buttons with 8px rounded corners)
           GridView.count(
             crossAxisCount: 3,
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             childAspectRatio: 2.2, // balanced compact landscape touch ratio
-            mainAxisSpacing: 16,
-            crossAxisSpacing: 16,
+            mainAxisSpacing: 12,
+            crossAxisSpacing: 12,
             children: [
               _buildKeypadButton('1'),
               _buildKeypadButton('2'),
@@ -335,21 +325,20 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               _buildKeypadButton('backspace', isIcon: true, value: 'backspace'),
             ],
           ),
-          const SizedBox(height: 24), // mt-stack-lg (24px)
+          const SizedBox(height: AppSpacing.lg), // mt-stack-lg (24px)
 
-          // Action Login Button
+          // Action Login Button (72px height, 8px rounded, solid Lavender)
           SizedBox(
             height: 72, // h-[72px]
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: _StitchColors.primaryContainer,
-                foregroundColor: _StitchColors.onPrimary,
+                backgroundColor: AppColors.primary, // Lavender brand color
+                foregroundColor: AppColors.onPrimary,
                 elevation: 0,
                 shadowColor: Colors.transparent,
                 shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.zero,
+                  borderRadius: AppRadius.borderMd, // 8px rounded
                 ),
-                side: const BorderSide(color: _StitchColors.primaryContainer, width: 2.0),
                 padding: EdgeInsets.zero,
               ),
               onPressed: authAsync is AsyncLoading ? null : _submit,
@@ -361,26 +350,25 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       width: 24,
                       height: 24,
                       child: CircularProgressIndicator(
-                        color: _StitchColors.onPrimary,
+                        color: AppColors.onPrimary,
                         strokeWidth: 2.5,
                       ),
                     )
                   else ...[
                     Text(
                       '로그인',
-                      style: GoogleFonts.workSans(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w700,
-                        height: 28 / 22,
-                        letterSpacing: 4.0, // tracking-widest
-                        color: _StitchColors.onPrimary,
+                      style: GoogleFonts.inter(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 2.0,
+                        color: AppColors.onPrimary,
                       ),
                     ),
-                    const SizedBox(width: 16),
+                    const SizedBox(width: 12),
                     const Icon(
-                      Icons.login,
-                      color: _StitchColors.onPrimary,
-                      size: 24,
+                      Icons.login_rounded,
+                      color: AppColors.onPrimary,
+                      size: 22,
                     ),
                   ],
                 ],
@@ -392,38 +380,53 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     );
 
     return Scaffold(
-      backgroundColor: _StitchColors.background,
+      backgroundColor: AppColors.background, // Deepest near-black canvas (#010102)
       body: Stack(
         children: [
-          // Layer 1: Background Texture (Unsplash)
-          Positioned.fill(
-            child: Opacity(
-              opacity: 0.2,
-              child: Image.network(
-                'https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?q=80&w=2070&auto=format&fit=crop',
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(color: Colors.transparent); // Fallback color
-                },
-              ),
-            ),
-          ),
-          // Layer 2: Black Gradient overlay from lowest boundary
-          Positioned.fill(
+          // Layer 1: Ambient Auroral Glow (Signature linear.app aesthetic)
+          Positioned(
+            top: -250,
+            left: -200,
             child: Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.transparent,
-                    _StitchColors.surfaceContainerLowest,
+              width: 600,
+              height: 600,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppColors.primary.withValues(alpha: 0.08), // Elegant lavender bloom
+              ),
+              child: Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.primary.withValues(alpha: 0.08),
+                      blurRadius: 150,
+                      spreadRadius: 50,
+                    ),
                   ],
                 ),
               ),
             ),
           ),
-          // Layer 3: Main Login Card Frame and responsive content
+          Positioned(
+            bottom: -200,
+            right: -200,
+            child: Container(
+              width: 500,
+              height: 500,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primaryLight.withValues(alpha: 0.04),
+                    blurRadius: 180,
+                    spreadRadius: 30,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          // Layer 2: Main Login Card Frame and responsive content
           SafeArea(
             child: Center(
               child: SingleChildScrollView(
@@ -432,21 +435,21 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   key: _formKey,
                   child: ConstrainedBox(
                     constraints: BoxConstraints(
-                      maxWidth: isTablet ? 1280 : 440, // max-w-7xl (1280px)
-                      maxHeight: isTablet ? 900 : double.infinity, // max-h-[900px]
+                      maxWidth: isTablet ? 1160 : 440, // max-w-7xl (1160px for elegant bounds)
+                      maxHeight: isTablet ? 840 : double.infinity,
                     ),
                     child: isTablet
                         ? Container(
                             padding: const EdgeInsets.all(48), // p-12 in HTML (48px)
                             decoration: BoxDecoration(
-                              color: _StitchColors.surfaceContainerLow,
-                              borderRadius: const BorderRadius.all(Radius.circular(4)), // DEFAULT (0.25rem = 4px)
-                              border: Border.all(color: _StitchColors.outlineVariant, width: 2),
+                              color: AppColors.surface, // Surface 1 (#0F1011)
+                              borderRadius: AppRadius.borderLg, // 12px rounded
+                              border: Border.all(color: AppColors.border, width: 1.0), // 1px hairline border (#23252A)
                               boxShadow: const [
                                 BoxShadow(
-                                  color: Color(0x80000000), // exact 50% opacity black
-                                  blurRadius: 25,
-                                  offset: Offset(0, 10),
+                                  color: Color(0x60000000), // elegant soft shadow
+                                  blurRadius: 30,
+                                  offset: Offset(0, 15),
                                 ),
                               ],
                             ),
@@ -457,9 +460,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                   brandingSection,
                                   const SizedBox(width: 48),
                                   const VerticalDivider(
-                                    color: _StitchColors.outlineVariant,
-                                    width: 2,
-                                    thickness: 2,
+                                    color: AppColors.border,
+                                    width: 1,
+                                    thickness: 1,
                                   ),
                                   const SizedBox(width: 48),
                                   loginInputSection,
@@ -470,14 +473,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         : Container(
                             padding: const EdgeInsets.all(24),
                             decoration: BoxDecoration(
-                              color: _StitchColors.surfaceContainerLow,
-                              borderRadius: const BorderRadius.all(Radius.circular(4)),
-                              border: Border.all(color: _StitchColors.outlineVariant, width: 2),
+                              color: AppColors.surface,
+                              borderRadius: AppRadius.borderLg,
+                              border: Border.all(color: AppColors.border, width: 1.0),
                               boxShadow: const [
                                 BoxShadow(
-                                  color: Color(0x80000000),
-                                  blurRadius: 15,
-                                  offset: Offset(0, 5),
+                                  color: Color(0x50000000),
+                                  blurRadius: 20,
+                                  offset: Offset(0, 8),
                                 ),
                               ],
                             ),
@@ -487,9 +490,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 brandingSection,
                                 const SizedBox(height: 24),
                                 const Divider(
-                                  color: _StitchColors.outlineVariant,
-                                  height: 2,
-                                  thickness: 2,
+                                  color: AppColors.border,
+                                  height: 1,
+                                  thickness: 1,
                                 ),
                                 const SizedBox(height: 24),
                                 loginInputSection,
@@ -513,39 +516,39 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     String? value,
   }) {
     final tapValue = value ?? label;
-    final bgColor = isSpecial ? _StitchColors.surfaceContainerHighest : _StitchColors.surfaceContainerHigh;
+    final bgColor = isSpecial ? AppColors.surfaceTertiary : AppColors.surfaceVariant;
 
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
         backgroundColor: bgColor,
-        foregroundColor: _StitchColors.onSurface,
+        foregroundColor: AppColors.onSurface,
         elevation: 0,
         shadowColor: Colors.transparent,
         padding: EdgeInsets.zero,
         shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.zero,
+          borderRadius: AppRadius.borderMd, // 8px rounded corners
         ),
-        side: const BorderSide(color: _StitchColors.outlineVariant, width: 2.0),
+        side: const BorderSide(color: AppColors.border, width: 1.0), // 1px hairline border
       ),
       onPressed: () => _onKeypadTap(tapValue),
       child: isIcon
           ? const Icon(
-              Icons.backspace,
-              color: _StitchColors.onSurfaceVariant,
-              size: 24,
+              Icons.backspace_outlined,
+              color: AppColors.onSurfaceVariant,
+              size: 22,
             )
           : Text(
               label,
               style: isSpecial
-                  ? GoogleFonts.workSans(
+                  ? AppTextStyles.labelLg.copyWith(
                       fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: _StitchColors.onSurfaceVariant,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.onSurfaceMuted,
                     )
-                  : GoogleFonts.workSans(
-                      fontSize: 28,
-                      fontWeight: FontWeight.w700,
-                      color: _StitchColors.onBackground,
+                  : AppTextStyles.headlineMd.copyWith(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.onBackground,
                     ),
             ),
     );
