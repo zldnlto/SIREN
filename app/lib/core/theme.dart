@@ -20,73 +20,75 @@ ThemeData buildAppTheme() {
       primaryContainer: AppColors.primaryContainer,
       secondary: AppColors.secondary,
       onSecondary: AppColors.onSurface,
-      secondaryContainer: AppColors.surfaceVariant,
+      secondaryContainer: AppColors.surface,
       tertiary: AppColors.tertiary,
       error: AppColors.error,
       surface: AppColors.surface,
       onSurface: AppColors.onSurface,
       onSurfaceVariant: AppColors.onSurfaceVariant,
-      outline: AppColors.outline,
+      outline: AppColors.border,
     ),
     dividerTheme: const DividerThemeData(
       color: AppColors.border,
       thickness: 1,
       space: 1,
     ),
-    cardTheme: CardThemeData(
+    cardTheme: const CardThemeData(
       elevation: 0,
-      color: AppColors.surfaceVariant,
-      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.zero, // Sharp (0px) corners
-        side: BorderSide(color: AppColors.borderSubtle, width: 2), // 2px Bold border (secondary)
+      color: AppColors.surface, // Night surface
+      margin: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      shape: RoundedRectangleBorder(
+        borderRadius: AppRadius.borderXl, // Sentry rounded.xl (12px)
+        side: BorderSide(color: AppColors.border, width: 1), // 1px Hairline Violet
       ),
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
         elevation: 0,
-        backgroundColor: AppColors.primary,
-        foregroundColor: AppColors.onPrimary,
-        minimumSize: const Size.fromHeight(AppSpacing.touchTargetMin), // 56px
+        backgroundColor: Colors.white, // Inverted Primary CTA (White on dark)
+        foregroundColor: AppColors.background, // Deep Violet Midnight text
+        minimumSize: const Size.fromHeight(AppSpacing.touchTargetMin), // 44px
         textStyle: AppTextStyles.buttonLg,
         shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.zero, // Sharp (0px) corners
+          borderRadius: AppRadius.borderMd, // Sentry rounded.md (8px)
         ),
       ),
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
-        minimumSize: const Size.fromHeight(AppSpacing.touchTargetMin), // 56px
+        elevation: 0,
+        backgroundColor: AppColors.primaryContainer, // Ghost button fill (rgba(255,255,255,0.18))
+        minimumSize: const Size.fromHeight(AppSpacing.touchTargetMin), // 44px
         foregroundColor: AppColors.onSurface,
         textStyle: AppTextStyles.buttonMd,
-        side: const BorderSide(color: AppColors.primary, width: 2), // 2px Border
+        side: BorderSide.none, // Ghost button has no borders
         shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.zero, // Sharp (0px) corners
+          borderRadius: AppRadius.borderMd, // Sentry rounded.md (8px)
         ),
       ),
     ),
     inputDecorationTheme: const InputDecorationTheme(
       filled: true,
-      fillColor: AppColors.surfaceVariant,
+      fillColor: AppColors.surface,
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.zero,
-        borderSide: BorderSide(color: AppColors.border, width: 2),
+        borderRadius: AppRadius.borderSm, // Sentry rounded.sm (6px)
+        borderSide: BorderSide(color: AppColors.borderSubtle, width: 1), // 1px Hairline Cool
       ),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.zero,
-        borderSide: BorderSide(color: AppColors.border, width: 2),
+        borderRadius: AppRadius.borderSm,
+        borderSide: BorderSide(color: AppColors.borderSubtle, width: 1),
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.zero,
-        borderSide: BorderSide(color: AppColors.primary, width: 2), // 2px primary focus border
+        borderRadius: AppRadius.borderSm,
+        borderSide: BorderSide(color: AppColors.secondary, width: 1.5), // Violet focus outline
       ),
       errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.zero,
-        borderSide: BorderSide(color: AppColors.error, width: 2),
+        borderRadius: AppRadius.borderSm,
+        borderSide: BorderSide(color: AppColors.error, width: 1.5), // Pink error outline
       ),
       focusedErrorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.zero,
-        borderSide: BorderSide(color: AppColors.error, width: 2),
+        borderRadius: AppRadius.borderSm,
+        borderSide: BorderSide(color: AppColors.error, width: 1.5),
       ),
       contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 18),
     ),

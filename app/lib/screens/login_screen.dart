@@ -44,58 +44,97 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     });
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.background, // Sentry Dark Canvas
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
             child: Form(
               key: _formKey,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text(
-                    'SIREN',
-                    style: AppTextStyles.displaySm.copyWith(letterSpacing: 6),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: AppSpacing.xs),
-                  Text(
-                    'LNG 탱크 검사 시스템',
-                    style: AppTextStyles.bodyMd.copyWith(
-                      color: AppColors.onSurfaceVariant,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 440),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Sentry-inspired display title with Lime keyword chip
+                    Center(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                        decoration: const BoxDecoration(
+                          color: AppColors.lime, // Electric Lime keyword chip
+                          borderRadius: AppRadius.borderXs, // rounded.xs (4px)
+                        ),
+                        child: Text(
+                          'SIREN',
+                          style: AppTextStyles.displayHero.copyWith(
+                            fontSize: 48,
+                            color: AppColors.onPrimary, // Deep Purple Ink text
+                            letterSpacing: 2,
+                          ),
+                        ),
+                      ),
                     ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: AppSpacing.x2l),
-                  _TokenInput(
-                    controller: _employeeIdCtrl,
-                    label: '사원번호',
-                    prefixIcon: Icons.badge_outlined,
-                    textInputAction: TextInputAction.next,
-                    validator: (v) => (v == null || v.trim().isEmpty)
-                        ? '사원번호를 입력해 주세요.'
-                        : null,
-                  ),
-                  const SizedBox(height: AppSpacing.md),
-                  _TokenInput(
-                    controller: _passwordCtrl,
-                    label: '비밀번호',
-                    prefixIcon: Icons.lock_outline,
-                    obscureText: true,
-                    textInputAction: TextInputAction.done,
-                    onFieldSubmitted: (_) => _submit(),
-                    validator: (v) =>
-                        (v == null || v.isEmpty) ? '비밀번호를 입력해 주세요.' : null,
-                  ),
-                  const SizedBox(height: AppSpacing.xl),
-                  SirenButton(
-                    label: '로그인',
-                    onPressed: authAsync is AsyncLoading ? null : _submit,
-                    isLoading: authAsync is AsyncLoading,
-                  ),
-                ],
+                    const SizedBox(height: AppSpacing.md),
+                    Text(
+                      'LNG TANK OBSERVABILITY CONSOLE',
+                      style: AppTextStyles.monoSm.copyWith(
+                        color: AppColors.onSurfaceMuted,
+                        letterSpacing: 1.0,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: AppSpacing.xxl),
+                    
+                    // Sentry rounded pricing/feature card polarity (12px rounded, 1px violet hairline)
+                    Card(
+                      margin: EdgeInsets.zero,
+                      child: Padding(
+                        padding: const EdgeInsets.all(AppSpacing.xxl), // 32px padding
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Text(
+                              'OPERATOR SIGN-IN',
+                              style: AppTextStyles.labelSm.copyWith(
+                                color: AppColors.onSurfaceVariant,
+                                letterSpacing: 0.5,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: AppSpacing.xl),
+                            _TokenInput(
+                              controller: _employeeIdCtrl,
+                              label: '사원번호',
+                              prefixIcon: Icons.badge_outlined,
+                              textInputAction: TextInputAction.next,
+                              validator: (v) => (v == null || v.trim().isEmpty)
+                                  ? '사원번호를 입력해 주세요.'
+                                  : null,
+                            ),
+                            const SizedBox(height: AppSpacing.md),
+                            _TokenInput(
+                              controller: _passwordCtrl,
+                              label: '비밀번호',
+                              prefixIcon: Icons.lock_outline,
+                              obscureText: true,
+                              textInputAction: TextInputAction.done,
+                              onFieldSubmitted: (_) => _submit(),
+                              validator: (v) =>
+                                  (v == null || v.isEmpty) ? '비밀번호를 입력해 주세요.' : null,
+                            ),
+                            const SizedBox(height: AppSpacing.xl),
+                            SirenButton(
+                              label: 'SIGN IN',
+                              onPressed: authAsync is AsyncLoading ? null : _submit,
+                              isLoading: authAsync is AsyncLoading,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -139,37 +178,15 @@ class _TokenInput extends StatelessWidget {
       textInputAction: textInputAction,
       onFieldSubmitted: onFieldSubmitted,
       validator: validator,
-      style: AppTextStyles.bodyMd,
+      style: AppTextStyles.bodyMd.copyWith(color: Colors.white),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: AppTextStyles.labelLg.copyWith(
+        labelStyle: AppTextStyles.labelMd.copyWith(
           color: AppColors.onSurfaceVariant,
         ),
-        prefixIcon: Icon(prefixIcon, color: AppColors.onSurfaceVariant),
-        filled: true,
-        fillColor: AppColors.surfaceVariant,
-        border: const OutlineInputBorder(
-          borderRadius: AppRadius.borderSm,
-          borderSide: BorderSide(color: AppColors.border),
-        ),
-        enabledBorder: const OutlineInputBorder(
-          borderRadius: AppRadius.borderSm,
-          borderSide: BorderSide(color: AppColors.border),
-        ),
-        focusedBorder: const OutlineInputBorder(
-          borderRadius: AppRadius.borderSm,
-          borderSide: BorderSide(color: AppColors.primary, width: 1.5),
-        ),
-        errorBorder: const OutlineInputBorder(
-          borderRadius: AppRadius.borderSm,
-          borderSide: BorderSide(color: AppColors.destructive),
-        ),
-        focusedErrorBorder: const OutlineInputBorder(
-          borderRadius: AppRadius.borderSm,
-          borderSide: BorderSide(color: AppColors.destructive, width: 1.5),
-        ),
+        prefixIcon: Icon(prefixIcon, color: AppColors.onSurfaceVariant, size: 20),
         errorStyle: AppTextStyles.labelSm.copyWith(
-          color: AppColors.destructive,
+          color: AppColors.pink, // Sentry Hot Pink error state text
         ),
       ),
     );

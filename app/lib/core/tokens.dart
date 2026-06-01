@@ -4,29 +4,32 @@ import 'package:google_fonts/google_fonts.dart';
 // ─── Colors ──────────────────────────────────────────────────────────────────
 
 abstract final class AppColors {
-  // Surface hierarchy (OLED dark, utilitarian sharp layers)
-  static const background = Color(0xFF0E0E0E);
-  static const surface = Color(0xFF131313);
-  static const surfaceVariant = Color(0xFF1C1B1B); // low
-  static const surfaceTertiary = Color(0xFF201F1F); // container
-  static const surfaceOverlay = Color(0xFF2A2A2A); // high
+  // Sentry's dark violet-midnight canvas polarity
+  static const background = Color(0xFF1F1633); // Dark Canvas / Ink-deep
+  static const surface = Color(0xFF150F23); // Night - Card surface / Primary
+  static const surfaceVariant = Color(0xFF1F1633); // Ink-deep
+  static const surfaceTertiary = Color(0xFF422082); // Deep Violet
+  static const surfaceOverlay = Color(0xFF1F1633);
 
-  // Primary — Steel Blue (overridePrimaryColor #3498DB)
-  static const primary = Color(0xFF3498DB);
-  static const primaryDark = Color(0xFF2980B9);
-  static const primaryLight = Color(0xFF5DADE2);
-  static const primaryContainer = Color(0xFF1A3A5C);
+  // Accents
+  static const primary = Color(0xFFFFFFFF); // CTA Inverted primary on dark
+  static const primaryDark = Color(0xFFE5E7EB);
+  static const primaryLight = Color(0xFFFFFFFF);
+  static const primaryContainer = Color(0xFF3F3849); // On dark faint
 
-  // Secondary — Deep Navy (overrideSecondaryColor #1E233D)
-  static const secondary = Color(0xFF1E233D);
-  static const secondaryDark = Color(0xFF13172B);
-  static const secondaryLight = Color(0xFF2D3354);
+  static const secondary = Color(0xFF6A5FC1); // Violet Link
+  static const secondaryDark = Color(0xFF422082);
+  static const secondaryLight = Color(0xFF79628C);
 
-  // Severity & Accent
-  static const good = Color(0xFF2ECC71); // 양호 (Green)
-  static const warning = Color(0xFFFFD60A); // 주의 (Safety Yellow / overrideTertiaryColor #FFD60A)
-  static const defect = Color(0xFFFF3B30); // 결함 (Danger Red)
-  static const critical = Color(0xFFC0392B); // 위험 (Dark Red)
+  // Sentry-inspired Accent colors
+  static const lime = Color(0xFFC2EF4E); // Electric Lime
+  static const pink = Color(0xFFFA7FAA); // Hot Pink
+
+  // Severity (Mapped to Sentry tones)
+  static const good = Color(0xFFC2EF4E); // 양호 (Electric Lime)
+  static const warning = Color(0xFFFFD60A); // 주의 (Yellow)
+  static const defect = Color(0xFFFA7FAA); // 결함 (Hot Pink)
+  static const critical = Color(0xFFFA7FAA); // 위험 (Hot Pink)
 
   static const severityGoodContainer = Color(0xFF1A3D2B);
   static const severityWarningContainer = Color(0xFF3D3300);
@@ -34,24 +37,29 @@ abstract final class AppColors {
   static const severityCriticalContainer = Color(0xFF2D0F0F);
 
   // Content on surfaces
-  static const onBackground = Color(0xFFE5E2E1);
-  static const onSurface = Color(0xFFE5E2E1);
-  static const onSurfaceVariant = Color(0xFFBFC7D2);
-  static const onSurfaceMuted = Color(0xFF89929B);
-  static const onPrimary = Color(0xFFFFFFFF); // primary 버튼 위 텍스트
+  static const onBackground = Color(0xFFFFFFFF);
+  static const onSurface = Color(0xFFFFFFFF);
+  static const onSurfaceVariant = Color(0xFFBDB8C0); // On Dark Muted
+  static const onSurfaceMuted = Color(0xFF79628C); // Mid Violet
+  static const onPrimary = Color(0xFF1F1633); // Inverted Text on primary white
 
-  // Accent — Safety Yellow (overrideTertiaryColor #FFD60A)
-  static const accent = Color(0xFFFFD60A);
+  // Accent
+  static const accent = Color(0xFFC2EF4E); // Electric Lime
 
   // Disabled
-  static const disabled = Color(0xFF353534);
-  static const onDisabled = Color(0xFF89929B);
+  static const disabled = Color(0xFF3F3849);
+  static const onDisabled = Color(0xFFBDB8C0);
 
-  // Border / divider
-  static const border = Color(0xFF3F4850); // outlineVariant
-  static const borderSubtle = Color(0xFF1E233D); // secondary
+  // Hairline / Borders
+  static const border = Color(0xFF362D59); // Hairline Violet
+  static const borderSubtle = Color(0xFFCFCFDB); // Hairline Cool
+  static const borderCloud = Color(0xFFE5E7EB); // Hairline Cloud
 
-  // Destructive — UI 파괴 액션용
+  // Semantic mappings for standard Material theme fields
+  static const tertiary = lime;
+  static const error = pink;
+
+  // Destructive
   static const destructive = defect;
 }
 
@@ -61,142 +69,189 @@ abstract final class AppBreakpoints {
   static const double tablet = 600;
 }
 
-// ─── Spacing ─────────────────────────────────────────────────────────────────
-
 abstract final class AppSpacing {
-  static const double xs = 4;
-  static const double sm = 8; // stack-sm
-  static const double md = 16; // gutter, stack-md
-  static const double lg = 24; // stack-lg
-  static const double xl = 32; // margin-tablet
-  static const double x2l = 48;
-  static const double x3l = 64;
+  static const double xxs = 2; // xxs
+  static const double xs = 4; // xs
+  static const double sm = 8; // sm
+  static const double md = 12; // md
+  static const double lg = 16; // lg
+  static const double xl = 24; // xl
+  static const double xxl = 32; // xxl
+  static const double section = 96; // section
 
-  static const double touchTargetMin = 56.0; // touch-target-min
-  static const double marginMobile = 20.0; // margin-mobile
+  static const double touchTargetMin = 44.0; // Sentry touch-target-min
+  static const double marginMobile = 16.0;
 }
 
 // ─── Border Radius ────────────────────────────────────────────────────────────
 
 abstract final class AppRadius {
-  // Sharp (0px) corners for all industrial components
-  static const double xs = 0;
-  static const double sm = 0;
-  static const double md = 0;
-  static const double lg = 0;
-  static const double xl = 0;
-  static const double full = 0;
+  // Sentry's rounded borders scale
+  static const double xs = 4;
+  static const double sm = 6;
+  static const double md = 8;
+  static const double lg = 10;
+  static const double xl = 12;
+  static const double xxl = 18;
+  static const double full = 9999;
 
-  static const borderXs = BorderRadius.zero;
-  static const borderSm = BorderRadius.zero;
-  static const borderMd = BorderRadius.zero;
-  static const borderLg = BorderRadius.zero;
-  static const borderXl = BorderRadius.zero;
-  static const borderFull = BorderRadius.zero;
+  static const borderXs = BorderRadius.all(Radius.circular(xs));
+  static const borderSm = BorderRadius.all(Radius.circular(sm));
+  static const borderMd = BorderRadius.all(Radius.circular(md));
+  static const borderLg = BorderRadius.all(Radius.circular(lg));
+  static const borderXl = BorderRadius.all(Radius.circular(xl));
+  static const borderFull = BorderRadius.all(Radius.circular(full));
 }
 
 // ─── Text Styles ──────────────────────────────────────────────────────────────
-//
-// Work Sans  — body, labels, UI
-// JetBrains Mono  — inspection IDs, metric values, defect codes (Stitch labelFont)
+// Rubik  — body, labels, UI
+// Monaco / JetBrains Mono  — inspection IDs, metric values, code blocks
 
 abstract final class AppTextStyles {
-  // Display & Headline
-  static final TextStyle headlineLg = GoogleFonts.workSans(
-    fontSize: 34,
+  // Display & Headline (Sentry custom display sans substitute)
+  static final TextStyle displayHero = GoogleFonts.rubik(
+    fontSize: 88,
     fontWeight: FontWeight.w700,
     color: AppColors.onBackground,
-    height: 40 / 34,
-    letterSpacing: -0.02 * 34,
+    height: 1.2,
   );
 
-  static final TextStyle headlineMd = GoogleFonts.workSans(
-    fontSize: 28,
-    fontWeight: FontWeight.w700,
-    color: AppColors.onBackground,
-    height: 34 / 28,
-    letterSpacing: -0.01 * 28,
-  );
-
-  static final TextStyle headlineSm = GoogleFonts.workSans(
-    fontSize: 22,
-    fontWeight: FontWeight.w700,
-    color: AppColors.onSurface,
-    height: 28 / 22,
-  );
-
-  // Section header — used in report sections
-  static final TextStyle sectionHeader = GoogleFonts.workSans(
-    fontSize: 13,
-    fontWeight: FontWeight.w700,
-    color: AppColors.onSurfaceVariant,
-    letterSpacing: 0.8,
-  );
-
-  // Body
-  static final TextStyle bodyLg = GoogleFonts.workSans(
-    fontSize: 18,
+  static final TextStyle displayLarge = GoogleFonts.rubik(
+    fontSize: 60,
     fontWeight: FontWeight.w500,
-    color: AppColors.onSurface,
-    height: 26 / 18,
+    color: AppColors.onBackground,
+    height: 1.1,
   );
 
-  static final TextStyle bodyMd = GoogleFonts.workSans(
-    fontSize: 16,
-    fontWeight: FontWeight.w400,
-    color: AppColors.onSurface,
-    height: 24 / 16,
+  static final TextStyle headlineXl = GoogleFonts.rubik(
+    fontSize: 30,
+    fontWeight: FontWeight.w500,
+    color: AppColors.onBackground,
+    height: 1.2,
   );
 
-  static final TextStyle bodySm = GoogleFonts.workSans(
-    fontSize: 12,
-    fontWeight: FontWeight.w400,
+  static final TextStyle headlineLg = GoogleFonts.rubik(
+    fontSize: 27,
+    fontWeight: FontWeight.w500,
+    color: AppColors.onBackground,
+    height: 1.25,
+  );
+
+  static final TextStyle headlineMd = GoogleFonts.rubik(
+    fontSize: 24,
+    fontWeight: FontWeight.w500,
+    color: AppColors.onBackground,
+    height: 1.25,
+  );
+
+  static final TextStyle headlineSm = GoogleFonts.rubik(
+    fontSize: 20,
+    fontWeight: FontWeight.w600,
+    color: AppColors.onSurface,
+    height: 1.25,
+  );
+
+  // Section header — eyebrow above headings
+  static final TextStyle sectionHeader = GoogleFonts.rubik(
+    fontSize: 15,
+    fontWeight: FontWeight.w500,
     color: AppColors.onSurfaceVariant,
     height: 1.4,
   );
 
+  // Body
+  static final TextStyle bodyLg = GoogleFonts.rubik(
+    fontSize: 16,
+    fontWeight: FontWeight.w400,
+    color: AppColors.onSurface,
+    height: 2.0, // airy marketing line height
+  );
+
+  static final TextStyle bodyStrong = GoogleFonts.rubik(
+    fontSize: 16,
+    fontWeight: FontWeight.w600,
+    color: AppColors.onSurface,
+    height: 1.5,
+  );
+
+  static final TextStyle bodyMd = GoogleFonts.rubik(
+    fontSize: 16,
+    fontWeight: FontWeight.w500,
+    color: AppColors.onSurface,
+    height: 1.5, // functional UI body
+  );
+
+  static final TextStyle bodySm = GoogleFonts.rubik(
+    fontSize: 14,
+    fontWeight: FontWeight.w400,
+    color: AppColors.onSurfaceVariant,
+    height: 1.43,
+  );
+
   // Label
-  static final TextStyle labelLg = GoogleFonts.workSans(
+  static final TextStyle labelLg = GoogleFonts.rubik(
     fontSize: 14,
     fontWeight: FontWeight.w700,
     color: AppColors.onSurface,
-    height: 20 / 14,
+    height: 1.14,
   );
 
-  static final TextStyle labelMd = GoogleFonts.workSans(
+  static final TextStyle labelMd = GoogleFonts.rubik(
     fontSize: 12,
     fontWeight: FontWeight.w600,
     color: AppColors.onSurfaceVariant,
-    height: 16 / 12,
+    height: 1.4,
   );
 
-  static final TextStyle labelSm = GoogleFonts.workSans(
-    fontSize: 11,
+  static final TextStyle labelSm = GoogleFonts.rubik(
+    fontSize: 10,
     fontWeight: FontWeight.w600,
     color: AppColors.onSurfaceMuted,
-    letterSpacing: 0.3,
+    letterSpacing: 0.25,
+    height: 1.8,
   );
 
+  // Mono — Sentry code Monaco/Menlo (Substituted with JetBrains Mono)
+  static final TextStyle monoLg = GoogleFonts.jetBrainsMono(
+    fontSize: 16,
+    fontWeight: FontWeight.w400,
+    color: AppColors.onSurface,
+    height: 1.5,
+  );
+
+  static final TextStyle monoMd = GoogleFonts.jetBrainsMono(
+    fontSize: 14,
+    fontWeight: FontWeight.w400,
+    color: AppColors.onSurface,
+  );
+
+  static final TextStyle monoSm = GoogleFonts.jetBrainsMono(
     fontSize: 12,
     fontWeight: FontWeight.w400,
     color: AppColors.onSurfaceVariant,
-    fontFeatures: const [FontFeature.tabularFigures()],
   );
 
   // Button
-  static final TextStyle buttonLg = GoogleFonts.ibmPlexSans(
-    fontSize: 16,
-    fontWeight: FontWeight.w600,
+  static final TextStyle buttonLg = GoogleFonts.rubik(
+    fontSize: 14,
+    fontWeight: FontWeight.w700,
     color: AppColors.onPrimary,
-    letterSpacing: 0.2,
+    letterSpacing: 0.2, // caps with tracking
+    height: 1.14,
   );
 
-  static final TextStyle buttonMd = GoogleFonts.ibmPlexSans(
+  static final TextStyle buttonMd = GoogleFonts.rubik(
     fontSize: 14,
-    fontWeight: FontWeight.w600,
+    fontWeight: FontWeight.w500,
     color: AppColors.onPrimary,
     letterSpacing: 0.2,
+    height: 1.29,
   );
+
+  // Fallback aliases for other screens' legacy style references
+  static final TextStyle titleLg = headlineLg;
+  static final TextStyle titleMd = headlineMd;
+  static final TextStyle titleSm = headlineSm;
 }
 
 // ─── Shadows ─────────────────────────────────────────────────────────────────

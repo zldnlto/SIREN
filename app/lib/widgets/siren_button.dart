@@ -49,8 +49,8 @@ class _SirenButtonState extends State<SirenButton> {
   bool get _enabled => widget.onPressed != null && !widget.isLoading;
 
   double get _height => switch (widget.size) {
-        SirenButtonSize.md => 48,
-        SirenButtonSize.lg => 56,
+        SirenButtonSize.md => 36,
+        SirenButtonSize.lg => 44, // Sentry touch target
       };
 
   EdgeInsets get _padding => switch (widget.size) {
@@ -66,33 +66,39 @@ class _SirenButtonState extends State<SirenButton> {
       };
 
   Color get _backgroundColor => switch (widget.variant) {
-        SirenButtonVariant.primary =>
-          _enabled ? AppColors.primary : AppColors.disabled,
-        SirenButtonVariant.destructive =>
-          _enabled ? AppColors.destructive : AppColors.disabled,
-        SirenButtonVariant.secondary => Colors.transparent,
-        SirenButtonVariant.ghost => Colors.transparent,
+        SirenButtonVariant.primary => _enabled
+            ? (_pressed ? const Color(0xFFE5E7EB) : const Color(0xFFFFFFFF))
+            : AppColors.disabled,
+        SirenButtonVariant.destructive => _enabled
+            ? (_pressed ? const Color(0xFFE74C3C) : AppColors.pink)
+            : AppColors.disabled,
+        SirenButtonVariant.secondary => _enabled
+            ? (_pressed ? const Color(0x3BFFFFFF) : const Color(0x1AFFFFFF))
+            : AppColors.disabled,
+        SirenButtonVariant.ghost => _enabled
+            ? (_pressed ? const Color(0x2EFFFFFF) : Colors.transparent)
+            : Colors.transparent,
       };
 
   Color get _foregroundColor => switch (widget.variant) {
         SirenButtonVariant.primary =>
           _enabled ? AppColors.onPrimary : AppColors.onDisabled,
         SirenButtonVariant.destructive =>
-          _enabled ? AppColors.onPrimary : AppColors.onDisabled,
+          _enabled ? const Color(0xFFFFFFFF) : AppColors.onDisabled,
         SirenButtonVariant.secondary =>
-          _enabled ? AppColors.primary : AppColors.onDisabled,
+          _enabled ? const Color(0xFFFFFFFF) : AppColors.onDisabled,
         SirenButtonVariant.ghost =>
-          _enabled ? AppColors.onSurface : AppColors.onDisabled,
+          _enabled ? AppColors.onSurfaceVariant : AppColors.onDisabled,
       };
 
   Border? get _border {
     if (_focused && _enabled) {
-      return Border.all(color: AppColors.primary, width: 2.0);
+      return Border.all(color: AppColors.secondary, width: 2.0); // Focus ring
     }
     return switch (widget.variant) {
       SirenButtonVariant.secondary => Border.all(
-          color: _enabled ? AppColors.primary : AppColors.disabled,
-          width: 1.5,
+          color: _enabled ? AppColors.border : AppColors.disabled,
+          width: 1.0,
         ),
       _ => null,
     };
@@ -130,7 +136,7 @@ class _SirenButtonState extends State<SirenButton> {
               : null,
           onTapCancel: _enabled ? () => setState(() => _pressed = false) : null,
           child: AnimatedScale(
-            scale: _pressed ? 0.96 : 1.0,
+            scale: _pressed ? 0.97 : 1.0,
             duration: AppDurations.fast,
             curve: AppCurves.enter,
             child: AnimatedContainer(
@@ -138,20 +144,28 @@ class _SirenButtonState extends State<SirenButton> {
               curve: AppCurves.standard,
               height: _height,
               padding: _padding,
+              alignment: Alignment.center,
               decoration: BoxDecoration(
                 color: _backgroundColor,
-                borderRadius: AppRadius.borderSm,
+                borderRadius: AppRadius.borderMd, // Sentry rounded.md (8px)
                 border: _border,
-                boxShadow:
-                    (!_enabled || widget.variant != SirenButtonVariant.primary)
-                        ? null
-                        : (_pressed ? null : AppShadows.primaryGlow),
+                boxShadow: (!_enabled ||
+                        widget.variant != SirenButtonVariant.primary ||
+                        _pressed)
+                    ? null
+                    : const [
+                        BoxShadow(
+                          color: Color(0x14000000), // level 1 lift
+                          blurRadius: 8,
+                          offset: Offset(0, 2),
+                        ),
+                      ],
               ),
               child: widget.isLoading
                   ? Center(
                       child: SizedBox(
-                        width: 20,
-                        height: 20,
+                        width: 18,
+                        height: 18,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
                           color: _foregroundColor,
@@ -165,13 +179,13 @@ class _SirenButtonState extends State<SirenButton> {
                         if (widget.icon != null) ...[
                           IconTheme(
                             data: IconThemeData(
-                                color: _foregroundColor, size: 20),
+                                color: _foregroundColor, size: 18),
                             child: widget.icon!,
                           ),
                           const SizedBox(width: AppSpacing.sm),
                         ],
                         Text(
-                          widget.label,
+                          widget.label.toUpperCase(), // Sentry Uppercase caps
                           style: _labelStyle.copyWith(color: _foregroundColor),
                         ),
                       ],
