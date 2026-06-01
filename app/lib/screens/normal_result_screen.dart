@@ -24,9 +24,15 @@ class NormalResultScreen extends ConsumerWidget {
       appBar: AppBar(
         backgroundColor: AppColors.surface,
         elevation: 0,
-        title: Text('검사 완료', style: AppTextStyles.titleMd),
+        title: Text(
+          '검사 완료',
+          style: AppTextStyles.headlineSm.copyWith(
+            fontWeight: FontWeight.w300,
+            letterSpacing: 1.0,
+          ),
+        ),
         leading: IconButton(
-          icon: const Icon(Icons.home_rounded, color: AppColors.onSurface),
+          icon: const Icon(Icons.home, color: AppColors.onSurface),
           onPressed: () {
             ref.read(inspectionProvider.notifier).reset();
             context.go('/home');
@@ -46,7 +52,7 @@ class NormalResultScreen extends ConsumerWidget {
               child: Column(
                 children: [
                   const Icon(
-                    Icons.check_circle_outline_rounded,
+                    Icons.check_circle_outline,
                     size: 64,
                     color: AppColors.good,
                   ),
@@ -68,7 +74,7 @@ class NormalResultScreen extends ConsumerWidget {
                 children: [
                   SirenButton(
                     label: '보고서 저장',
-                    icon: const Icon(Icons.save_alt_rounded),
+                    icon: const Icon(Icons.save_alt),
                     onPressed: () => Toast.show(
                       context,
                       '보고서가 저장되었습니다.',

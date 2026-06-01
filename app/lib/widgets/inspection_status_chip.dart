@@ -22,7 +22,7 @@ class InspectionStatusChip extends StatelessWidget {
         ),
         decoration: BoxDecoration(
           color: status.color.withAlpha(26),
-          borderRadius: AppRadius.borderFull,
+          borderRadius: BorderRadius.zero, // IBM Carbon 0px sharp corners
           border: Border.all(color: status.color.withAlpha(77), width: 1),
         ),
         child: Row(
@@ -56,7 +56,7 @@ class InspectionStatusChip extends StatelessWidget {
       height: 6,
       decoration: BoxDecoration(
         color: status.color,
-        shape: BoxShape.circle,
+        shape: BoxShape.rectangle, // IBM Carbon sharp square status dot
       ),
     );
   }
