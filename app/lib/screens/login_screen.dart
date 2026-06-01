@@ -148,15 +148,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // precision_manufacturing icon container
-            Container(
-              width: 96,
-              height: 96,
-              decoration: BoxDecoration(
-                color: AppColors.surfaceVariant, // Surface 2
-                borderRadius: AppRadius.borderMd, // 8px rounded
-                border: Border.all(color: AppColors.primary.withValues(alpha: 0.3), width: 1.0), // subtle elegant border
-              ),
-              padding: const EdgeInsets.all(AppSpacing.md),
+            // Brand Logo Image (Boxless premium visual - scaled up)
+            SizedBox(
+              width: 130,
+              height: 130,
               child: Image.asset(
                 'assets/images/logo.png',
                 fit: BoxFit.contain,
@@ -240,15 +235,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         child: Row(
           children: [
             // Micro Icon container (36x36)
-            Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                color: AppColors.surfaceVariant,
-                borderRadius: const BorderRadius.all(Radius.circular(6)),
-                border: Border.all(color: AppColors.primary.withValues(alpha: 0.3), width: 1.0),
-              ),
-              padding: const EdgeInsets.all(6),
+            // Micro Logo (Boxless mobile visual - scaled up)
+            SizedBox(
+              width: 46,
+              height: 46,
               child: Image.asset(
                 'assets/images/logo.png',
                 fit: BoxFit.contain,
