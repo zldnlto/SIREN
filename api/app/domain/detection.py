@@ -7,6 +7,7 @@ CANONICAL_TO_ONTOLOGY: dict[str, str] = {
     # surface_treatment — ontology_id 알파벳 정렬 기준 (build_task_label_map 파생 순서와 일치)
     "coating_drop_paint": "surface_treatment.coating_drop.paint",
     "coating_separation_paint": "surface_treatment.coating_separation.paint",
+    "crack_insulation": "surface_treatment.crack.insulation",
     "crack_paint": "surface_treatment.crack.paint",
     "insulation_damage_insulation": "surface_treatment.insulation_damage.insulation",
     "paint_run_paint": "surface_treatment.paint_run.paint",
@@ -33,6 +34,7 @@ CANONICAL_TO_DISPLAY_LABEL: dict[str, str] = {
     # surface_treatment
     "coating_drop_paint": "도막떨어짐 (도장)",
     "coating_separation_paint": "도막분리 (도장)",
+    "crack_insulation": "균열 (보온재)",
     "crack_paint": "균열 (도장)",
     "insulation_damage_insulation": "보온재손상 (보온재)",
     "paint_run_paint": "도장흐름 (도장)",
@@ -59,12 +61,13 @@ CANONICAL_TO_DISPLAY_LABEL: dict[str, str] = {
 CLASS_CODE_MAP: dict[int, str] = {
     0: "coating_drop_paint",
     1: "coating_separation_paint",
-    2: "crack_paint",
-    3: "insulation_damage_insulation",
-    4: "paint_run_paint",
-    5: "scratch_base_material",
-    6: "scratch_insulation",
-    7: "scratch_paint",
+    2: "crack_insulation",
+    3: "crack_paint",
+    4: "insulation_damage_insulation",
+    5: "paint_run_paint",
+    6: "scratch_base_material",
+    7: "scratch_insulation",
+    8: "scratch_paint",
 }
 
 CLS_ONLY_CODES: set[int] = set()

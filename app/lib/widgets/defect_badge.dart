@@ -37,7 +37,7 @@ class DefectBadge extends StatelessWidget {
         padding: _padding,
         decoration: BoxDecoration(
           color: severity.containerColor,
-          borderRadius: AppRadius.borderXs,
+          borderRadius: AppRadius.borderXs, // linear.app 4px rounded badge corners
           border: Border.all(color: severity.color, width: 1),
         ),
         child: Text(

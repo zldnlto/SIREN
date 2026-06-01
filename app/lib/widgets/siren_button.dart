@@ -49,8 +49,8 @@ class _SirenButtonState extends State<SirenButton> {
   bool get _enabled => widget.onPressed != null && !widget.isLoading;
 
   double get _height => switch (widget.size) {
-        SirenButtonSize.md => 48,
-        SirenButtonSize.lg => 56,
+        SirenButtonSize.md => 32,
+        SirenButtonSize.lg => 40, // linear.app compact target min (40px)
       };
 
   EdgeInsets get _padding => switch (widget.size) {
@@ -66,11 +66,15 @@ class _SirenButtonState extends State<SirenButton> {
       };
 
   Color get _backgroundColor => switch (widget.variant) {
-        SirenButtonVariant.primary =>
-          _enabled ? AppColors.primary : AppColors.disabled,
-        SirenButtonVariant.destructive =>
-          _enabled ? AppColors.destructive : AppColors.disabled,
-        SirenButtonVariant.secondary => Colors.transparent,
+        SirenButtonVariant.primary => _enabled
+            ? (_pressed ? AppColors.primaryDark : AppColors.primary)
+            : AppColors.disabled,
+        SirenButtonVariant.destructive => _enabled
+            ? (_pressed ? const Color(0xFF8A131A) : AppColors.defect)
+            : AppColors.disabled,
+        SirenButtonVariant.secondary => _enabled
+            ? (_pressed ? AppColors.surfaceVariant : AppColors.surface)
+            : AppColors.disabled,
         SirenButtonVariant.ghost => Colors.transparent,
       };
 
@@ -80,19 +84,19 @@ class _SirenButtonState extends State<SirenButton> {
         SirenButtonVariant.destructive =>
           _enabled ? AppColors.onPrimary : AppColors.onDisabled,
         SirenButtonVariant.secondary =>
-          _enabled ? AppColors.primary : AppColors.onDisabled,
-        SirenButtonVariant.ghost =>
           _enabled ? AppColors.onSurface : AppColors.onDisabled,
+        SirenButtonVariant.ghost =>
+          _enabled ? AppColors.primary : AppColors.onDisabled, // Lavender active ghost
       };
 
   Border? get _border {
     if (_focused && _enabled) {
-      return Border.all(color: AppColors.primary, width: 2.0);
+      return Border.all(color: AppColors.primary, width: 2.0); // Focus ring
     }
     return switch (widget.variant) {
       SirenButtonVariant.secondary => Border.all(
-          color: _enabled ? AppColors.primary : AppColors.disabled,
-          width: 1.5,
+          color: _enabled ? AppColors.border : AppColors.disabled,
+          width: 1.0,
         ),
       _ => null,
     };
@@ -129,54 +133,46 @@ class _SirenButtonState extends State<SirenButton> {
                 }
               : null,
           onTapCancel: _enabled ? () => setState(() => _pressed = false) : null,
-          child: AnimatedScale(
-            scale: _pressed ? 0.96 : 1.0,
+          child: AnimatedContainer(
             duration: AppDurations.fast,
-            curve: AppCurves.enter,
-            child: AnimatedContainer(
-              duration: AppDurations.fast,
-              curve: AppCurves.standard,
-              height: _height,
-              padding: _padding,
-              decoration: BoxDecoration(
-                color: _backgroundColor,
-                borderRadius: AppRadius.borderSm,
-                border: _border,
-                boxShadow:
-                    (!_enabled || widget.variant != SirenButtonVariant.primary)
-                        ? null
-                        : (_pressed ? null : AppShadows.primaryGlow),
-              ),
-              child: widget.isLoading
-                  ? Center(
-                      child: SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: _foregroundColor,
-                        ),
-                      ),
-                    )
-                  : Row(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        if (widget.icon != null) ...[
-                          IconTheme(
-                            data: IconThemeData(
-                                color: _foregroundColor, size: 20),
-                            child: widget.icon!,
-                          ),
-                          const SizedBox(width: AppSpacing.sm),
-                        ],
-                        Text(
-                          widget.label,
-                          style: _labelStyle.copyWith(color: _foregroundColor),
-                        ),
-                      ],
-                    ),
+            curve: AppCurves.standard,
+            height: _height,
+            padding: _padding,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: _backgroundColor,
+              borderRadius: AppRadius.borderMd, // linear.app 8px rounded corners
+              border: _border,
             ),
+            child: widget.isLoading
+                ? Center(
+                    child: SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: _foregroundColor,
+                      ),
+                    ),
+                  )
+                : Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      if (widget.icon != null) ...[
+                        IconTheme(
+                          data: IconThemeData(
+                              color: _foregroundColor, size: 18),
+                          child: widget.icon!,
+                        ),
+                        const SizedBox(width: AppSpacing.sm),
+                      ],
+                      Text(
+                        widget.label, // IBM sentence case
+                        style: _labelStyle.copyWith(color: _foregroundColor),
+                      ),
+                    ],
+                  ),
           ),
         ),
       ),

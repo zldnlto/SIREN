@@ -24,7 +24,13 @@ class HistoryDetailScreen extends ConsumerWidget {
       appBar: AppBar(
         backgroundColor: AppColors.surface,
         elevation: 0,
-        title: Text('검사 상세', style: AppTextStyles.titleMd),
+        title: Text(
+          '검사 상세',
+          style: AppTextStyles.headlineSm.copyWith(
+            fontWeight: FontWeight.w400, // linear.app display-md/subhead weight
+            letterSpacing: -0.2, // negative letterSpacing
+          ),
+        ),
       ),
       body: inspectionAsync.when(
         data: (inspection) {

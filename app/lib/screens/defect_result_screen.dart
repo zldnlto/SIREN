@@ -83,7 +83,7 @@ class DefectResultScreen extends ConsumerWidget {
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
         child: SirenButton(
           label: '보고서 저장',
-          icon: const Icon(Icons.save_alt_rounded),
+          icon: const Icon(Icons.save_alt_rounded), // Rounded icon
           onPressed: () =>
               Toast.show(context, '보고서가 저장되었습니다.', type: ToastType.success),
         ),
@@ -96,9 +96,16 @@ class DefectResultScreen extends ConsumerWidget {
       appBar: AppBar(
         backgroundColor: AppColors.surface,
         elevation: 0,
-        title: Text('결함 감지됨', style: AppTextStyles.titleMd),
+        title: Text(
+          '결함 감지됨',
+          style: AppTextStyles.headlineSm.copyWith(
+            color: AppColors.defect, // Semantic Error Red
+            fontWeight: FontWeight.w500, // linear.app display-md weight
+            letterSpacing: -0.2, // negative letterSpacing
+          ),
+        ),
         leading: IconButton(
-          icon: const Icon(Icons.home_rounded, color: AppColors.onSurface),
+          icon: const Icon(Icons.home_rounded, color: AppColors.onSurface), // Rounded icon
           onPressed: () {
             ref.read(inspectionProvider.notifier).reset();
             context.go('/home');
