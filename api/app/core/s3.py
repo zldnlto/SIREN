@@ -92,3 +92,20 @@ async def generate_presigned_put_url(key: str, expires_in: int = 900) -> str:
             status_code=status.HTTP_502_BAD_GATEWAY,
             detail=f"S3 presigned URL 생성 실패: {exc}",
         )
+
+
+async def generate_presigned_get_url(key: str, expires_in: int = 3600) -> str:
+    def _generate():
+        return _get_client().generate_presigned_url(
+            "get_object",
+            Params={"Bucket": settings.AWS_S3_BUCKET, "Key": key},
+            ExpiresIn=expires_in,
+        )
+
+    try:
+        return await asyncio.to_thread(_generate)
+    except (BotoCoreError, ClientError) as exc:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=f"S3 presigned URL 생성 실패: {exc}",
+        )
