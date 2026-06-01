@@ -57,21 +57,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    // Sentry-inspired display title with Lime keyword chip
+                    // IBM Carbon-inspired display title using IBM Plex Sans light display style
                     Center(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                        decoration: const BoxDecoration(
-                          color: AppColors.lime, // Electric Lime keyword chip
-                          borderRadius: AppRadius.borderXs, // rounded.xs (4px)
-                        ),
-                        child: Text(
-                          'SIREN',
-                          style: AppTextStyles.displayHero.copyWith(
-                            fontSize: 48,
-                            color: AppColors.onPrimary, // Deep Purple Ink text
-                            letterSpacing: 2,
-                          ),
+                      child: Text(
+                        'SIREN',
+                        style: AppTextStyles.displayLarge.copyWith(
+                          fontSize: 48,
+                          color: AppColors.primary, // Confident IBM Blue brand signature
+                          letterSpacing: 4.0,
+                          fontWeight: FontWeight.w300, // Light display treatment
                         ),
                       ),
                     ),
@@ -79,24 +73,24 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     Text(
                       'LNG TANK OBSERVABILITY CONSOLE',
                       style: AppTextStyles.monoSm.copyWith(
-                        color: AppColors.onSurfaceMuted,
+                        color: AppColors.onSurfaceVariant,
                         letterSpacing: 1.0,
                       ),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: AppSpacing.xxl),
                     
-                    // Sentry rounded pricing/feature card polarity (12px rounded, 1px violet hairline)
+                    // Carbon-dark rigid card polarity (0px sharp corners, 1px Gray-80 hairline)
                     Card(
                       margin: EdgeInsets.zero,
                       child: Padding(
-                        padding: const EdgeInsets.all(AppSpacing.xxl), // 32px padding
+                        padding: const EdgeInsets.all(AppSpacing.xxl), // 48px padding for Carbon hero feel
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
                             Text(
                               'OPERATOR SIGN-IN',
-                              style: AppTextStyles.labelSm.copyWith(
+                              style: AppTextStyles.sectionHeader.copyWith(
                                 color: AppColors.onSurfaceVariant,
                                 letterSpacing: 0.5,
                               ),
@@ -125,7 +119,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             ),
                             const SizedBox(height: AppSpacing.xl),
                             SirenButton(
-                              label: 'SIGN IN',
+                              label: 'Sign In', // IBM sentence case
                               onPressed: authAsync is AsyncLoading ? null : _submit,
                               isLoading: authAsync is AsyncLoading,
                             ),
@@ -186,7 +180,7 @@ class _TokenInput extends StatelessWidget {
         ),
         prefixIcon: Icon(prefixIcon, color: AppColors.onSurfaceVariant, size: 20),
         errorStyle: AppTextStyles.labelSm.copyWith(
-          color: AppColors.pink, // Sentry Hot Pink error state text
+          color: AppColors.error, // Carbon Red-60 error state text
         ),
       ),
     );
