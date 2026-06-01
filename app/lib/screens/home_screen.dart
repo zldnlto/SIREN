@@ -52,10 +52,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       appBar: AppBar(
         backgroundColor: AppColors.surface,
         elevation: 0,
-        title: Text('SIREN', style: AppTextStyles.titleMd),
+        title: Text(
+          'SIREN',
+          style: AppTextStyles.headlineMd.copyWith(
+            color: AppColors.primary,
+            fontWeight: FontWeight.w300,
+            letterSpacing: 2.0,
+          ),
+        ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.history_rounded, color: AppColors.onSurface),
+            icon: const Icon(Icons.history, color: AppColors.onSurface),
             onPressed: () => context.go('/history'),
             tooltip: '검사 이력',
           ),

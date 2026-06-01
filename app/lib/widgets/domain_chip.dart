@@ -30,21 +30,21 @@ class DomainChip extends StatelessWidget {
         ),
         decoration: BoxDecoration(
           color: isSelected
-              ? AppColors.primaryContainer
-              : AppColors.surfaceTertiary,
-          borderRadius: AppRadius.borderFull,
+              ? AppColors.primary // IBM Blue for selected
+              : AppColors.surface, // Charcoal surface for unselected
+          borderRadius: BorderRadius.zero, // IBM Carbon 0px sharp corners
           border: Border.all(
             color: isSelected ? AppColors.primary : AppColors.border,
-            width: isSelected ? 1.5 : 1,
+            width: 1, // 1px hairline
           ),
         ),
         child: Text(
           domain.label,
           style: AppTextStyles.labelMd.copyWith(
             color: isSelected
-                ? AppColors.primaryLight
-                : AppColors.onSurfaceVariant,
-            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                ? AppColors.onPrimary // White text for selected
+                : AppColors.onSurfaceVariant, // Muted text for unselected
+            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
           ),
         ),
       ),
