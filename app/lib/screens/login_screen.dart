@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -30,27 +31,60 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   // Explicitly manage active input field via boolean state to prevent focus stealing bugs during virtual keypad taps
   bool _isIdActive = true; 
 
+  final FocusNode _employeeIdFocusNode = FocusNode();
+  final FocusNode _passwordFocusNode = FocusNode();
+
+  @override
+  void initState() {
+    super.initState();
+    
+    _employeeIdFocusNode.addListener(() {
+      if (_employeeIdFocusNode.hasFocus) {
+        setState(() => _isIdActive = true);
+      }
+    });
+    
+    _passwordFocusNode.addListener(() {
+      if (_passwordFocusNode.hasFocus) {
+        setState(() => _isIdActive = false);
+      }
+    });
+
+    // Auto-focus ID field on page load/refresh
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _employeeIdFocusNode.requestFocus();
+    });
+  }
+
   @override
   void dispose() {
     _employeeIdCtrl.dispose();
     _passwordCtrl.dispose();
+    _employeeIdFocusNode.dispose();
+    _passwordFocusNode.dispose();
     super.dispose();
   }
 
   void _onKeypadTap(String val) {
     final controller = _isIdActive ? _employeeIdCtrl : _passwordCtrl;
     final maxLen = _isIdActive ? _employeeIdMaxLen : _pinMaxLen;
+    final focusNode = _isIdActive ? _employeeIdFocusNode : _passwordFocusNode;
     final text = controller.text;
 
     if (val == 'clear') {
       setState(() => controller.clear());
+      focusNode.requestFocus();
     } else if (val == 'backspace') {
       if (text.isNotEmpty) {
         setState(() => controller.text = text.substring(0, text.length - 1));
       }
+      focusNode.requestFocus();
     } else {
       // Prevent further typing if limit reached
-      if (text.length >= maxLen) return;
+      if (text.length >= maxLen) {
+        focusNode.requestFocus();
+        return;
+      }
       
       final nextText = text + val;
       setState(() => controller.text = nextText);
@@ -58,10 +92,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       // Smart UX Automation for gloved field inspectors (10-tap 프리패스)
       if (_isIdActive && nextText.length == _employeeIdMaxLen) {
         // Auto-advance to the password PIN input field
-        setState(() => _isIdActive = false);
+        _passwordFocusNode.requestFocus();
       } else if (!_isIdActive && nextText.length == _pinMaxLen) {
         // Auto-submit login immediately upon completing the 4-digit PIN
         _submit();
+      } else {
+        focusNode.requestFocus();
       }
     }
   }
@@ -283,14 +319,28 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         height: 60, // Compact elegant form height
         child: TextFormField(
           controller: _employeeIdCtrl,
-          readOnly: true,
+          focusNode: _employeeIdFocusNode,
+          // Web/Desktop uses physical keyboard (+ keypad). Mobile uses keypad only.
+          readOnly: !kIsWeb, 
           showCursor: true,
           style: AppTextStyles.headlineMd.copyWith(
             fontSize: 22,
             fontWeight: FontWeight.w600,
             color: AppColors.onBackground,
           ),
-          onTap: () => setState(() => _isIdActive = true),
+          onTap: () => _employeeIdFocusNode.requestFocus(),
+          onChanged: (val) {
+            // Support physical keyboard auto-advance & length constraint
+            if (val.length > _employeeIdMaxLen) {
+              _employeeIdCtrl.text = val.substring(0, _employeeIdMaxLen);
+              _employeeIdCtrl.selection = TextSelection.fromPosition(
+                const TextPosition(offset: _employeeIdMaxLen),
+              );
+            }
+            if (_employeeIdCtrl.text.length == _employeeIdMaxLen) {
+              _passwordFocusNode.requestFocus();
+            }
+          },
           decoration: InputDecoration(
             filled: true,
             fillColor: AppColors.surfaceVariant, // Surface 2
@@ -342,7 +392,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         height: 60,
         child: TextFormField(
           controller: _passwordCtrl,
-          readOnly: true,
+          focusNode: _passwordFocusNode,
+          readOnly: !kIsWeb,
           showCursor: true,
           obscureText: true,
           style: AppTextStyles.headlineMd.copyWith(
@@ -351,7 +402,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             letterSpacing: 8.0,
             color: AppColors.onBackground,
           ),
-          onTap: () => setState(() => _isIdActive = false),
+          onTap: () => _passwordFocusNode.requestFocus(),
+          onChanged: (val) {
+            // Support physical keyboard auto-submit & length constraint
+            if (val.length > _pinMaxLen) {
+              _passwordCtrl.text = val.substring(0, _pinMaxLen);
+              _passwordCtrl.selection = TextSelection.fromPosition(
+                const TextPosition(offset: _pinMaxLen),
+              );
+            }
+            if (_passwordCtrl.text.length == _pinMaxLen) {
+              _submit();
+            }
+          },
           decoration: InputDecoration(
             filled: true,
             fillColor: AppColors.surfaceVariant,
