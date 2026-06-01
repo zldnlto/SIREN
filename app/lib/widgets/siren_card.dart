@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../core/tokens.dart';
 
-class SirenCard extends StatefulWidget {
+class SirenCard extends StatelessWidget {
   const SirenCard({
     super.key,
     required this.child,
@@ -14,33 +14,20 @@ class SirenCard extends StatefulWidget {
   final VoidCallback? onTap;
   final EdgeInsetsGeometry? padding;
 
-  @override
-  State<SirenCard> createState() => _SirenCardState();
-}
-
-class _SirenCardState extends State<SirenCard> {
-  bool _pressed = false;
-
-  bool get _tappable => widget.onTap != null;
+  bool get _tappable => onTap != null;
 
   @override
   Widget build(BuildContext context) {
-    final card = AnimatedScale(
-      scale: _pressed ? 0.96 : 1.0,
+    final card = AnimatedContainer(
       duration: AppDurations.fast,
-      curve: AppCurves.enter,
-      child: AnimatedContainer(
-        duration: AppDurations.fast,
-        curve: AppCurves.standard,
-        padding: widget.padding ?? const EdgeInsets.all(AppSpacing.md),
-        decoration: BoxDecoration(
-          color: AppColors.surfaceVariant,
-          borderRadius: AppRadius.borderXl,
-          border: Border.all(color: AppColors.border, width: 1),
-          boxShadow: AppShadows.md,
-        ),
-        child: widget.child,
+      curve: AppCurves.standard,
+      padding: padding ?? const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: AppColors.surface, // Inverse Surface 1
+        borderRadius: AppRadius.borderLg, // linear.app 12px rounded corners
+        border: Border.all(color: AppColors.border, width: 1), // 1px hairline Gray-80
       ),
+      child: child,
     );
 
     if (!_tappable) return card;
@@ -48,12 +35,7 @@ class _SirenCardState extends State<SirenCard> {
     return Semantics(
       button: true,
       child: GestureDetector(
-        onTapDown: (_) => setState(() => _pressed = true),
-        onTapUp: (_) {
-          setState(() => _pressed = false);
-          widget.onTap?.call();
-        },
-        onTapCancel: () => setState(() => _pressed = false),
+        onTap: onTap,
         child: MouseRegion(
           cursor: SystemMouseCursors.click,
           child: card,

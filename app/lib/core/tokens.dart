@@ -4,50 +4,59 @@ import 'package:google_fonts/google_fonts.dart';
 // ─── Colors ──────────────────────────────────────────────────────────────────
 
 abstract final class AppColors {
-  // Surface hierarchy (OLED dark, navy-tinted layers)
-  static const background = Color(0xFF0E0E0E);
-  static const surface = Color(0xFF1E233D);
-  static const surfaceVariant = Color(0xFF252B45);
-  static const surfaceTertiary = Color(0xFF2D3354);
+  // linear.app near-black canvas and surface ladders
+  static const background = Color(0xFF010102); // Deepest Canvas Polarity
+  static const surface = Color(0xFF0F1011); // Surface 1 - cards
+  static const surfaceVariant = Color(0xFF141516); // Surface 2
+  static const surfaceTertiary = Color(0xFF18191A); // Surface 3
+  static const surfaceOverlay = Color(0xFF000000);
 
-  // Primary — Steel Blue
-  static const primary = Color(0xFF3498DB);
-  static const primaryDark = Color(0xFF2980B9);
-  static const primaryLight = Color(0xFF5DADE2);
-  static const primaryContainer = Color(0xFF1A3A5C);
+  // Linear lavender-blue confidence accents
+  static const primary = Color(0xFF5E6AD2); // Lavender
+  static const primaryDark = Color(0xFF5E69D1); // Focus variant
+  static const primaryLight = Color(0xFF828FFF); // Hover variant
+  static const primaryContainer = Color(0xFF141516);
 
-  // Severity
-  static const good = Color(0xFF2ECC71); // 양호
-  static const warning = Color(0xFFFFD60A); // 주의
-  static const defect = Color(0xFFE74C3C); // 결함
-  static const critical = Color(0xFFC0392B); // 위험
+  static const secondary = Color(0xFF141516); // Surface 2
+  static const secondaryDark = Color(0xFF0F1011);
+  static const secondaryLight = Color(0xFF18191A);
 
-  static const severityGoodContainer = Color(0xFF1A3D2B);
-  static const severityWarningContainer = Color(0xFF3D3300);
-  static const severityDefectContainer = Color(0xFF3D1A1A);
-  static const severityCriticalContainer = Color(0xFF2D0F0F);
+  // Semantic mappings
+  static const good = Color(0xFF27A644); // Success Green
+  static const warning = Color(0xFFF1C21B); // Warning Yellow
+  static const defect = Color(0xFFDA1E28); // Error Red
+  static const critical = Color(0xFFDA1E28);
+
+  static const severityGoodContainer = Color(0xFF0F2616);
+  static const severityWarningContainer = Color(0xFF262100);
+  static const severityDefectContainer = Color(0xFF260F0F);
+  static const severityCriticalContainer = Color(0xFF1C0A0A);
 
   // Content on surfaces
-  static const onBackground = Color(0xFFF0F4F8);
-  static const onSurface = Color(0xFFE2E8F0);
-  static const onSurfaceVariant = Color(0xFF94A3B8);
-  static const onSurfaceMuted = Color(0xFF64748B);
-  static const onPrimary = Color(0xFFFFFFFF); // primary 버튼 위 텍스트
+  static const onBackground = Color(0xFFF7F8F8); // Light gray Ink
+  static const onSurface = Color(0xFFF7F8F8);
+  static const onSurfaceVariant = Color(0xFFD0D6E0); // Ink Muted
+  static const onSurfaceMuted = Color(0xFF8A8F98); // Ink Subtle
+  static const onPrimary = Color(0xFFFFFFFF);
 
-  // Accent — Safety Yellow (CTA / warning 겸용)
-  static const accent = Color(0xFFFFD60A);
+  // Accent
+  static const accent = Color(0xFF5E6AD2); // Lavender-Blue
 
   // Disabled
-  static const disabled = Color(0xFF3D4460);
-  static const onDisabled = Color(0xFF64748B);
+  static const disabled = Color(0xFF62666D); // Ink Tertiary
+  static const onDisabled = Color(0xFF8A8F98);
 
-  // Border / divider
-  static const border = Color(0xFF2D3354); // surfaceTertiary 기준
-  static const borderSubtle =
-      Color(0xFF252B45); // surfaceVariant 기준 — surface와 구분됨
+  // Border / divider (hairlines)
+  static const border = Color(0xFF23252A); // Hairline
+  static const borderSubtle = Color(0xFF34343A); // Hairline Strong
+  static const borderCloud = Color(0xFF3E3E44); // Hairline Tertiary
 
-  // Destructive — UI 파괴 액션(삭제·취소)용. critical과 동일 계열이나 semantic 분리
-  static const destructive = critical;
+  // Semantic mappings
+  static const tertiary = primary;
+  static const error = defect;
+
+  // Destructive
+  static const destructive = defect;
 }
 
 // ─── Breakpoints ─────────────────────────────────────────────────────────────
@@ -56,27 +65,31 @@ abstract final class AppBreakpoints {
   static const double tablet = 600;
 }
 
-// ─── Spacing ─────────────────────────────────────────────────────────────────
-
 abstract final class AppSpacing {
-  static const double xs = 4;
-  static const double sm = 8;
+  static const double xxs = 4;
+  static const double xs = 8;
+  static const double sm = 12;
   static const double md = 16;
   static const double lg = 24;
   static const double xl = 32;
-  static const double x2l = 48;
-  static const double x3l = 64;
+  static const double xxl = 48;
+  static const double section = 96;
+
+  static const double touchTargetMin = 40.0; // Linear compact touch target min
+  static const double marginMobile = 16.0;
 }
 
 // ─── Border Radius ────────────────────────────────────────────────────────────
 
 abstract final class AppRadius {
+  // linear.app rounded corner hierarchy
   static const double xs = 4;
-  static const double sm = 8;
-  static const double md = 12;
-  static const double lg = 16;
-  static const double xl = 24;
-  static const double full = 999;
+  static const double sm = 6;
+  static const double md = 8; // buttons, form inputs
+  static const double lg = 12; // pricing/feature cards
+  static const double xl = 16; // screenshot panels
+  static const double xxl = 24;
+  static const double full = 9999; // pill / circles
 
   static const borderXs = BorderRadius.all(Radius.circular(xs));
   static const borderSm = BorderRadius.all(Radius.circular(sm));
@@ -87,166 +100,187 @@ abstract final class AppRadius {
 }
 
 // ─── Text Styles ──────────────────────────────────────────────────────────────
-//
-// IBM Plex Sans  — body, labels, UI
-// IBM Plex Mono  — inspection IDs, metric values, defect codes
+// Inter — display, body, labels, UI
+// JetBrains Mono — inspection IDs, metric values, code blocks
 
 abstract final class AppTextStyles {
-  // Display
-  static final TextStyle displayLg = GoogleFonts.ibmPlexSans(
+  // Display & Headline (Inter at weights 500-700 with negative tracking)
+  static final TextStyle displayHero = GoogleFonts.inter(
+    fontSize: 80,
+    fontWeight: FontWeight.w600,
+    color: AppColors.onBackground,
+    height: 1.05,
+    letterSpacing: -3.0, // Aggressive negative tracking
+  );
+
+  static final TextStyle displayLarge = GoogleFonts.inter(
+    fontSize: 56,
+    fontWeight: FontWeight.w600,
+    color: AppColors.onBackground,
+    height: 1.1,
+    letterSpacing: -1.8,
+  );
+
+  static final TextStyle headlineXl = GoogleFonts.inter(
     fontSize: 40,
-    fontWeight: FontWeight.w700,
-    color: AppColors.onBackground,
-    letterSpacing: -0.5,
-  );
-
-  static final TextStyle displaySm = GoogleFonts.ibmPlexSans(
-    fontSize: 32,
-    fontWeight: FontWeight.w700,
-    color: AppColors.onBackground,
-    letterSpacing: -0.3,
-  );
-
-  // Title
-  static final TextStyle titleLg = GoogleFonts.ibmPlexSans(
-    fontSize: 24,
     fontWeight: FontWeight.w600,
     color: AppColors.onBackground,
+    height: 1.15,
+    letterSpacing: -1.0,
   );
 
-  static final TextStyle titleMd = GoogleFonts.ibmPlexSans(
+  static final TextStyle headlineLg = GoogleFonts.inter(
+    fontSize: 28,
+    fontWeight: FontWeight.w600,
+    color: AppColors.onBackground,
+    height: 1.2,
+    letterSpacing: -0.6,
+  );
+
+  static final TextStyle headlineMd = GoogleFonts.inter(
+    fontSize: 22,
+    fontWeight: FontWeight.w500,
+    color: AppColors.onBackground,
+    height: 1.25,
+    letterSpacing: -0.4,
+  );
+
+  static final TextStyle headlineSm = GoogleFonts.inter(
     fontSize: 20,
-    fontWeight: FontWeight.w600,
-    color: AppColors.onBackground,
-  );
-
-  static final TextStyle titleSm = GoogleFonts.ibmPlexSans(
-    fontSize: 16,
-    fontWeight: FontWeight.w600,
+    fontWeight: FontWeight.w400,
     color: AppColors.onSurface,
+    height: 1.4,
+    letterSpacing: -0.2,
   );
 
-  // Section header — used in report sections
-  static final TextStyle sectionHeader = GoogleFonts.ibmPlexSans(
+  // Section header — eyebrow above headings (+0.4px taxonomy tracking)
+  static final TextStyle sectionHeader = GoogleFonts.inter(
     fontSize: 13,
-    fontWeight: FontWeight.w600,
-    color: AppColors.onSurfaceVariant,
-    letterSpacing: 0.8,
+    fontWeight: FontWeight.w500,
+    color: AppColors.primary, // Eyebrow in signature lavender-blue
+    height: 1.3,
+    letterSpacing: 0.4,
   );
 
   // Body
-  static final TextStyle bodyLg = GoogleFonts.ibmPlexSans(
+  static final TextStyle bodyLg = GoogleFonts.inter(
+    fontSize: 18,
+    fontWeight: FontWeight.w400,
+    color: AppColors.onSurface,
+    height: 1.5,
+    letterSpacing: -0.1,
+  );
+
+  static final TextStyle bodyStrong = GoogleFonts.inter(
+    fontSize: 14,
+    fontWeight: FontWeight.w500,
+    color: AppColors.onSurface,
+    height: 1.5,
+  );
+
+  static final TextStyle bodyMd = GoogleFonts.inter(
     fontSize: 16,
     fontWeight: FontWeight.w400,
     color: AppColors.onSurface,
-    height: 1.6,
+    height: 1.5,
+    letterSpacing: -0.05, // Subtle negative tracking for readability
   );
 
-  static final TextStyle bodyMd = GoogleFonts.ibmPlexSans(
+  static final TextStyle bodySm = GoogleFonts.inter(
     fontSize: 14,
+    fontWeight: FontWeight.w400,
+    color: AppColors.onSurfaceVariant,
+    height: 1.5,
+    letterSpacing: 0,
+  );
+
+  // Label
+  static final TextStyle labelLg = GoogleFonts.inter(
+    fontSize: 14,
+    fontWeight: FontWeight.w500,
+    color: AppColors.onSurface,
+    height: 1.2,
+    letterSpacing: 0,
+  );
+
+  static final TextStyle labelMd = GoogleFonts.inter(
+    fontSize: 12,
+    fontWeight: FontWeight.w400,
+    color: AppColors.onSurfaceVariant,
+    height: 1.4,
+    letterSpacing: 0,
+  );
+
+  static final TextStyle labelSm = GoogleFonts.inter(
+    fontSize: 12,
+    fontWeight: FontWeight.w400,
+    color: AppColors.onSurfaceMuted,
+    letterSpacing: 0,
+    height: 1.4,
+  );
+
+  // Mono — JetBrains Mono
+  static final TextStyle monoLg = GoogleFonts.jetBrainsMono(
+    fontSize: 15,
     fontWeight: FontWeight.w400,
     color: AppColors.onSurface,
     height: 1.5,
   );
 
-  static final TextStyle bodySm = GoogleFonts.ibmPlexSans(
+  static final TextStyle monoMd = GoogleFonts.jetBrainsMono(
+    fontSize: 13,
+    fontWeight: FontWeight.w400,
+    color: AppColors.onSurface,
+  );
+
+  static final TextStyle monoSm = GoogleFonts.jetBrainsMono(
     fontSize: 12,
     fontWeight: FontWeight.w400,
     color: AppColors.onSurfaceVariant,
-    height: 1.4,
-  );
-
-  // Label
-  static final TextStyle labelLg = GoogleFonts.ibmPlexSans(
-    fontSize: 14,
-    fontWeight: FontWeight.w500,
-    color: AppColors.onSurface,
-  );
-
-  static final TextStyle labelMd = GoogleFonts.ibmPlexSans(
-    fontSize: 12,
-    fontWeight: FontWeight.w500,
-    color: AppColors.onSurfaceVariant,
-  );
-
-  static final TextStyle labelSm = GoogleFonts.ibmPlexSans(
-    fontSize: 11,
-    fontWeight: FontWeight.w500,
-    color: AppColors.onSurfaceMuted,
-    letterSpacing: 0.3,
-  );
-
-  // Mono — inspection IDs, metric values, defect codes
-  static final TextStyle monoLg = GoogleFonts.ibmPlexMono(
-    fontSize: 16,
-    fontWeight: FontWeight.w500,
-    color: AppColors.onSurface,
-    fontFeatures: const [FontFeature.tabularFigures()],
-  );
-
-  static final TextStyle monoMd = GoogleFonts.ibmPlexMono(
-    fontSize: 14,
-    fontWeight: FontWeight.w400,
-    color: AppColors.onSurface,
-    fontFeatures: const [FontFeature.tabularFigures()],
-  );
-
-  static final TextStyle monoSm = GoogleFonts.ibmPlexMono(
-    fontSize: 12,
-    fontWeight: FontWeight.w400,
-    color: AppColors.onSurfaceVariant,
-    fontFeatures: const [FontFeature.tabularFigures()],
   );
 
   // Button
-  static final TextStyle buttonLg = GoogleFonts.ibmPlexSans(
-    fontSize: 16,
-    fontWeight: FontWeight.w600,
+  static final TextStyle buttonLg = GoogleFonts.inter(
+    fontSize: 14,
+    fontWeight: FontWeight.w500,
     color: AppColors.onPrimary,
-    letterSpacing: 0.2,
+    letterSpacing: 0,
+    height: 1.2,
   );
 
-  static final TextStyle buttonMd = GoogleFonts.ibmPlexSans(
+  static final TextStyle buttonMd = GoogleFonts.inter(
     fontSize: 14,
-    fontWeight: FontWeight.w600,
+    fontWeight: FontWeight.w500,
     color: AppColors.onPrimary,
-    letterSpacing: 0.2,
+    letterSpacing: 0,
+    height: 1.2,
   );
+
+  // Fallback aliases for other screens' legacy style references
+  static final TextStyle titleLg = headlineLg;
+  static final TextStyle titleMd = headlineMd;
+  static final TextStyle titleSm = headlineSm;
 }
 
 // ─── Shadows ─────────────────────────────────────────────────────────────────
 
 abstract final class AppShadows {
-  static const List<BoxShadow> sm = [
-    BoxShadow(color: Color(0x14000000), blurRadius: 4, offset: Offset(0, 1)),
-  ];
+  static const List<BoxShadow> sm = [];
 
-  static const List<BoxShadow> md = [
-    BoxShadow(color: Color(0x1F000000), blurRadius: 8, offset: Offset(0, 2)),
-    BoxShadow(color: Color(0x0A000000), blurRadius: 2, offset: Offset(0, 0)),
-  ];
+  static const List<BoxShadow> md = [];
 
-  static const List<BoxShadow> lg = [
-    BoxShadow(color: Color(0x29000000), blurRadius: 16, offset: Offset(0, 4)),
-    BoxShadow(color: Color(0x0F000000), blurRadius: 4, offset: Offset(0, 1)),
-  ];
+  static const List<BoxShadow> lg = [];
 
-  // Blue glow — primary interactive elements
-  static const List<BoxShadow> primaryGlow = [
-    BoxShadow(color: Color(0x4D3498DB), blurRadius: 12, offset: Offset(0, 2)),
-  ];
+  static const List<BoxShadow> primaryGlow = [];
 
-  // Yellow glow — warning / accent states
-  static const List<BoxShadow> accentGlow = [
-    BoxShadow(color: Color(0x33FFD60A), blurRadius: 10, offset: Offset(0, 2)),
-  ];
+  static const List<BoxShadow> accentGlow = [];
 }
 
 // ─── Animation Durations ─────────────────────────────────────────────────────
 
 abstract final class AppDurations {
   static const instant = Duration.zero;
-  static const exit = Duration(milliseconds: 100); // exit은 enter보다 짧게
+  static const exit = Duration(milliseconds: 100);
   static const fast = Duration(milliseconds: 150);
   static const normal = Duration(milliseconds: 220);
   static const slow = Duration(milliseconds: 300);

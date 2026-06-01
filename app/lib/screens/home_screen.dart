@@ -52,7 +52,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       appBar: AppBar(
         backgroundColor: AppColors.surface,
         elevation: 0,
-        title: Text('SIREN', style: AppTextStyles.titleMd),
+        title: Text(
+          'SIREN',
+          style: AppTextStyles.headlineMd.copyWith(
+            color: AppColors.primary, // Signature Lavender
+            fontWeight: FontWeight.w600, // Linear custom display weight
+            letterSpacing: -0.4, // Linear Display negative tracking
+          ),
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.history_rounded, color: AppColors.onSurface),

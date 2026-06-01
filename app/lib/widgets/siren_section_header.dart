@@ -24,7 +24,7 @@ class SirenSectionHeader extends StatelessWidget {
           children: [
             Expanded(
               child: Text(
-                title.toUpperCase(),
+                title, // Carbon sentence case
                 style: AppTextStyles.sectionHeader,
               ),
             ),
