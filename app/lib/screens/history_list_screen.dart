@@ -25,7 +25,13 @@ class HistoryListScreen extends ConsumerWidget {
       appBar: AppBar(
         backgroundColor: AppColors.surface,
         elevation: 0,
-        title: Text('검사 이력', style: AppTextStyles.titleMd),
+        title: Text(
+          '검사 이력',
+          style: AppTextStyles.headlineSm.copyWith(
+            fontWeight: FontWeight.w300,
+            letterSpacing: 1.0,
+          ),
+        ),
       ),
       body: historyAsync.when(
         data: (list) => list.isEmpty
@@ -33,8 +39,11 @@ class HistoryListScreen extends ConsumerWidget {
             : ListView.separated(
                 padding: const EdgeInsets.all(AppSpacing.md),
                 itemCount: list.length,
-                separatorBuilder: (_, __) =>
-                    const SizedBox(height: AppSpacing.sm),
+                separatorBuilder: (_, __) => const Divider(
+                  color: AppColors.border,
+                  height: AppSpacing.md,
+                  thickness: 1,
+                ),
                 itemBuilder: (context, i) => _HistoryTile(inspection: list[i]),
               ),
         loading: () => const Center(
@@ -44,7 +53,7 @@ class HistoryListScreen extends ConsumerWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               const Icon(
-                Icons.error_outline_rounded,
+                Icons.error_outline, // Sharp icon
                 size: 48,
                 color: AppColors.critical,
               ),
@@ -82,7 +91,7 @@ class _EmptyState extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             const Icon(
-              Icons.history_toggle_off_rounded,
+              Icons.history_toggle_off, // Sharp icon
               size: 64,
               color: AppColors.onSurfaceMuted,
             ),
