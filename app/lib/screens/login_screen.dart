@@ -77,312 +77,391 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       }
     });
 
-    final isTablet =
-        MediaQuery.of(context).size.shortestSide >= AppBreakpoints.tablet;
+    final shortestSide = MediaQuery.of(context).size.shortestSide;
+    // Mobile Breakpoint spec: shortestSide < 600 dp (from supported_devices.md)
+    final isTablet = shortestSide >= AppBreakpoints.tablet;
+    
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
 
-    // Fluid responsive sizing clamps for the Tablet layout card (Slightly larger height scale to utilize vertical space)
+    // Fluid responsive sizing clamps for the Tablet layout card
     final tabletWidth = (screenWidth * 0.9).clamp(800.0, 1120.0);
     final tabletHeight = (screenHeight * 0.82).clamp(600.0, 780.0);
 
-    // Left Branding Section (Clean layout without internal scrollbars + Compact design hierarchy)
-    final brandingSection = Expanded(
-      flex: isTablet ? 1 : 0,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // precision_manufacturing icon container (96x96 compact size, 8px rounded, lavender outline)
-          Container(
-            width: 96,
-            height: 96,
-            decoration: BoxDecoration(
-              color: AppColors.surfaceVariant, // Surface 2
-              borderRadius: AppRadius.borderMd, // 8px rounded
-              border: Border.all(color: AppColors.primary, width: 1.5), // Elegant lavender accent outline
-            ),
-            child: const Center(
-              child: Icon(
-                Icons.precision_manufacturing_rounded,
-                color: AppColors.primary,
-                size: 44,
+    // ─── Left Branding Component (Polymorphic Responsive Visuals) ───
+    late Widget brandingWidget;
+
+    if (isTablet) {
+      // Full Tablet Landscape Branding (2-Pane column style)
+      brandingWidget = Expanded(
+        flex: 1,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // precision_manufacturing icon container
+            Container(
+              width: 96,
+              height: 96,
+              decoration: BoxDecoration(
+                color: AppColors.surfaceVariant, // Surface 2
+                borderRadius: AppRadius.borderMd, // 8px rounded
+                border: Border.all(color: AppColors.primary, width: 1.5), // elegant lavender accent
+              ),
+              child: const Center(
+                child: Icon(
+                  Icons.precision_manufacturing_rounded,
+                  color: AppColors.primary,
+                  size: 44,
+                ),
               ),
             ),
-          ),
-          const SizedBox(height: AppSpacing.md), // Compact spacing (16px)
-          Text(
-            'LNG TANK',
-            style: AppTextStyles.displayLarge.copyWith(
-              fontSize: 30, // Compact typography scale for zero scrollbar
-              fontWeight: FontWeight.w700,
-              height: 1.1,
-              letterSpacing: -1.0,
-              color: AppColors.onBackground,
+            const SizedBox(height: AppSpacing.md),
+            Text(
+              'LNG TANK',
+              style: AppTextStyles.displayLarge.copyWith(
+                fontSize: 30,
+                fontWeight: FontWeight.w700,
+                height: 1.1,
+                letterSpacing: -1.0,
+                color: AppColors.onBackground,
+              ),
             ),
-          ),
-          Text(
-            'INSPECTOR',
-            style: AppTextStyles.displayLarge.copyWith(
-              fontSize: 30,
-              fontWeight: FontWeight.w700,
-              height: 1.1,
-              letterSpacing: -1.0,
-              color: AppColors.primary, // signature lavender
+            Text(
+              'INSPECTOR',
+              style: AppTextStyles.displayLarge.copyWith(
+                fontSize: 30,
+                fontWeight: FontWeight.w700,
+                height: 1.1,
+                letterSpacing: -1.0,
+                color: AppColors.primary, // signature lavender
+              ),
             ),
-          ),
-          const SizedBox(height: AppSpacing.sm), // my-stack-sm (12px)
-          Container(
-            height: 3,
-            width: 64,
-            decoration: const BoxDecoration(
-              color: AppColors.primary,
-              borderRadius: BorderRadius.all(Radius.circular(1.5)),
+            const SizedBox(height: AppSpacing.sm),
+            Container(
+              height: 3,
+              width: 64,
+              decoration: const BoxDecoration(
+                color: AppColors.primary,
+                borderRadius: BorderRadius.all(Radius.circular(1.5)),
+              ),
             ),
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          Text(
-            '고위험 산업 환경용 검사 시스템. 허가된 작업자만 로그인할 수 있습니다.',
-            style: AppTextStyles.bodyLg.copyWith(
-              color: AppColors.onSurfaceVariant,
-              fontSize: 14, // Muted & compact description text
-              height: 1.45,
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              '고위험 산업 환경용 검사 시스템. 허가된 작업자만 로그인할 수 있습니다.',
+              style: AppTextStyles.bodyLg.copyWith(
+                color: AppColors.onSurfaceVariant,
+                fontSize: 14,
+                height: 1.45,
+              ),
             ),
-          ),
-          const Spacer(), // Safely pushes the device warning chip to bottom without IntrinsicHeight crash
-          // Device Info Warning Chip (linear.app styled pill badge - compact height)
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-            decoration: BoxDecoration(
-              color: AppColors.surfaceVariant,
-              borderRadius: AppRadius.borderSm, // 6px rounded
-              border: Border.all(color: AppColors.border, width: 1), // 1px hairline border
+            const Spacer(),
+            // Device Info Warning Chip
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceVariant,
+                borderRadius: AppRadius.borderSm, // 6px rounded
+                border: Border.all(color: AppColors.border, width: 1),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.warning_amber_rounded,
+                    color: AppColors.warning,
+                    size: 16,
+                  ),
+                  const SizedBox(width: 10),
+                  Text(
+                    '기기 ID: TERM-X9-204',
+                    style: AppTextStyles.labelMd.copyWith(
+                      color: AppColors.onSurface,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
             ),
-            child: Row(
+          ],
+        ),
+      );
+    } else {
+      // Compact Mobile Portrait Branding Header (Horizontal row style to save massive vertical space)
+      brandingWidget = Container(
+        padding: const EdgeInsets.only(bottom: 12),
+        child: Row(
+          children: [
+            // Micro Icon container (36x36)
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: AppColors.surfaceVariant,
+                borderRadius: const BorderRadius.all(Radius.circular(6)),
+                border: Border.all(color: AppColors.primary, width: 1.0),
+              ),
+              child: const Center(
+                child: Icon(
+                  Icons.precision_manufacturing_rounded,
+                  color: AppColors.primary,
+                  size: 18,
+                ),
+              ),
+            ),
+            const SizedBox(width: 10),
+            // Header Text & Device ID stacked (compact design)
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(
-                  Icons.warning_amber_rounded,
-                  color: AppColors.warning,
-                  size: 16,
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'LNG TANK ',
+                      style: GoogleFonts.inter(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: -0.5,
+                        color: AppColors.onBackground,
+                      ),
+                    ),
+                    Text(
+                      'INSPECTOR',
+                      style: GoogleFonts.inter(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: -0.5,
+                        color: AppColors.primary, // signature lavender
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 10),
                 Text(
-                  '기기 ID: TERM-X9-204',
-                  style: AppTextStyles.labelMd.copyWith(
-                    color: AppColors.onSurface,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
+                  '기기 ID: TERM-X9-204 (모바일)',
+                  style: AppTextStyles.labelSm.copyWith(
+                    fontSize: 9.5,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.onSurfaceMuted,
                   ),
                 ),
               ],
             ),
+          ],
+        ),
+      );
+    }
+
+    // ─── Right Login Input & Keypad Section (Stitch skeleton + linear.app styles) ───
+    final inputPaneContent = [
+      // Operator ID Input Label
+      Text(
+        '작업자 ID',
+        style: AppTextStyles.labelLg.copyWith(
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+          letterSpacing: 0.5,
+          color: AppColors.onSurfaceMuted,
+        ),
+      ),
+      const SizedBox(height: 6),
+      SizedBox(
+        height: 60, // Compact elegant form height
+        child: TextFormField(
+          controller: _employeeIdCtrl,
+          readOnly: true,
+          showCursor: true,
+          style: AppTextStyles.headlineMd.copyWith(
+            fontSize: 22,
+            fontWeight: FontWeight.w600,
+            color: AppColors.onBackground,
           ),
+          onTap: () => setState(() => _activeController = _employeeIdCtrl),
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: AppColors.surfaceVariant, // Surface 2
+            prefixIcon: const Icon(
+              Icons.badge_outlined,
+              color: AppColors.onSurfaceMuted,
+              size: 20,
+            ),
+            hintText: '사원번호 6자리',
+            hintStyle: AppTextStyles.headlineMd.copyWith(
+              fontSize: 22,
+              fontWeight: FontWeight.w600,
+              color: const Color(0x50D0D6E0),
+            ),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: AppRadius.borderMd, // 8px rounded
+              borderSide: BorderSide(
+                color: _activeController == _employeeIdCtrl ? AppColors.primary : AppColors.border,
+                width: _activeController == _employeeIdCtrl ? 1.5 : 1.0,
+              ),
+            ),
+            focusedBorder: const OutlineInputBorder(
+              borderRadius: AppRadius.borderMd,
+              borderSide: BorderSide(color: AppColors.primary, width: 1.5),
+            ),
+            border: const OutlineInputBorder(
+              borderRadius: AppRadius.borderMd,
+              borderSide: BorderSide(color: AppColors.border, width: 1.0),
+            ),
+          ),
+        ),
+      ),
+      const SizedBox(height: 14),
+
+      // Password (PIN) Input Label
+      Text(
+        '비밀번호 (PIN)',
+        style: AppTextStyles.labelLg.copyWith(
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+          letterSpacing: 0.5,
+          color: AppColors.onSurfaceMuted,
+        ),
+      ),
+      const SizedBox(height: 6),
+      SizedBox(
+        height: 60,
+        child: TextFormField(
+          controller: _passwordCtrl,
+          readOnly: true,
+          showCursor: true,
+          obscureText: true,
+          style: AppTextStyles.headlineMd.copyWith(
+            fontSize: 22,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 8.0,
+            color: AppColors.onBackground,
+          ),
+          onTap: () => setState(() => _activeController = _passwordCtrl),
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: AppColors.surfaceVariant,
+            prefixIcon: const Icon(
+              Icons.lock_outline_rounded,
+              color: AppColors.onSurfaceMuted,
+              size: 20,
+            ),
+            hintText: 'PIN 입력',
+            hintStyle: AppTextStyles.headlineMd.copyWith(
+              fontSize: 22,
+              fontWeight: FontWeight.w600,
+              color: const Color(0x50D0D6E0),
+              letterSpacing: 0,
+            ),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: AppRadius.borderMd,
+              borderSide: BorderSide(
+                color: _activeController == _passwordCtrl ? AppColors.primary : AppColors.border,
+                width: _activeController == _passwordCtrl ? 1.5 : 1.0,
+              ),
+            ),
+            focusedBorder: const OutlineInputBorder(
+              borderRadius: AppRadius.borderMd,
+              borderSide: BorderSide(color: AppColors.primary, width: 1.5),
+            ),
+            border: const OutlineInputBorder(
+              borderRadius: AppRadius.borderMd,
+              borderSide: BorderSide(color: AppColors.border, width: 1.0),
+            ),
+          ),
+        ),
+      ),
+      const SizedBox(height: 12),
+
+      // Numeric Keypad Grid (compact ratio 2.4, clean 10px spacing)
+      GridView.count(
+        crossAxisCount: 3,
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        childAspectRatio: 2.4,
+        mainAxisSpacing: 10,
+        crossAxisSpacing: 10,
+        children: [
+          _buildKeypadButton('1'),
+          _buildKeypadButton('2'),
+          _buildKeypadButton('3'),
+          _buildKeypadButton('4'),
+          _buildKeypadButton('5'),
+          _buildKeypadButton('6'),
+          _buildKeypadButton('7'),
+          _buildKeypadButton('8'),
+          _buildKeypadButton('9'),
+          _buildKeypadButton('지우기', isSpecial: true, value: 'clear'),
+          _buildKeypadButton('0'),
+          _buildKeypadButton('backspace', isIcon: true, value: 'backspace'),
         ],
       ),
-    );
+      const SizedBox(height: 16),
 
-    // Right Login Input & Keypad Section (Clean layout without internal scrollbars + Compact components)
-    final loginInputSection = Expanded(
-      flex: isTablet ? 1 : 0,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          // Operator ID Input Label
-          Text(
-            '작업자 ID',
-            style: AppTextStyles.labelLg.copyWith(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              letterSpacing: 0.5,
-              color: AppColors.onSurfaceMuted,
+      // Action Login Button
+      SizedBox(
+        height: 60,
+        child: ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.primary,
+            foregroundColor: AppColors.onPrimary,
+            elevation: 0,
+            shadowColor: Colors.transparent,
+            shape: const RoundedRectangleBorder(
+              borderRadius: AppRadius.borderMd,
             ),
+            padding: EdgeInsets.zero,
           ),
-          const SizedBox(height: 6),
-          SizedBox(
-            height: 60, // Refined height (60px instead of 72px) for elegant look & spacing savings
-            child: TextFormField(
-              controller: _employeeIdCtrl,
-              readOnly: true,
-              showCursor: true,
-              style: AppTextStyles.headlineMd.copyWith(
-                fontSize: 22,
-                fontWeight: FontWeight.w600,
-                color: AppColors.onBackground,
-              ),
-              onTap: () => setState(() => _activeController = _employeeIdCtrl),
-              decoration: InputDecoration(
-                filled: true,
-                fillColor: AppColors.surfaceVariant, // Surface 2
-                prefixIcon: const Icon(
-                  Icons.badge_outlined,
-                  color: AppColors.onSurfaceMuted,
-                  size: 20,
-                ),
-                hintText: '사원번호 6자리',
-                hintStyle: AppTextStyles.headlineMd.copyWith(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w600,
-                  color: const Color(0x50D0D6E0),
-                ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: AppRadius.borderMd, // 8px rounded
-                  borderSide: BorderSide(
-                    color: _activeController == _employeeIdCtrl ? AppColors.primary : AppColors.border,
-                    width: _activeController == _employeeIdCtrl ? 1.5 : 1.0,
-                  ),
-                ),
-                focusedBorder: const OutlineInputBorder(
-                  borderRadius: AppRadius.borderMd,
-                  borderSide: BorderSide(color: AppColors.primary, width: 1.5),
-                ),
-                border: const OutlineInputBorder(
-                  borderRadius: AppRadius.borderMd,
-                  borderSide: BorderSide(color: AppColors.border, width: 1.0),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 14), // space-y-stack-md (14px)
-
-          // Password (PIN) Input Label
-          Text(
-            '비밀번호 (PIN)',
-            style: AppTextStyles.labelLg.copyWith(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              letterSpacing: 0.5,
-              color: AppColors.onSurfaceMuted,
-            ),
-          ),
-          const SizedBox(height: 6),
-          SizedBox(
-            height: 60, // Refined height (60px instead of 72px)
-            child: TextFormField(
-              controller: _passwordCtrl,
-              readOnly: true,
-              showCursor: true,
-              obscureText: true,
-              style: AppTextStyles.headlineMd.copyWith(
-                fontSize: 22,
-                fontWeight: FontWeight.w600,
-                letterSpacing: 8.0, // balanced dots spacing
-                color: AppColors.onBackground,
-              ),
-              onTap: () => setState(() => _activeController = _passwordCtrl),
-              decoration: InputDecoration(
-                filled: true,
-                fillColor: AppColors.surfaceVariant,
-                prefixIcon: const Icon(
-                  Icons.lock_outline_rounded,
-                  color: AppColors.onSurfaceMuted,
-                  size: 20,
-                ),
-                hintText: 'PIN 입력',
-                hintStyle: AppTextStyles.headlineMd.copyWith(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w600,
-                  color: const Color(0x50D0D6E0),
-                  letterSpacing: 0,
-                ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: AppRadius.borderMd,
-                  borderSide: BorderSide(
-                    color: _activeController == _passwordCtrl ? AppColors.primary : AppColors.border,
-                    width: _activeController == _passwordCtrl ? 1.5 : 1.0,
-                  ),
-                ),
-                focusedBorder: const OutlineInputBorder(
-                  borderRadius: AppRadius.borderMd,
-                  borderSide: BorderSide(color: AppColors.primary, width: 1.5),
-                ),
-                border: const OutlineInputBorder(
-                  borderRadius: AppRadius.borderMd,
-                  borderSide: BorderSide(color: AppColors.border, width: 1.0),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 12),
-
-          // Numeric Keypad Grid (compact ratio 2.4, clean 10px spacing)
-          GridView.count(
-            crossAxisCount: 3,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            childAspectRatio: 2.4, // Compact key aspect ratio to save vertical space
-            mainAxisSpacing: 10,
-            crossAxisSpacing: 10,
+          onPressed: authAsync is AsyncLoading ? null : _submit,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              _buildKeypadButton('1'),
-              _buildKeypadButton('2'),
-              _buildKeypadButton('3'),
-              _buildKeypadButton('4'),
-              _buildKeypadButton('5'),
-              _buildKeypadButton('6'),
-              _buildKeypadButton('7'),
-              _buildKeypadButton('8'),
-              _buildKeypadButton('9'),
-              _buildKeypadButton('지우기', isSpecial: true, value: 'clear'),
-              _buildKeypadButton('0'),
-              _buildKeypadButton('backspace', isIcon: true, value: 'backspace'),
+              if (authAsync is AsyncLoading)
+                const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    color: AppColors.onPrimary,
+                    strokeWidth: 2.0,
+                  ),
+                )
+              else ...[
+                Text(
+                  '로그인',
+                  style: GoogleFonts.inter(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 2.0,
+                    color: AppColors.onPrimary,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                const Icon(
+                  Icons.login_rounded,
+                  color: AppColors.onPrimary,
+                  size: 20,
+                ),
+              ],
             ],
           ),
-          const SizedBox(height: 16),
-
-          // Action Login Button (60px height to align perfectly with form inputs)
-          SizedBox(
-            height: 60, // Slimmer elegant button
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary, // Lavender brand color
-                foregroundColor: AppColors.onPrimary,
-                elevation: 0,
-                shadowColor: Colors.transparent,
-                shape: const RoundedRectangleBorder(
-                  borderRadius: AppRadius.borderMd, // 8px rounded
-                ),
-                padding: EdgeInsets.zero,
-              ),
-              onPressed: authAsync is AsyncLoading ? null : _submit,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  if (authAsync is AsyncLoading)
-                    const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        color: AppColors.onPrimary,
-                        strokeWidth: 2.0,
-                      ),
-                    )
-                  else ...[
-                    Text(
-                      '로그인',
-                      style: GoogleFonts.inter(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 2.0,
-                        color: AppColors.onPrimary,
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    const Icon(
-                      Icons.login_rounded,
-                      color: AppColors.onPrimary,
-                      size: 20,
-                    ),
-                  ],
-                ],
-              ),
-            ),
-          ),
-        ],
+        ),
       ),
-    );
+    ];
+
+    final loginInputSection = isTablet
+        ? Expanded(
+            flex: 1,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: inputPaneContent,
+            ),
+          )
+        : Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: inputPaneContent,
+          );
 
     return Scaffold(
       backgroundColor: AppColors.background, // Deepest near-black canvas (#010102)
@@ -431,11 +510,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ),
             ),
           ),
-          // Layer 2: Main Login Card Frame and responsive content (Unified Single Scroll for entire screen under extreme viewport reduction)
+          // Layer 2: Main Login Card Frame and responsive content
           SafeArea(
             child: Center(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16), // optimized screen margins
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16), // optimized mobile screen margins
                 child: Form(
                   key: _formKey,
                   child: ConstrainedBox(
@@ -463,7 +542,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             child: Row(
                               crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
-                                brandingSection,
+                                brandingWidget,
                                 const SizedBox(width: 32),
                                 const VerticalDivider(
                                   color: AppColors.border,
@@ -476,7 +555,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             ),
                           )
                         : Container(
-                            padding: const EdgeInsets.all(24),
+                            // Mobile view: Minimalistic one-screen card with elegant margins
+                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
                             decoration: BoxDecoration(
                               color: AppColors.surface,
                               borderRadius: AppRadius.borderLg,
@@ -491,16 +571,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             ),
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
-                                brandingSection,
-                                const SizedBox(height: 20),
+                                brandingWidget, // Slim mobile header
                                 const Divider(
                                   color: AppColors.border,
-                                  height: 1,
+                                  height: 16,
                                   thickness: 1,
                                 ),
-                                const SizedBox(height: 20),
-                                loginInputSection,
+                                const SizedBox(height: 4),
+                                loginInputSection, // Inputs + Keypad stacked
                               ],
                             ),
                           ),
