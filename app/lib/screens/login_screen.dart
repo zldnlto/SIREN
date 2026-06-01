@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -151,10 +152,30 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             // Brand Logo with Ambient Radial Glow behind it
             Stack(
               alignment: Alignment.center,
+              clipBehavior: Clip.none,
               children: [
-                // 1. glow 컨테이너 크기 키우기 (로고 네온 번짐 수용)
+                // [기법 2] 로고 하단 타원형 radial-gradient glow (바닥 네온 빛 번짐)
+                Positioned(
+                  bottom: -15, // 로고 하단 가장자리에 배치
+                  child: Container(
+                    width: 180,
+                    height: 24, // 가로로 찌그러진 타원형 발광체
+                    decoration: BoxDecoration(
+                      gradient: RadialGradient(
+                        colors: [
+                          AppColors.primary.withValues(alpha: 0.35), // 네온 빛무리 코어
+                          AppColors.primary.withValues(alpha: 0.08),
+                          Colors.transparent,
+                        ],
+                        stops: const [0.0, 0.5, 1.0],
+                      ),
+                    ),
+                  ),
+                ),
+
+                // 원래의 220dp 거대 오라 글로우 (배후 조명)
                 Container(
-                  width: 220,  // 160 → 220
+                  width: 220,
                   height: 220,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
@@ -165,11 +186,32 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         AppColors.primary.withValues(alpha: 0.02),
                         Colors.transparent,
                       ],
-                      stops: const [0.0, 0.4, 0.7, 1.0],  // stop 하나 추가해서 더 부드럽게
+                      stops: const [0.0, 0.4, 0.7, 1.0],
                     ),
                   ),
                 ),
-                // 2. BlendMode로 흰 잔상 흡수
+
+                // [기법 1] 로고 실루엣 drop-shadow 레이어 (사각 박스그림자가 아닌 픽셀 경계선 기준)
+                Positioned(
+                  top: 4, // 아래로 미세 오프셋
+                  left: 2,
+                  child: ImageFiltered(
+                    imageFilter: ImageFilter.blur(sigmaX: 7.0, sigmaY: 7.0),
+                    child: SizedBox(
+                      width: 130,
+                      height: 130,
+                      child: Image.asset(
+                        'assets/images/logo@2x.png',
+                        fit: BoxFit.contain,
+                        // 실루엣을 딥 블랙 섀도우 톤으로 변환
+                        color: const Color(0xFF010102).withValues(alpha: 0.75),
+                        colorBlendMode: BlendMode.srcIn,
+                      ),
+                    ),
+                  ),
+                ),
+
+                // 원래의 고화질 logo@2x.png 에셋 본체
                 SizedBox(
                   width: 130,
                   height: 130,
@@ -264,10 +306,30 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             // Micro Logo with Soft Ambient Glow
             Stack(
               alignment: Alignment.center,
+              clipBehavior: Clip.none,
               children: [
-                // 1. 모바일 glow 컨테이너 확대 및 stops 부드럽게 매칭
+                // [기법 2] 모바일 로고 하단 타원형 radial-gradient glow (바닥 네온 빛 번짐)
+                Positioned(
+                  bottom: -6,
+                  child: Container(
+                    width: 70,
+                    height: 10,
+                    decoration: BoxDecoration(
+                      gradient: RadialGradient(
+                        colors: [
+                          AppColors.primary.withValues(alpha: 0.35),
+                          AppColors.primary.withValues(alpha: 0.08),
+                          Colors.transparent,
+                        ],
+                        stops: const [0.0, 0.5, 1.0],
+                      ),
+                    ),
+                  ),
+                ),
+
+                // 원래의 모바일 glow 컨테이너
                 Container(
-                  width: 90,  // 60 → 90
+                  width: 90,
                   height: 90,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
@@ -282,7 +344,27 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
                   ),
                 ),
-                // 2. 모바일 로고 이미지에 BlendMode 필터 튜닝 적용
+
+                // [기법 1] 모바일 로고 실루엣 drop-shadow 레이어 (blur 4.0)
+                Positioned(
+                  top: 2,
+                  left: 1,
+                  child: ImageFiltered(
+                    imageFilter: ImageFilter.blur(sigmaX: 4.0, sigmaY: 4.0),
+                    child: SizedBox(
+                      width: 46,
+                      height: 46,
+                      child: Image.asset(
+                        'assets/images/logo@2x.png',
+                        fit: BoxFit.contain,
+                        color: const Color(0xFF010102).withValues(alpha: 0.75),
+                        colorBlendMode: BlendMode.srcIn,
+                      ),
+                    ),
+                  ),
+                ),
+
+                // 원래의 모바일 로고 이미지에 BlendMode 필터 튜닝 적용
                 SizedBox(
                   width: 46,
                   height: 46,
@@ -637,65 +719,77 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       maxHeight: isTablet ? tabletHeight : double.infinity,
                     ),
                     child: isTablet
-                        ? Container(
-                            width: tabletWidth,
-                            height: tabletHeight, // Real-time fluid responsive height via MediaQuery clamp
-                            padding: const EdgeInsets.all(32), // refined padding (32px instead of 48px) to optimize space
-                            decoration: BoxDecoration(
-                              color: AppColors.surface, // Surface 1 (#0F1011)
-                              borderRadius: AppRadius.borderLg, // 12px rounded
-                              border: Border.all(color: AppColors.border, width: 1.0), // 1px hairline border (#23252A)
-                              boxShadow: const [
-                                BoxShadow(
-                                  color: Color(0x60000000), // elegant soft shadow
-                                  blurRadius: 30,
-                                  offset: Offset(0, 15),
+                        ? ClipRRect(
+                            borderRadius: AppRadius.borderLg,
+                            child: BackdropFilter(
+                              filter: ImageFilter.blur(sigmaX: 12.0, sigmaY: 12.0),
+                              child: Container(
+                                width: tabletWidth,
+                                height: tabletHeight, // Real-time fluid responsive height via MediaQuery clamp
+                                padding: const EdgeInsets.all(32), // refined padding (32px instead of 48px) to optimize space
+                                decoration: BoxDecoration(
+                                  color: AppColors.surface.withValues(alpha: 0.85), // 미세 투명화하여 뒷배경 굴절 투과
+                                  borderRadius: AppRadius.borderLg, // 12px rounded
+                                  border: Border.all(color: AppColors.border, width: 1.0), // 1px hairline border (#23252A)
+                                  boxShadow: const [
+                                    BoxShadow(
+                                      color: Color(0x60000000), // elegant soft shadow
+                                      blurRadius: 30,
+                                      offset: Offset(0, 15),
+                                    ),
+                                  ],
                                 ),
-                              ],
-                            ),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                brandingWidget,
-                                const SizedBox(width: 32),
-                                const VerticalDivider(
-                                  color: AppColors.border,
-                                  width: 1,
-                                  thickness: 1,
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                                  children: [
+                                    brandingWidget,
+                                    const SizedBox(width: 32),
+                                    const VerticalDivider(
+                                      color: AppColors.border,
+                                      width: 1,
+                                      thickness: 1,
+                                    ),
+                                    const SizedBox(width: 32),
+                                    loginInputSection,
+                                  ],
                                 ),
-                                const SizedBox(width: 32),
-                                loginInputSection,
-                              ],
+                              ),
                             ),
                           )
-                        : Container(
-                            // Mobile view: Minimalistic one-screen card with elegant margins
-                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-                            decoration: BoxDecoration(
-                              color: AppColors.surface,
-                              borderRadius: AppRadius.borderLg,
-                              border: Border.all(color: AppColors.border, width: 1.0),
-                              boxShadow: const [
-                                BoxShadow(
-                                  color: Color(0x50000000),
-                                  blurRadius: 20,
-                                  offset: Offset(0, 8),
+                        : ClipRRect(
+                            borderRadius: AppRadius.borderLg,
+                            child: BackdropFilter(
+                              filter: ImageFilter.blur(sigmaX: 12.0, sigmaY: 12.0),
+                              child: Container(
+                                // Mobile view: Minimalistic one-screen card with elegant margins
+                                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                                decoration: BoxDecoration(
+                                  color: AppColors.surface.withValues(alpha: 0.85), // 동일하게 미세 투명화
+                                  borderRadius: AppRadius.borderLg,
+                                  border: Border.all(color: AppColors.border, width: 1.0),
+                                  boxShadow: const [
+                                    BoxShadow(
+                                      color: Color(0x50000000),
+                                      blurRadius: 20,
+                                      offset: Offset(0, 8),
+                                    ),
+                                  ],
                                 ),
-                              ],
-                            ),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                brandingWidget, // Slim mobile header
-                                const Divider(
-                                  color: AppColors.border,
-                                  height: 16,
-                                  thickness: 1,
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                                  children: [
+                                    brandingWidget, // Slim mobile header
+                                    const Divider(
+                                      color: AppColors.border,
+                                      height: 16,
+                                      thickness: 1,
+                                    ),
+                                    const SizedBox(height: 4),
+                                    loginInputSection, // Inputs + Keypad stacked
+                                  ],
                                 ),
-                                const SizedBox(height: 4),
-                                loginInputSection, // Inputs + Keypad stacked
-                              ],
+                              ),
                             ),
                           ),
                   ),
