@@ -148,14 +148,36 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // precision_manufacturing icon container
-            // Brand Logo Image (Boxless premium visual - scaled up)
-            SizedBox(
-              width: 130,
-              height: 130,
-              child: Image.asset(
-                'assets/images/logo.png',
-                fit: BoxFit.contain,
-              ),
+            // Brand Logo with Ambient Radial Glow behind it
+            Stack(
+              alignment: Alignment.center,
+              children: [
+                // Soft Lavender-Blue Ambient Aura behind the logo
+                Container(
+                  width: 160,
+                  height: 160,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: RadialGradient(
+                      colors: [
+                        AppColors.primary.withValues(alpha: 0.15), // soft lavender core
+                        AppColors.primary.withValues(alpha: 0.05),
+                        Colors.transparent, // smooth fade out
+                      ],
+                      stops: const [0.0, 0.5, 1.0],
+                    ),
+                  ),
+                ),
+                // The boxless logo asset itself
+                SizedBox(
+                  width: 130,
+                  height: 130,
+                  child: Image.asset(
+                    'assets/images/logo.png',
+                    fit: BoxFit.contain,
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: AppSpacing.md),
             Text(
@@ -235,14 +257,35 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         child: Row(
           children: [
             // Micro Icon container (36x36)
-            // Micro Logo (Boxless mobile visual - scaled up)
-            SizedBox(
-              width: 46,
-              height: 46,
-              child: Image.asset(
-                'assets/images/logo.png',
-                fit: BoxFit.contain,
-              ),
+            // Micro Logo with Soft Ambient Glow
+            Stack(
+              alignment: Alignment.center,
+              children: [
+                // Soft Micro Glow for mobile
+                Container(
+                  width: 60,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: RadialGradient(
+                      colors: [
+                        AppColors.primary.withValues(alpha: 0.15),
+                        AppColors.primary.withValues(alpha: 0.03),
+                        Colors.transparent,
+                      ],
+                      stops: const [0.0, 0.6, 1.0],
+                    ),
+                  ),
+                ),
+                SizedBox(
+                  width: 46,
+                  height: 46,
+                  child: Image.asset(
+                    'assets/images/logo.png',
+                    fit: BoxFit.contain,
+                  ),
+                ),
+              ],
             ),
             const SizedBox(width: 10),
             // Header Text & Device ID stacked (compact design)
