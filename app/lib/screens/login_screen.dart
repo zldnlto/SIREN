@@ -436,10 +436,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   child: ConstrainedBox(
                     constraints: BoxConstraints(
                       maxWidth: isTablet ? 1160 : 440, // max-w-7xl (1160px for elegant bounds)
-                      maxHeight: isTablet ? 840 : double.infinity,
+                      maxHeight: isTablet ? 780 : double.infinity,
                     ),
                     child: isTablet
                         ? Container(
+                            height: 680, // Fix layout crash by providing explicit height to tablet card to satisfy Spacers
                             padding: const EdgeInsets.all(48), // p-12 in HTML (48px)
                             decoration: BoxDecoration(
                               color: AppColors.surface, // Surface 1 (#0F1011)
@@ -453,21 +454,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 ),
                               ],
                             ),
-                            child: IntrinsicHeight(
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
-                                  brandingSection,
-                                  const SizedBox(width: 48),
-                                  const VerticalDivider(
-                                    color: AppColors.border,
-                                    width: 1,
-                                    thickness: 1,
-                                  ),
-                                  const SizedBox(width: 48),
-                                  loginInputSection,
-                                ],
-                              ),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                brandingSection,
+                                const SizedBox(width: 48),
+                                const VerticalDivider(
+                                  color: AppColors.border,
+                                  width: 1,
+                                  thickness: 1,
+                                ),
+                                const SizedBox(width: 48),
+                                loginInputSection,
+                              ],
                             ),
                           )
                         : Container(
