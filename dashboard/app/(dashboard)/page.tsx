@@ -24,8 +24,8 @@ export default async function OverviewPage() {
   return (
     <div className="space-y-8 max-w-6xl">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">검사 현황 개요</h1>
-        <p className="text-sm text-gray-500 mt-1">LNG 탱크 부품 검사 결과 모니터링</p>
+        <h1 className="text-2xl font-semibold text-ink tracking-tight">검사 현황 개요</h1>
+        <p className="text-sm text-ink-subtle mt-1">LNG 탱크 부품 검사 결과 모니터링</p>
       </div>
 
       <div className="grid grid-cols-5 gap-4">
@@ -35,18 +35,18 @@ export default async function OverviewPage() {
       </div>
 
       <div className="grid grid-cols-2 gap-6">
-        <div className="bg-white rounded-xl border border-gray-200 p-5">
-          <p className="text-sm font-semibold text-gray-700 mb-4">도메인별 검사 분포</p>
+        <div className="bg-surface-1 rounded-lg border border-hairline p-5">
+          <p className="text-xs font-medium text-ink-subtle uppercase tracking-wide mb-4">도메인별 검사 분포</p>
           <DomainDistributionChart data={a.domain_distribution} />
         </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-5">
-          <p className="text-sm font-semibold text-gray-700 mb-4">결함 유형별 분포</p>
+        <div className="bg-surface-1 rounded-lg border border-hairline p-5">
+          <p className="text-xs font-medium text-ink-subtle uppercase tracking-wide mb-4">결함 유형별 분포</p>
           <DefectTypeChart data={a.defect_type_distribution} />
         </div>
       </div>
 
-      <div className="bg-white rounded-xl border border-gray-200 p-5">
-        <p className="text-sm font-semibold text-gray-700 mb-4">최근 검사 목록</p>
+      <div className="bg-surface-1 rounded-lg border border-hairline p-5">
+        <p className="text-xs font-medium text-ink-subtle uppercase tracking-wide mb-4">최근 검사 목록</p>
         <RecentInspectionsTable items={items} />
       </div>
     </div>

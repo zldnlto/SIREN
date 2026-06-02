@@ -29,15 +29,15 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-950">
-      <div className="w-full max-w-sm bg-white rounded-2xl shadow-xl p-8">
+    <div className="min-h-screen flex items-center justify-center bg-canvas">
+      <div className="w-full max-w-sm bg-surface-1 rounded-lg border border-hairline p-8">
         <div className="mb-8 text-center">
-          <p className="text-xs text-gray-400 uppercase tracking-widest mb-1">SIREN</p>
-          <h1 className="text-xl font-bold text-gray-900">관리자 로그인</h1>
+          <p className="text-xs text-primary uppercase tracking-widest mb-2 font-medium">SIREN</p>
+          <h1 className="text-xl font-semibold text-ink tracking-tight">관리자 로그인</h1>
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+            <label className="block text-xs font-medium text-ink-subtle mb-1.5 uppercase tracking-wide">
               사번
             </label>
             <input
@@ -45,34 +45,34 @@ export default function LoginPage() {
               type="text"
               required
               placeholder="EMP-001"
-              className="w-full border border-gray-200 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400"
+              className="w-full border border-hairline rounded-md px-3.5 py-2.5 text-sm bg-surface-2 text-ink placeholder:text-ink-tertiary focus:outline-none focus:ring-1 focus:ring-primary"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+            <label className="block text-xs font-medium text-ink-subtle mb-1.5 uppercase tracking-wide">
               비밀번호
             </label>
             <input
               name="password"
               type="password"
               required
-              className="w-full border border-gray-200 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400"
+              className="w-full border border-hairline rounded-md px-3.5 py-2.5 text-sm bg-surface-2 text-ink focus:outline-none focus:ring-1 focus:ring-primary"
             />
           </div>
           {error && (
-            <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">
+            <p className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-md px-3 py-2">
               {error}
             </p>
           )}
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-gray-900 text-white rounded-lg py-2.5 text-sm font-medium hover:bg-gray-800 transition-colors disabled:opacity-60"
+            className="w-full bg-primary text-white rounded-md py-2.5 text-sm font-medium hover:bg-primary-hover transition-colors disabled:opacity-50"
           >
             {loading ? "로그인 중…" : "로그인"}
           </button>
         </form>
-        <p className="mt-6 text-xs text-center text-gray-400">
+        <p className="mt-6 text-xs text-center text-ink-tertiary">
           AI 분석 결과는 현장 품질 판단을 보조하기 위한 참고 정보입니다.
         </p>
       </div>

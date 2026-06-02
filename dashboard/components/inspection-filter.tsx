@@ -53,7 +53,7 @@ export function InspectionFilter() {
       <select
         value={params.get("annotation_domain") ?? ""}
         onChange={(e) => update("annotation_domain", e.target.value)}
-        className="text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-gray-300"
+        className="text-sm border border-hairline rounded-md px-3 py-2 bg-surface-2 text-ink-muted focus:outline-none focus:ring-1 focus:ring-primary"
       >
         {DOMAINS.map((d) => (
           <option key={d.value} value={d.value}>{d.label}</option>
@@ -63,7 +63,7 @@ export function InspectionFilter() {
       <select
         value={params.get("status") ?? ""}
         onChange={(e) => update("status", e.target.value)}
-        className="text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-gray-300"
+        className="text-sm border border-hairline rounded-md px-3 py-2 bg-surface-2 text-ink-muted focus:outline-none focus:ring-1 focus:ring-primary"
       >
         {STATUSES.map((s) => (
           <option key={s.value} value={s.value}>{s.label}</option>
@@ -73,7 +73,7 @@ export function InspectionFilter() {
       <select
         value={params.get("quality_state") ?? ""}
         onChange={(e) => update("quality_state", e.target.value)}
-        className="text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-gray-300"
+        className="text-sm border border-hairline rounded-md px-3 py-2 bg-surface-2 text-ink-muted focus:outline-none focus:ring-1 focus:ring-primary"
       >
         {QUALITY_STATES.map((q) => (
           <option key={q.value} value={q.value}>{q.label}</option>
@@ -84,20 +84,20 @@ export function InspectionFilter() {
         type="date"
         value={params.get("from") ?? ""}
         onChange={(e) => update("from", e.target.value)}
-        className="text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-gray-300"
+        className="text-sm border border-hairline rounded-md px-3 py-2 bg-surface-2 text-ink-muted focus:outline-none focus:ring-1 focus:ring-primary"
       />
-      <span className="text-gray-400 text-sm">~</span>
+      <span className="text-ink-tertiary text-sm">~</span>
       <input
         type="date"
         value={params.get("to") ?? ""}
         onChange={(e) => update("to", e.target.value)}
-        className="text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-gray-300"
+        className="text-sm border border-hairline rounded-md px-3 py-2 bg-surface-2 text-ink-muted focus:outline-none focus:ring-1 focus:ring-primary"
       />
 
       {hasFilter && (
         <button
           onClick={reset}
-          className="text-sm text-gray-500 hover:text-gray-900 underline"
+          className="text-sm text-ink-subtle hover:text-ink underline"
         >
           필터 초기화
         </button>

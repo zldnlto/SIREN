@@ -38,22 +38,22 @@ export function NavSidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="w-56 min-h-screen bg-gray-900 text-white flex flex-col">
-      <div className="px-5 py-6 border-b border-gray-700">
-        <p className="text-xs text-gray-400 uppercase tracking-widest mb-1">SIREN</p>
-        <p className="text-sm font-semibold">관리자 대시보드</p>
+    <aside className="w-56 min-h-screen bg-surface-1 border-r border-hairline flex flex-col">
+      <div className="px-5 py-6 border-b border-hairline">
+        <p className="text-xs text-primary uppercase tracking-widest mb-1 font-medium">SIREN</p>
+        <p className="text-sm font-semibold text-ink">관리자 대시보드</p>
       </div>
-      <nav className="flex-1 px-3 py-4 space-y-1">
+      <nav className="flex-1 px-3 py-4 space-y-0.5">
         {NAV_ITEMS.map(({ href, label, icon }) => {
           const active = pathname === href || (href !== "/" && pathname.startsWith(href));
           return (
             <Link
               key={href}
               href={href}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-md text-sm transition-colors ${
                 active
-                  ? "bg-gray-700 text-white"
-                  : "text-gray-400 hover:bg-gray-800 hover:text-white"
+                  ? "bg-surface-2 text-ink border border-hairline-strong"
+                  : "text-ink-subtle hover:bg-surface-2 hover:text-ink"
               }`}
             >
               {icon}
@@ -62,10 +62,10 @@ export function NavSidebar() {
           );
         })}
       </nav>
-      <div className="px-3 py-4 border-t border-gray-700">
+      <div className="px-3 py-4 border-t border-hairline">
         <button
           onClick={() => signOut({ callbackUrl: "/login" })}
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-gray-400 hover:bg-gray-800 hover:text-white transition-colors"
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-sm text-ink-subtle hover:bg-surface-2 hover:text-ink transition-colors"
         >
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />

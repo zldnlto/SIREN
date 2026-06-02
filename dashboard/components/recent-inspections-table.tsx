@@ -10,7 +10,7 @@ import type { InspectionListItem } from "@/types";
 export function RecentInspectionsTable({ items }: { items: InspectionListItem[] }) {
   if (items.length === 0) {
     return (
-      <p className="text-sm text-gray-400 py-6 text-center">
+      <p className="text-sm text-ink-subtle py-6 text-center">
         최근 검사 결과가 없습니다.
       </p>
     );
@@ -22,31 +22,31 @@ export function RecentInspectionsTable({ items }: { items: InspectionListItem[] 
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b border-gray-100 text-gray-500 text-left">
-            <th className="pb-3 font-medium pr-4">검사 ID</th>
-            <th className="pb-3 font-medium pr-4">일시</th>
-            <th className="pb-3 font-medium pr-4">도메인</th>
-            <th className="pb-3 font-medium pr-4">결함명</th>
-            <th className="pb-3 font-medium pr-4">분석 상태</th>
-            <th className="pb-3 font-medium pr-4">품질</th>
-            <th className="pb-3 font-medium pr-4">Confidence</th>
+          <tr className="border-b border-hairline text-ink-subtle text-left">
+            <th className="pb-3 font-medium pr-4 text-xs uppercase tracking-wide">검사 ID</th>
+            <th className="pb-3 font-medium pr-4 text-xs uppercase tracking-wide">일시</th>
+            <th className="pb-3 font-medium pr-4 text-xs uppercase tracking-wide">도메인</th>
+            <th className="pb-3 font-medium pr-4 text-xs uppercase tracking-wide">결함명</th>
+            <th className="pb-3 font-medium pr-4 text-xs uppercase tracking-wide">분석 상태</th>
+            <th className="pb-3 font-medium pr-4 text-xs uppercase tracking-wide">품질</th>
+            <th className="pb-3 font-medium pr-4 text-xs uppercase tracking-wide">Confidence</th>
             <th className="pb-3 font-medium"></th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-gray-50">
+        <tbody className="divide-y divide-hairline">
           {rows.map((row) => (
-            <tr key={row.idFull} className="hover:bg-gray-50 transition-colors">
-              <td className="py-3 pr-4 font-mono text-xs text-gray-500">{row.id}</td>
-              <td className="py-3 pr-4 text-gray-600">{row.date}</td>
-              <td className="py-3 pr-4 text-gray-700">{row.domain}</td>
-              <td className="py-3 pr-4 text-gray-700">{row.defectName}</td>
+            <tr key={row.idFull} className="hover:bg-surface-2 transition-colors">
+              <td className="py-3 pr-4 font-mono text-xs text-ink-tertiary">{row.id}</td>
+              <td className="py-3 pr-4 text-ink-subtle">{row.date}</td>
+              <td className="py-3 pr-4 text-ink-muted">{row.domain}</td>
+              <td className="py-3 pr-4 text-ink-muted">{row.defectName}</td>
               <td className="py-3 pr-4"><StatusBadge {...row.status} /></td>
               <td className="py-3 pr-4"><QualityBadge {...row.quality} /></td>
-              <td className="py-3 pr-4 text-gray-600">{row.confidence}</td>
+              <td className="py-3 pr-4 text-ink-subtle">{row.confidence}</td>
               <td className="py-3">
                 <Link
                   href={`/inspections/${row.idFull}`}
-                  className="text-xs text-blue-600 hover:underline"
+                  className="text-xs text-primary hover:text-primary-hover transition-colors"
                 >
                   상세
                 </Link>
