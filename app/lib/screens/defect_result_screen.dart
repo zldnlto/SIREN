@@ -13,6 +13,7 @@ import '../widgets/siren_button.dart';
 import '../widgets/siren_card.dart';
 import '../widgets/siren_section_header.dart';
 import '../widgets/toast.dart';
+import '../widgets/domain_override_bottom_sheet.dart';
 
 class DefectResultScreen extends ConsumerWidget {
   const DefectResultScreen({super.key, required this.inspectionId});
@@ -201,6 +202,20 @@ class DefectResultScreen extends ConsumerWidget {
             context.go('/home');
           },
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.tune_rounded, color: AppColors.onSurface),
+            tooltip: '도메인 강제 변경',
+            onPressed: () {
+              final domain = state.inspection?.annotationDomain ?? 'surface_treatment';
+              DomainOverrideBottomSheet.show(
+                context,
+                inspectionId: inspectionId,
+                currentDomain: domain,
+              );
+            },
+          ),
+        ],
       ),
       body: Stack(
         children: [

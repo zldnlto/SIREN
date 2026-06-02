@@ -30,6 +30,14 @@ class InspectionRepository {
     );
     return Inspection.fromJson(resp.data!);
   }
+
+  Future<Inspection> updateDomain(String inspectionId, String annotationDomain) async {
+    final resp = await _dio.patch<Map<String, dynamic>>(
+      '/inspections/$inspectionId',
+      data: {'annotation_domain': annotationDomain},
+    );
+    return Inspection.fromJson(resp.data!);
+  }
 }
 
 final inspectionRepositoryProvider = Provider<InspectionRepository>(
