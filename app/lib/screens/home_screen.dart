@@ -247,16 +247,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
                         duration: const Duration(milliseconds: 120),
                         curve: Curves.easeOut,
                         child: Container(
-                          width: 96,
-                          height: 96,
+                          width: 120,
+                          height: 120,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             border: Border.all(color: Colors.white, width: 4),
                           ),
                           alignment: Alignment.center,
                           child: Container(
-                            width: 78,
-                            height: 78,
+                            width: 98,
+                            height: 98,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               color: inspectionState.isCreating
@@ -266,10 +266,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
                             child: inspectionState.isCreating
                                 ? const Center(
                                     child: SizedBox(
-                                      width: 24,
-                                      height: 24,
+                                      width: 32,
+                                      height: 32,
                                       child: CircularProgressIndicator(
-                                        strokeWidth: 2.5,
+                                        strokeWidth: 3.0,
                                         color: Colors.white,
                                       ),
                                     ),
