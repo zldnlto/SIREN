@@ -85,9 +85,10 @@ class NormalResultScreen extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         SizedBox(
-          height: 50, // 50px sporty height
+          height: 64, // glove-friendly height
           child: SirenButton(
             label: '보고서 저장',
+            size: SirenButtonSize.xl,
             icon: const Icon(Icons.save_alt_rounded),
             onPressed: () => Toast.show(
               context,
@@ -98,9 +99,10 @@ class NormalResultScreen extends ConsumerWidget {
         ),
         const SizedBox(height: AppSpacing.sm),
         SizedBox(
-          height: 50, // 50px sporty height
+          height: 64, // glove-friendly height
           child: SirenButton(
             label: '홈으로 돌아가기',
+            size: SirenButtonSize.xl,
             variant: SirenButtonVariant.secondary,
             onPressed: () {
               ref.read(inspectionProvider.notifier).reset();

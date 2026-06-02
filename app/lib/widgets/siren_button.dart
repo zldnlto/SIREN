@@ -5,7 +5,7 @@ import '../core/tokens.dart';
 
 enum SirenButtonVariant { primary, secondary, ghost, destructive }
 
-enum SirenButtonSize { md, lg }
+enum SirenButtonSize { md, lg, xl }
 
 class SirenButton extends StatefulWidget {
   const SirenButton({
@@ -50,7 +50,8 @@ class _SirenButtonState extends State<SirenButton> {
 
   double get _height => switch (widget.size) {
         SirenButtonSize.md => 32,
-        SirenButtonSize.lg => 40, // linear.app compact target min (40px)
+        SirenButtonSize.lg => 40,
+        SirenButtonSize.xl => 64, // glove-friendly height matching Stitch HTML
       };
 
   EdgeInsets get _padding => switch (widget.size) {
@@ -58,11 +59,14 @@ class _SirenButtonState extends State<SirenButton> {
           const EdgeInsets.symmetric(horizontal: AppSpacing.md),
         SirenButtonSize.lg =>
           const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+        SirenButtonSize.xl =>
+          const EdgeInsets.symmetric(horizontal: AppSpacing.xl, vertical: AppSpacing.sm),
       };
 
   TextStyle get _labelStyle => switch (widget.size) {
         SirenButtonSize.md => AppTextStyles.buttonMd,
         SirenButtonSize.lg => AppTextStyles.buttonLg,
+        SirenButtonSize.xl => AppTextStyles.buttonLg.copyWith(fontSize: 16.5, fontWeight: FontWeight.bold),
       };
 
   Color get _backgroundColor => switch (widget.variant) {
@@ -162,7 +166,9 @@ class _SirenButtonState extends State<SirenButton> {
                       if (widget.icon != null) ...[
                         IconTheme(
                           data: IconThemeData(
-                              color: _foregroundColor, size: 18),
+                            color: _foregroundColor, 
+                            size: widget.size == SirenButtonSize.xl ? 22 : 18,
+                          ),
                           child: widget.icon!,
                         ),
                         const SizedBox(width: AppSpacing.sm),
