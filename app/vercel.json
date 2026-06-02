@@ -1,5 +1,5 @@
 {
-  "buildCommand": "flutter build web --dart-define=BASE_URL=$BASE_URL",
+  "buildCommand": "$HOME/flutter/bin/flutter build web --dart-define=BASE_URL=$BASE_URL",
   "outputDirectory": "build/web",
   "framework": null
 }
