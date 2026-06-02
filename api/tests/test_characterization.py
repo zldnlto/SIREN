@@ -228,8 +228,8 @@ async def test_run_detection_persists_mock_detections():
     assert result.defects[0].bbox == [10.0, 20.0, 100.0, 80.0]
     create_many.assert_awaited_once()
     saved_items = create_many.await_args.args[1]
-    assert saved_items[0]["canonical_class_name"] == "crack_paint"
-    assert saved_items[0]["ontology_id"] == "surface_treatment.crack.paint"
+    assert saved_items[0]["canonical_class_name"] == "coating_drop_paint"
+    assert saved_items[0]["ontology_id"] == "surface_treatment.coating_drop.paint"
     assert saved_items[0]["detection_job_id"] == _job_id
     assert saved_items[0]["quality_state"] == "defect"
     assert saved_items[0]["bbox"] == {
@@ -238,7 +238,7 @@ async def test_run_detection_persists_mock_detections():
         "x_max": 100.0,
         "y_max": 80.0,
     }
-    assert saved_items[1]["canonical_class_name"] == "coating_drop_paint"
-    assert saved_items[1]["ontology_id"] == "surface_treatment.coating_drop.paint"
+    assert saved_items[1]["canonical_class_name"] == "coating_separation_paint"
+    assert saved_items[1]["ontology_id"] == "surface_treatment.coating_separation.paint"
     assert update_job_status.await_count == 2  # processing → completed
     db.commit.assert_awaited_once()
