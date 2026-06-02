@@ -6,6 +6,17 @@ const config: Config = {
     "./components/**/*.{ts,tsx}",
   ],
   theme: {
+    borderRadius: {
+      none: "0px",
+      xs: "0px",
+      sm: "0px",
+      md: "0px",
+      lg: "0px",
+      xl: "0px",
+      xxl: "0px",
+      pill: "9999px",
+      full: "9999px",
+    },
     extend: {
       colors: {
         canvas:   "#010102",
