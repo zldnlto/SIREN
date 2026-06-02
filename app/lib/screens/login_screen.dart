@@ -1,6 +1,6 @@
+import 'dart:ui';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -20,163 +20,87 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   static const _employeeIdMaxLen = 6;
   static const _pinMaxLen = 4;
 
-  // 웹에서는 키패드 테스트를 위해 빈 값으로 시작 (모바일은 개발용 프리필 유지)
+  // 편의를 위해 개발용 프리필 탑재 (084920 / 1234)
   final _employeeIdCtrl = TextEditingController(
-    text: kIsWeb ? '' : '084920',
+    text: '084920',
   );
   final _passwordCtrl = TextEditingController(
-    text: kIsWeb ? '' : '1234',
+    text: '1234',
   );
   final _formKey = GlobalKey<FormState>();
 
-  late TextEditingController _activeController;
+  // Explicitly manage active input field via boolean state to prevent focus stealing bugs during virtual keypad taps
+  bool _isIdActive = true; 
 
-  /// 모바일: 커스텀 키패드만 (소프트 키보드 비활성). 웹/데스크톱: 물리 키보드 + 키패드.
-  static bool get _keypadOnlyInput => !kIsWeb;
+  final FocusNode _employeeIdFocusNode = FocusNode();
+  final FocusNode _passwordFocusNode = FocusNode();
 
   @override
   void initState() {
     super.initState();
-    _activeController = _employeeIdCtrl;
-    _employeeIdCtrl.addListener(_syncFieldUi);
-    _passwordCtrl.addListener(_syncFieldUi);
-  }
+    
+    _employeeIdFocusNode.addListener(() {
+      if (_employeeIdFocusNode.hasFocus) {
+        setState(() => _isIdActive = true);
+      }
+    });
+    
+    _passwordFocusNode.addListener(() {
+      if (_passwordFocusNode.hasFocus) {
+        setState(() => _isIdActive = false);
+      }
+    });
 
-  void _syncFieldUi() {
-    if (!mounted) return;
-    setState(() {});
+    // Auto-focus ID field on page load/refresh
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _employeeIdFocusNode.requestFocus();
+    });
   }
 
   @override
   void dispose() {
-    _employeeIdCtrl.removeListener(_syncFieldUi);
-    _passwordCtrl.removeListener(_syncFieldUi);
     _employeeIdCtrl.dispose();
     _passwordCtrl.dispose();
+    _employeeIdFocusNode.dispose();
+    _passwordFocusNode.dispose();
     super.dispose();
   }
 
-  TextStyle get _fieldTextStyle => AppTextStyles.headlineMd.copyWith(
-        fontSize: 20,
-        fontWeight: FontWeight.w600,
-        height: 1.1,
-        color: AppColors.onBackground,
-      );
-
-  void _setControllerText(TextEditingController controller, String text) {
-    final next = TextEditingValue(
-      text: text,
-      selection: TextSelection.collapsed(offset: text.length),
-      composing: TextRange.empty,
-    );
-
-    void apply() {
-      if (controller.value == next) {
-        if (mounted) setState(() {});
-        return;
-      }
-      controller.value = next;
-      if (mounted) setState(() {});
-    }
-
-    // 웹: 포커스된 TextField가 내부 편집 버퍼를 유지하면 controller만 바꿔도 화면에 안 보임
-    if (kIsWeb && (FocusManager.instance.primaryFocus?.hasFocus ?? false)) {
-      FocusManager.instance.primaryFocus?.unfocus();
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted) return;
-        apply();
-      });
-      return;
-    }
-
-    apply();
-  }
-
-  void _activateField(TextEditingController controller) {
-    setState(() => _activeController = controller);
-  }
-
-  String? _validateEmployeeId(String? value) {
-    final v = value?.trim() ?? '';
-    if (v.isEmpty) return '사원번호를 입력해 주세요';
-    if (!RegExp('^\\d{$_employeeIdMaxLen}\$').hasMatch(v)) {
-      return '사원번호 $_employeeIdMaxLen자리를 입력해 주세요';
-    }
-    return null;
-  }
-
-  String? _validatePin(String? value) {
-    final v = value ?? '';
-    if (v.isEmpty) return 'PIN을 입력해 주세요';
-    if (!RegExp('^\\d{$_pinMaxLen}\$').hasMatch(v)) {
-      return 'PIN $_pinMaxLen자리를 입력해 주세요';
-    }
-    return null;
-  }
-
   void _onKeypadTap(String val) {
-    final text = _activeController.text;
-    final maxLen =
-        _activeController == _employeeIdCtrl ? _employeeIdMaxLen : _pinMaxLen;
+    final controller = _isIdActive ? _employeeIdCtrl : _passwordCtrl;
+    final maxLen = _isIdActive ? _employeeIdMaxLen : _pinMaxLen;
+    final focusNode = _isIdActive ? _employeeIdFocusNode : _passwordFocusNode;
+    final text = controller.text;
 
     if (val == 'clear') {
-      _setControllerText(_activeController, '');
-      return;
-    }
-    if (val == 'backspace') {
-      if (text.isEmpty) return;
-      _setControllerText(
-        _activeController,
-        text.substring(0, text.length - 1),
-      );
-      return;
-    }
-    if (text.length >= maxLen) return;
-    _setControllerText(_activeController, text + val);
-  }
+      setState(() => controller.clear());
+      focusNode.requestFocus();
+    } else if (val == 'backspace') {
+      if (text.isNotEmpty) {
+        setState(() => controller.text = text.substring(0, text.length - 1));
+      }
+      focusNode.requestFocus();
+    } else {
+      // Prevent further typing if limit reached
+      if (text.length >= maxLen) {
+        focusNode.requestFocus();
+        return;
+      }
+      
+      final nextText = text + val;
+      setState(() => controller.text = nextText);
 
-  InputDecoration _loginFieldDecoration({
-    required bool isActive,
-    required IconData prefixIcon,
-    required String hintText,
-    TextStyle? hintStyle,
-  }) {
-    return InputDecoration(
-      isDense: true,
-      filled: true,
-      fillColor: AppColors.surfaceVariant,
-      prefixIcon: Icon(
-        prefixIcon,
-        color: AppColors.onSurfaceMuted,
-        size: 20,
-      ),
-      hintText: hintText,
-      hintStyle: hintStyle ??
-          _fieldTextStyle.copyWith(
-            color: const Color(0x50D0D6E0),
-            letterSpacing: 0,
-          ),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: AppRadius.borderMd,
-        borderSide: BorderSide(
-          color: isActive ? AppColors.primary : AppColors.border,
-          width: isActive ? 1.5 : 1.0,
-        ),
-      ),
-      border: const OutlineInputBorder(
-        borderRadius: AppRadius.borderMd,
-        borderSide: BorderSide(color: AppColors.border, width: 1.0),
-      ),
-      errorBorder: const OutlineInputBorder(
-        borderRadius: AppRadius.borderMd,
-        borderSide: BorderSide(color: AppColors.error, width: 1.0),
-      ),
-      focusedErrorBorder: const OutlineInputBorder(
-        borderRadius: AppRadius.borderMd,
-        borderSide: BorderSide(color: AppColors.error, width: 1.5),
-      ),
-    );
+      // Smart UX Automation for gloved field inspectors (10-tap 프리패스)
+      if (_isIdActive && nextText.length == _employeeIdMaxLen) {
+        // Auto-advance to the password PIN input field
+        _passwordFocusNode.requestFocus();
+      } else if (!_isIdActive && nextText.length == _pinMaxLen) {
+        // Auto-submit login immediately upon completing the 4-digit PIN
+        _submit();
+      } else {
+        focusNode.requestFocus();
+      }
+    }
   }
 
   void _submit() {
@@ -225,40 +149,100 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // precision_manufacturing icon container
-            Container(
-              width: 96,
-              height: 96,
-              decoration: BoxDecoration(
-                color: AppColors.surfaceVariant, // Surface 2
-                borderRadius: AppRadius.borderMd, // 8px rounded
-                border: Border.all(color: AppColors.primary, width: 1.5), // elegant lavender accent
-              ),
-              child: const Center(
-                child: Icon(
-                  Icons.precision_manufacturing_rounded,
-                  color: AppColors.primary,
-                  size: 44,
+            // Brand Logo with Ambient Radial Glow behind it
+            Stack(
+              alignment: Alignment.center,
+              clipBehavior: Clip.none,
+              children: [
+                // [기법 2] 로고 하단 타원형 radial-gradient glow (바닥 네온 빛 번짐)
+                Positioned(
+                  bottom: -15, // 로고 하단 가장자리에 배치
+                  child: Container(
+                    width: 180,
+                    height: 24, // 가로로 찌그러진 타원형 발광체
+                    decoration: BoxDecoration(
+                      gradient: RadialGradient(
+                        colors: [
+                          AppColors.primary.withValues(alpha: 0.35), // 네온 빛무리 코어
+                          AppColors.primary.withValues(alpha: 0.08),
+                          Colors.transparent,
+                        ],
+                        stops: const [0.0, 0.5, 1.0],
+                      ),
+                    ),
+                  ),
                 ),
-              ),
+
+                // 원래의 220dp 거대 오라 글로우 (배후 조명)
+                Container(
+                  width: 220,
+                  height: 220,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: RadialGradient(
+                      colors: [
+                        AppColors.primary.withValues(alpha: 0.20),
+                        AppColors.primary.withValues(alpha: 0.08),
+                        AppColors.primary.withValues(alpha: 0.02),
+                        Colors.transparent,
+                      ],
+                      stops: const [0.0, 0.4, 0.7, 1.0],
+                    ),
+                  ),
+                ),
+
+                // [기법 1] 로고 실루엣 drop-shadow 레이어 (사각 박스그림자가 아닌 픽셀 경계선 기준)
+                Positioned(
+                  top: 4, // 아래로 미세 오프셋
+                  left: 2,
+                  child: ImageFiltered(
+                    imageFilter: ImageFilter.blur(sigmaX: 7.0, sigmaY: 7.0),
+                    child: SizedBox(
+                      width: 130,
+                      height: 130,
+                      child: Image.asset(
+                        'assets/images/logo@2x.png',
+                        fit: BoxFit.contain,
+                        // 실루엣을 딥 블랙 섀도우 톤으로 변환
+                        color: const Color(0xFF010102).withValues(alpha: 0.75),
+                        colorBlendMode: BlendMode.srcIn,
+                      ),
+                    ),
+                  ),
+                ),
+
+                // 원래의 고화질 logo@2x.png 에셋 본체
+                SizedBox(
+                  width: 130,
+                  height: 130,
+                  child: Image.asset(
+                    'assets/images/logo@2x.png',
+                    fit: BoxFit.contain,
+                    // 네온 흰 잔상을 어두운 배경에 블렌딩
+                    color: Colors.white.withValues(alpha: 0.95),
+                    colorBlendMode: BlendMode.modulate,
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: AppSpacing.md),
             Text(
               'LNG TANK',
-              style: AppTextStyles.displayLarge.copyWith(
-                fontSize: 30,
-                fontWeight: FontWeight.w700,
-                height: 1.1,
-                letterSpacing: -1.0,
+              style: GoogleFonts.unbounded(
+                fontSize: 26,
+                fontWeight: FontWeight.w900, // Heavy / Black 900
+                height: 1.15,
+                letterSpacing: -1.2, // 대담한 밀착 자간
                 color: AppColors.onBackground,
               ),
             ),
             Text(
               'INSPECTOR',
-              style: AppTextStyles.displayLarge.copyWith(
-                fontSize: 30,
-                fontWeight: FontWeight.w700,
-                height: 1.1,
-                letterSpacing: -1.0,
+              style: GoogleFonts.unbounded(
+                fontSize: 26,
+                fontWeight: FontWeight.w900,
+                height: 1.15,
+                letterSpacing: -1.2,
                 color: AppColors.primary, // signature lavender
               ),
             ),
@@ -319,21 +303,79 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         child: Row(
           children: [
             // Micro Icon container (36x36)
-            Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                color: AppColors.surfaceVariant,
-                borderRadius: const BorderRadius.all(Radius.circular(6)),
-                border: Border.all(color: AppColors.primary, width: 1.0),
-              ),
-              child: const Center(
-                child: Icon(
-                  Icons.precision_manufacturing_rounded,
-                  color: AppColors.primary,
-                  size: 18,
+            // Micro Logo with Soft Ambient Glow
+            Stack(
+              alignment: Alignment.center,
+              clipBehavior: Clip.none,
+              children: [
+                // [기법 2] 모바일 로고 하단 타원형 radial-gradient glow (바닥 네온 빛 번짐)
+                Positioned(
+                  bottom: -6,
+                  child: Container(
+                    width: 70,
+                    height: 10,
+                    decoration: BoxDecoration(
+                      gradient: RadialGradient(
+                        colors: [
+                          AppColors.primary.withValues(alpha: 0.35),
+                          AppColors.primary.withValues(alpha: 0.08),
+                          Colors.transparent,
+                        ],
+                        stops: const [0.0, 0.5, 1.0],
+                      ),
+                    ),
+                  ),
                 ),
-              ),
+
+                // 원래의 모바일 glow 컨테이너
+                Container(
+                  width: 90,
+                  height: 90,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: RadialGradient(
+                      colors: [
+                        AppColors.primary.withValues(alpha: 0.20),
+                        AppColors.primary.withValues(alpha: 0.08),
+                        AppColors.primary.withValues(alpha: 0.02),
+                        Colors.transparent,
+                      ],
+                      stops: const [0.0, 0.4, 0.7, 1.0],
+                    ),
+                  ),
+                ),
+
+                // [기법 1] 모바일 로고 실루엣 drop-shadow 레이어 (blur 4.0)
+                Positioned(
+                  top: 2,
+                  left: 1,
+                  child: ImageFiltered(
+                    imageFilter: ImageFilter.blur(sigmaX: 4.0, sigmaY: 4.0),
+                    child: SizedBox(
+                      width: 46,
+                      height: 46,
+                      child: Image.asset(
+                        'assets/images/logo@2x.png',
+                        fit: BoxFit.contain,
+                        color: const Color(0xFF010102).withValues(alpha: 0.75),
+                        colorBlendMode: BlendMode.srcIn,
+                      ),
+                    ),
+                  ),
+                ),
+
+                // 원래의 모바일 로고 이미지에 BlendMode 필터 튜닝 적용
+                SizedBox(
+                  width: 46,
+                  height: 46,
+                  child: Image.asset(
+                    'assets/images/logo@2x.png',
+                    fit: BoxFit.contain,
+                    color: Colors.white.withValues(alpha: 0.95),
+                    colorBlendMode: BlendMode.modulate,
+                  ),
+                ),
+              ],
             ),
             const SizedBox(width: 10),
             // Header Text & Device ID stacked (compact design)
@@ -346,19 +388,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   children: [
                     Text(
                       'LNG TANK ',
-                      style: GoogleFonts.inter(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: -0.5,
+                      style: GoogleFonts.unbounded(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w900, // Heavy 900
+                        letterSpacing: -0.6,
                         color: AppColors.onBackground,
                       ),
                     ),
                     Text(
                       'INSPECTOR',
-                      style: GoogleFonts.inter(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: -0.5,
+                      style: GoogleFonts.unbounded(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -0.6,
                         color: AppColors.primary, // signature lavender
                       ),
                     ),
@@ -392,24 +434,64 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         ),
       ),
       const SizedBox(height: 6),
-      TextFormField(
-        controller: _employeeIdCtrl,
-        readOnly: _keypadOnlyInput,
-        showCursor: true,
-        keyboardType: TextInputType.number,
-        enableSuggestions: false,
-        autocorrect: false,
-        inputFormatters: [
-          FilteringTextInputFormatter.digitsOnly,
-          LengthLimitingTextInputFormatter(_employeeIdMaxLen),
-        ],
-        validator: _validateEmployeeId,
-        style: _fieldTextStyle,
-        onTap: () => _activateField(_employeeIdCtrl),
-        decoration: _loginFieldDecoration(
-          isActive: _activeController == _employeeIdCtrl,
-          prefixIcon: Icons.badge_outlined,
-          hintText: '사원번호 6자리',
+      SizedBox(
+        height: 60, // Compact elegant form height
+        child: TextFormField(
+          controller: _employeeIdCtrl,
+          focusNode: _employeeIdFocusNode,
+          // Web/Desktop uses physical keyboard (+ keypad). Mobile uses keypad only.
+          readOnly: !kIsWeb, 
+          showCursor: true,
+          style: AppTextStyles.headlineMd.copyWith(
+            fontSize: 22,
+            fontWeight: FontWeight.w600,
+            color: AppColors.onBackground,
+          ),
+          onTap: () => _employeeIdFocusNode.requestFocus(),
+          onChanged: (val) {
+            // Support physical keyboard auto-advance & length constraint
+            if (val.length > _employeeIdMaxLen) {
+              _employeeIdCtrl.text = val.substring(0, _employeeIdMaxLen);
+              _employeeIdCtrl.selection = TextSelection.fromPosition(
+                const TextPosition(offset: _employeeIdMaxLen),
+              );
+            }
+            if (_employeeIdCtrl.text.length == _employeeIdMaxLen) {
+              _passwordFocusNode.requestFocus();
+            }
+          },
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: AppColors.surfaceVariant, // Surface 2
+            prefixIcon: const Icon(
+              Icons.badge_outlined,
+              color: AppColors.onSurfaceMuted,
+              size: 20,
+            ),
+            hintText: '사원번호 6자리',
+            hintStyle: AppTextStyles.headlineMd.copyWith(
+              fontSize: 22,
+              fontWeight: FontWeight.w600,
+              color: const Color(0x50D0D6E0),
+            ),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+            // Maintain dynamic border highlights based on the active boolean state
+            enabledBorder: OutlineInputBorder(
+              borderRadius: AppRadius.borderMd, // 8px rounded
+              borderSide: BorderSide(
+                color: _isIdActive ? AppColors.primary : AppColors.border,
+                width: _isIdActive ? 1.5 : 1.0,
+              ),
+            ),
+            focusedBorder: const OutlineInputBorder(
+              borderRadius: AppRadius.borderMd,
+              borderSide: BorderSide(color: AppColors.primary, width: 1.5),
+            ),
+            border: const OutlineInputBorder(
+              borderRadius: AppRadius.borderMd,
+              borderSide: BorderSide(color: AppColors.border, width: 1.0),
+            ),
+          ),
         ),
       ),
       const SizedBox(height: 14),
@@ -425,25 +507,65 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         ),
       ),
       const SizedBox(height: 6),
-      TextFormField(
-        controller: _passwordCtrl,
-        readOnly: _keypadOnlyInput,
-        showCursor: true,
-        obscureText: true,
-        keyboardType: TextInputType.number,
-        enableSuggestions: false,
-        autocorrect: false,
-        inputFormatters: [
-          FilteringTextInputFormatter.digitsOnly,
-          LengthLimitingTextInputFormatter(_pinMaxLen),
-        ],
-        validator: _validatePin,
-        style: _fieldTextStyle.copyWith(letterSpacing: 4),
-        onTap: () => _activateField(_passwordCtrl),
-        decoration: _loginFieldDecoration(
-          isActive: _activeController == _passwordCtrl,
-          prefixIcon: Icons.lock_outline_rounded,
-          hintText: 'PIN 4자리',
+      SizedBox(
+        height: 60,
+        child: TextFormField(
+          controller: _passwordCtrl,
+          focusNode: _passwordFocusNode,
+          readOnly: !kIsWeb,
+          showCursor: true,
+          obscureText: true,
+          style: AppTextStyles.headlineMd.copyWith(
+            fontSize: 22,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 8.0,
+            color: AppColors.onBackground,
+          ),
+          onTap: () => _passwordFocusNode.requestFocus(),
+          onChanged: (val) {
+            // Support physical keyboard auto-submit & length constraint
+            if (val.length > _pinMaxLen) {
+              _passwordCtrl.text = val.substring(0, _pinMaxLen);
+              _passwordCtrl.selection = TextSelection.fromPosition(
+                const TextPosition(offset: _pinMaxLen),
+              );
+            }
+            if (_passwordCtrl.text.length == _pinMaxLen) {
+              _submit();
+            }
+          },
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: AppColors.surfaceVariant,
+            prefixIcon: const Icon(
+              Icons.lock_outline_rounded,
+              color: AppColors.onSurfaceMuted,
+              size: 20,
+            ),
+            hintText: 'PIN 입력',
+            hintStyle: AppTextStyles.headlineMd.copyWith(
+              fontSize: 22,
+              fontWeight: FontWeight.w600,
+              color: const Color(0x50D0D6E0),
+              letterSpacing: 0,
+            ),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: AppRadius.borderMd,
+              borderSide: BorderSide(
+                color: !_isIdActive ? AppColors.primary : AppColors.border,
+                width: !_isIdActive ? 1.5 : 1.0,
+              ),
+            ),
+            focusedBorder: const OutlineInputBorder(
+              borderRadius: AppRadius.borderMd,
+              borderSide: BorderSide(color: AppColors.primary, width: 1.5),
+            ),
+            border: const OutlineInputBorder(
+              borderRadius: AppRadius.borderMd,
+              borderSide: BorderSide(color: AppColors.border, width: 1.0),
+            ),
+          ),
         ),
       ),
       const SizedBox(height: 12),
@@ -545,8 +667,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           Positioned(
             top: -250,
             left: -200,
-            child: IgnorePointer(
-              child: Container(
+            child: Container(
               width: 600,
               height: 600,
               decoration: BoxDecoration(
@@ -566,13 +687,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 ),
               ),
             ),
-            ),
           ),
           Positioned(
             bottom: -200,
             right: -200,
-            child: IgnorePointer(
-              child: Container(
+            child: Container(
               width: 500,
               height: 500,
               decoration: BoxDecoration(
@@ -585,7 +704,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ),
                 ],
               ),
-            ),
             ),
           ),
           // Layer 2: Main Login Card Frame and responsive content
@@ -601,65 +719,77 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       maxHeight: isTablet ? tabletHeight : double.infinity,
                     ),
                     child: isTablet
-                        ? Container(
-                            width: tabletWidth,
-                            height: tabletHeight, // Real-time fluid responsive height via MediaQuery clamp
-                            padding: const EdgeInsets.all(32), // refined padding (32px instead of 48px) to optimize space
-                            decoration: BoxDecoration(
-                              color: AppColors.surface, // Surface 1 (#0F1011)
-                              borderRadius: AppRadius.borderLg, // 12px rounded
-                              border: Border.all(color: AppColors.border, width: 1.0), // 1px hairline border (#23252A)
-                              boxShadow: const [
-                                BoxShadow(
-                                  color: Color(0x60000000), // elegant soft shadow
-                                  blurRadius: 30,
-                                  offset: Offset(0, 15),
+                        ? ClipRRect(
+                            borderRadius: AppRadius.borderLg,
+                            child: BackdropFilter(
+                              filter: ImageFilter.blur(sigmaX: 12.0, sigmaY: 12.0),
+                              child: Container(
+                                width: tabletWidth,
+                                height: tabletHeight, // Real-time fluid responsive height via MediaQuery clamp
+                                padding: const EdgeInsets.all(32), // refined padding (32px instead of 48px) to optimize space
+                                decoration: BoxDecoration(
+                                  color: AppColors.surface.withValues(alpha: 0.85), // 미세 투명화하여 뒷배경 굴절 투과
+                                  borderRadius: AppRadius.borderLg, // 12px rounded
+                                  border: Border.all(color: AppColors.border, width: 1.0), // 1px hairline border (#23252A)
+                                  boxShadow: const [
+                                    BoxShadow(
+                                      color: Color(0x60000000), // elegant soft shadow
+                                      blurRadius: 30,
+                                      offset: Offset(0, 15),
+                                    ),
+                                  ],
                                 ),
-                              ],
-                            ),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                brandingWidget,
-                                const SizedBox(width: 32),
-                                const VerticalDivider(
-                                  color: AppColors.border,
-                                  width: 1,
-                                  thickness: 1,
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                                  children: [
+                                    brandingWidget,
+                                    const SizedBox(width: 32),
+                                    const VerticalDivider(
+                                      color: AppColors.border,
+                                      width: 1,
+                                      thickness: 1,
+                                    ),
+                                    const SizedBox(width: 32),
+                                    loginInputSection,
+                                  ],
                                 ),
-                                const SizedBox(width: 32),
-                                loginInputSection,
-                              ],
+                              ),
                             ),
                           )
-                        : Container(
-                            // Mobile view: Minimalistic one-screen card with elegant margins
-                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-                            decoration: BoxDecoration(
-                              color: AppColors.surface,
-                              borderRadius: AppRadius.borderLg,
-                              border: Border.all(color: AppColors.border, width: 1.0),
-                              boxShadow: const [
-                                BoxShadow(
-                                  color: Color(0x50000000),
-                                  blurRadius: 20,
-                                  offset: Offset(0, 8),
+                        : ClipRRect(
+                            borderRadius: AppRadius.borderLg,
+                            child: BackdropFilter(
+                              filter: ImageFilter.blur(sigmaX: 12.0, sigmaY: 12.0),
+                              child: Container(
+                                // Mobile view: Minimalistic one-screen card with elegant margins
+                                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                                decoration: BoxDecoration(
+                                  color: AppColors.surface.withValues(alpha: 0.85), // 동일하게 미세 투명화
+                                  borderRadius: AppRadius.borderLg,
+                                  border: Border.all(color: AppColors.border, width: 1.0),
+                                  boxShadow: const [
+                                    BoxShadow(
+                                      color: Color(0x50000000),
+                                      blurRadius: 20,
+                                      offset: Offset(0, 8),
+                                    ),
+                                  ],
                                 ),
-                              ],
-                            ),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                brandingWidget, // Slim mobile header
-                                const Divider(
-                                  color: AppColors.border,
-                                  height: 16,
-                                  thickness: 1,
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                                  children: [
+                                    brandingWidget, // Slim mobile header
+                                    const Divider(
+                                      color: AppColors.border,
+                                      height: 16,
+                                      thickness: 1,
+                                    ),
+                                    const SizedBox(height: 4),
+                                    loginInputSection, // Inputs + Keypad stacked
+                                  ],
                                 ),
-                                const SizedBox(height: 4),
-                                loginInputSection, // Inputs + Keypad stacked
-                              ],
+                              ),
                             ),
                           ),
                   ),

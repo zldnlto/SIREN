@@ -12,6 +12,7 @@ const double kDesktopBreakpoint = 960;
 ThemeData buildAppTheme() {
   return ThemeData(
     useMaterial3: true,
+    fontFamily: 'LINE Seed Sans KR',
     brightness: Brightness.dark,
     scaffoldBackgroundColor: AppColors.background,
     colorScheme: const ColorScheme.dark(
