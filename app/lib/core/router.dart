@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+
+import '../core/tokens.dart';
 import '../screens/login_screen.dart';
 import '../screens/home_screen.dart';
 import '../screens/inspection_progress_screen.dart';
@@ -45,7 +47,10 @@ final appRouter = GoRouter(
         GoRoute(
           path: '/home',
           name: 'home',
-          pageBuilder: (_, state) => _fadeSlidePage(state, const HomeScreen()),
+          pageBuilder: (_, state) => NoTransitionPage(
+            key: state.pageKey,
+            child: const HomeScreen(),
+          ),
           routes: [
             GoRoute(
               path: 'progress',
@@ -76,8 +81,10 @@ final appRouter = GoRouter(
         GoRoute(
           path: '/history',
           name: 'history',
-          pageBuilder: (_, state) =>
-              _fadeSlidePage(state, const HistoryListScreen()),
+          pageBuilder: (_, state) => NoTransitionPage(
+            key: state.pageKey,
+            child: const HistoryListScreen(),
+          ),
           routes: [
             GoRoute(
               path: ':id',
@@ -94,8 +101,10 @@ final appRouter = GoRouter(
         GoRoute(
           path: '/profile',
           name: 'profile',
-          pageBuilder: (_, state) =>
-              _fadeSlidePage(state, const ProfileScreen()),
+          pageBuilder: (_, state) => NoTransitionPage(
+            key: state.pageKey,
+            child: const ProfileScreen(),
+          ),
         ),
       ],
     ),
@@ -115,24 +124,67 @@ class MainShell extends StatelessWidget {
             ? 2
             : 0;
 
+    final showRail = !(location == '/home/progress' || location.startsWith('/home/result'));
+
+    if (!showRail) {
+      return Scaffold(
+        backgroundColor: AppColors.background,
+        body: child,
+      );
+    }
+
     return Scaffold(
-      body: child,
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: index,
-        onDestinationSelected: (i) {
-          switch (i) {
-            case 0:
-              context.go('/home');
-            case 1:
-              context.go('/history');
-            case 2:
-              context.go('/profile');
-          }
-        },
-        destinations: const [
-          NavigationDestination(icon: Icon(Icons.camera_alt), label: '검사'),
-          NavigationDestination(icon: Icon(Icons.history), label: '이력'),
-          NavigationDestination(icon: Icon(Icons.person), label: '프로필'),
+      backgroundColor: AppColors.background,
+      body: Row(
+        children: [
+          NavigationRail(
+            backgroundColor: AppColors.surface,
+            selectedIndex: index,
+            onDestinationSelected: (i) {
+              switch (i) {
+                case 0:
+                  context.go('/home');
+                case 1:
+                  context.go('/history');
+                case 2:
+                  context.go('/profile');
+              }
+            },
+            labelType: NavigationRailLabelType.all,
+            selectedLabelTextStyle: AppTextStyles.labelMd.copyWith(
+              color: AppColors.primary,
+              fontWeight: FontWeight.bold,
+            ),
+            unselectedLabelTextStyle: AppTextStyles.labelMd.copyWith(
+              color: AppColors.onSurfaceMuted,
+            ),
+            selectedIconTheme: IconThemeData(color: AppColors.primary),
+            unselectedIconTheme: IconThemeData(color: AppColors.onSurfaceMuted),
+            indicatorColor: AppColors.primary.withValues(alpha: 0.08),
+            destinations: const [
+              NavigationRailDestination(
+                icon: Icon(Icons.camera_alt_outlined),
+                selectedIcon: Icon(Icons.camera_alt),
+                label: Text('검사'),
+              ),
+              NavigationRailDestination(
+                icon: Icon(Icons.history_outlined),
+                selectedIcon: Icon(Icons.history),
+                label: Text('이력'),
+              ),
+              NavigationRailDestination(
+                icon: Icon(Icons.person_outline),
+                selectedIcon: Icon(Icons.person),
+                label: Text('프로필'),
+              ),
+            ],
+          ),
+          VerticalDivider(
+            thickness: 1,
+            width: 1,
+            color: AppColors.border,
+          ),
+          Expanded(child: child),
         ],
       ),
     );
