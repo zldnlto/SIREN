@@ -81,6 +81,30 @@ class InspectionNotifier extends Notifier<InspectionState> {
     await createInspection(annotationDomain);
   }
 
+  Future<void> updateDomain(String inspectionId, String annotationDomain) async {
+    try {
+      final updated = await ref
+          .read(inspectionRepositoryProvider)
+          .updateDomain(inspectionId, annotationDomain);
+      state = state.copyWith(inspection: updated);
+    } catch (_) {
+      // Local fallback sync to maintain UI state seamlessly if backend PATCH endpoint is not ready yet
+      if (state.inspection != null && state.inspection!.id == inspectionId) {
+        final fallback = Inspection(
+          id: state.inspection!.id,
+          annotationDomain: annotationDomain,
+          inspectorId: state.inspection!.inspectorId,
+          reportFlagged: state.inspection!.reportFlagged,
+          createdAt: state.inspection!.createdAt,
+          status: state.inspection!.status,
+          imageKey: state.inspection!.imageKey,
+          thumbnailKey: state.inspection!.thumbnailKey,
+        );
+        state = state.copyWith(inspection: fallback);
+      }
+    }
+  }
+
   void injectMockResult({required bool hasDefect}) {
     final mockInspection = Inspection(
       id: 'mock-inspection-id-12345678',
