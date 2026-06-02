@@ -10,7 +10,7 @@ import '../screens/defect_result_screen.dart';
 import '../screens/normal_result_screen.dart';
 import '../screens/history_list_screen.dart';
 import '../screens/history_detail_screen.dart';
-import '../screens/profile_screen.dart';
+import '../screens/settings_screen.dart';
 
 Page<T> _fadeSlidePage<T>(GoRouterState state, Widget child) {
   return CustomTransitionPage<T>(
@@ -108,11 +108,11 @@ final appRouter = GoRouter(
           ],
         ),
         GoRoute(
-          path: '/profile',
-          name: 'profile',
+          path: '/settings',
+          name: 'settings',
           pageBuilder: (_, state) => NoTransitionPage(
             key: state.pageKey,
-            child: const ProfileScreen(),
+            child: const SettingsScreen(),
           ),
         ),
       ],
@@ -129,7 +129,7 @@ class MainShell extends StatelessWidget {
     final location = GoRouterState.of(context).uri.toString();
     final index = location.startsWith('/history')
         ? 1
-        : location.startsWith('/profile')
+        : location.startsWith('/settings')
             ? 2
             : 0;
 
@@ -175,10 +175,10 @@ class MainShell extends StatelessWidget {
                 _buildSidebarItem(
                   context: context,
                   isActive: index == 2,
-                  icon: Icons.person_outline,
-                  activeIcon: Icons.person,
-                  label: '프로필',
-                  onTap: () => context.go('/profile'),
+                  icon: Icons.settings_outlined,
+                  activeIcon: Icons.settings,
+                  label: '시스템 설정',
+                  onTap: () => context.go('/settings'),
                 ),
                 _buildDivider(),
                 const Spacer(),
