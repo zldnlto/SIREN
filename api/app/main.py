@@ -1,5 +1,5 @@
 from app.core.config import settings
-from app.routers import auth, dashboard, health, inspections
+from app.routers import auth, dashboard, health, inspections, reports
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -18,3 +18,4 @@ app.include_router(health.router)
 app.include_router(auth.router, prefix=settings.API_PREFIX)
 app.include_router(inspections.router, prefix=settings.API_PREFIX)
 app.include_router(dashboard.router, prefix=settings.API_PREFIX)
+app.include_router(reports.router, prefix=settings.API_PREFIX)
