@@ -150,6 +150,53 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
             ),
           ),
 
+          // ─── 2-B. Viewfinder HUD Top Right (MOCK TEST PANEL) ───
+          Positioned(
+            top: 24,
+            right: 24,
+            child: SafeArea(
+              child: Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: AppColors.surface.withValues(alpha: 0.85),
+                  borderRadius: AppRadius.borderMd,
+                  border: Border.all(color: AppColors.border, width: 1.0),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      ' MOCK 검수 툴: ',
+                      style: AppTextStyles.monoSm.copyWith(
+                        fontSize: 9.5,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.onSurfaceMuted,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    _buildMockButton(
+                      label: '결함 감지',
+                      color: AppColors.defect,
+                      onTap: () {
+                        ref.read(inspectionProvider.notifier).injectMockResult(hasDefect: true);
+                        context.pushNamed('result-defect', extra: 'mock-inspection-id-12345678');
+                      },
+                    ),
+                    const SizedBox(width: 4),
+                    _buildMockButton(
+                      label: '정상 완료',
+                      color: AppColors.good,
+                      onTap: () {
+                        ref.read(inspectionProvider.notifier).injectMockResult(hasDefect: false);
+                        context.pushNamed('result-normal', extra: 'mock-inspection-id-12345678');
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
           // ─── 3. Center Reticle / Crosshair / Pulsing Focus Box ───
           Positioned.fill(
             child: IgnorePointer(
@@ -285,6 +332,34 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildMockButton({
+    required String label,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: color.withValues(alpha: 0.12),
+      borderRadius: AppRadius.borderSm,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: const BorderRadius.all(Radius.circular(AppRadius.sm)),
+        splashColor: color.withValues(alpha: 0.2),
+        highlightColor: color.withValues(alpha: 0.1),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          child: Text(
+            label,
+            style: AppTextStyles.monoSm.copyWith(
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
+          ),
+        ),
       ),
     );
   }
