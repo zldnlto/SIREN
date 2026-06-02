@@ -168,9 +168,10 @@ class DefectResultScreen extends ConsumerWidget {
       Padding(
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
         child: SizedBox(
-          height: 50, // 50px sporty height
+          height: 64, // glove-friendly height
           child: SirenButton(
             label: '보고서 저장',
+            size: SirenButtonSize.xl,
             icon: const Icon(Icons.save_alt_rounded),
             onPressed: () =>
                 Toast.show(context, '보고서가 저장되었습니다.', type: ToastType.success),

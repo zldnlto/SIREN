@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../models/detected_defect.dart';
 import '../models/detection_result.dart';
 import '../models/inspection.dart';
 import '../repositories/inspection_repository.dart';
@@ -78,6 +79,55 @@ class InspectionNotifier extends Notifier<InspectionState> {
   Future<void> start(String annotationDomain) async {
     reset();
     await createInspection(annotationDomain);
+  }
+
+  void injectMockResult({required bool hasDefect}) {
+    final mockInspection = Inspection(
+      id: 'mock-inspection-id-12345678',
+      annotationDomain: 'surface_treatment',
+      inspectorId: 'inspector-123',
+      reportFlagged: hasDefect,
+      createdAt: DateTime.now(),
+      imageKey: 'inspections/mock-image.jpg',
+      thumbnailKey: 'assets/images/logo.png',
+    );
+
+    final mockResult = DetectionResult(
+      id: 'mock-result-id-123',
+      inspectionId: mockInspection.id,
+      detectionJobId: 'mock-job-id-123',
+      defects: hasDefect
+          ? [
+              const DetectedDefect(
+                ontologyId: 'surface_treatment.crack.paint',
+                displayLabel: '균열 (도장)',
+                qualityState: 'defect',
+                canonicalClassName: 'crack_paint',
+                annotationDomain: 'surface_treatment',
+                confidenceScore: 0.942,
+                bbox: [0.15, 0.20, 0.65, 0.70],
+              ),
+              const DetectedDefect(
+                ontologyId: 'surface_treatment.coating_drop.paint',
+                displayLabel: '도막떨어짐 (도장)',
+                qualityState: 'defect',
+                canonicalClassName: 'coating_drop_paint',
+                annotationDomain: 'surface_treatment',
+                confidenceScore: 0.895,
+                bbox: [0.45, 0.50, 0.85, 0.90],
+              ),
+            ]
+          : [],
+      confidence: hasDefect ? 0.9185 : 1.0,
+      detectedAt: DateTime.now(),
+    );
+
+    state = InspectionState(
+      inspection: mockInspection,
+      result: mockResult,
+      isCreating: false,
+      isDetecting: false,
+    );
   }
 }
 

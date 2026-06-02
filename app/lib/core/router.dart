@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+
+import '../core/tokens.dart';
 import '../screens/login_screen.dart';
 import '../screens/home_screen.dart';
 import '../screens/inspection_progress_screen.dart';
@@ -45,7 +47,10 @@ final appRouter = GoRouter(
         GoRoute(
           path: '/home',
           name: 'home',
-          pageBuilder: (_, state) => _fadeSlidePage(state, const HomeScreen()),
+          pageBuilder: (_, state) => NoTransitionPage(
+            key: state.pageKey,
+            child: const HomeScreen(),
+          ),
           routes: [
             GoRoute(
               path: 'progress',
@@ -76,8 +81,10 @@ final appRouter = GoRouter(
         GoRoute(
           path: '/history',
           name: 'history',
-          pageBuilder: (_, state) =>
-              _fadeSlidePage(state, const HistoryListScreen()),
+          pageBuilder: (_, state) => NoTransitionPage(
+            key: state.pageKey,
+            child: const HistoryListScreen(),
+          ),
           routes: [
             GoRoute(
               path: ':id',
@@ -94,8 +101,10 @@ final appRouter = GoRouter(
         GoRoute(
           path: '/profile',
           name: 'profile',
-          pageBuilder: (_, state) =>
-              _fadeSlidePage(state, const ProfileScreen()),
+          pageBuilder: (_, state) => NoTransitionPage(
+            key: state.pageKey,
+            child: const ProfileScreen(),
+          ),
         ),
       ],
     ),
@@ -115,25 +124,146 @@ class MainShell extends StatelessWidget {
             ? 2
             : 0;
 
+    final showRail = !(location == '/home/progress' || location.startsWith('/home/result'));
+
+    if (!showRail) {
+      return Scaffold(
+        backgroundColor: AppColors.background,
+        body: child,
+      );
+    }
+
     return Scaffold(
-      body: child,
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: index,
-        onDestinationSelected: (i) {
-          switch (i) {
-            case 0:
-              context.go('/home');
-            case 1:
-              context.go('/history');
-            case 2:
-              context.go('/profile');
-          }
-        },
-        destinations: const [
-          NavigationDestination(icon: Icon(Icons.camera_alt), label: '검사'),
-          NavigationDestination(icon: Icon(Icons.history), label: '이력'),
-          NavigationDestination(icon: Icon(Icons.person), label: '프로필'),
+      backgroundColor: AppColors.background,
+      body: Row(
+        children: [
+          // ─── Premium Custom Bento Sidebar ───
+          Container(
+            width: 104,
+            color: AppColors.surface,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const SizedBox(height: 16),
+                _buildSidebarItem(
+                  context: context,
+                  isActive: index == 0,
+                  icon: Icons.camera_alt_outlined,
+                  activeIcon: Icons.camera_alt,
+                  label: '실시간 검사',
+                  onTap: () => context.go('/home'),
+                ),
+                _buildDivider(),
+                _buildSidebarItem(
+                  context: context,
+                  isActive: index == 1,
+                  icon: Icons.history_outlined,
+                  activeIcon: Icons.history,
+                  label: '이력 관리',
+                  onTap: () => context.go('/history'),
+                ),
+                _buildDivider(),
+                _buildSidebarItem(
+                  context: context,
+                  isActive: index == 2,
+                  icon: Icons.person_outline,
+                  activeIcon: Icons.person,
+                  label: '프로필',
+                  onTap: () => context.go('/profile'),
+                ),
+                _buildDivider(),
+                const Spacer(),
+              ],
+            ),
+          ),
+          VerticalDivider(
+            thickness: 1,
+            width: 1,
+            color: AppColors.border,
+          ),
+          Expanded(child: child),
         ],
+      ),
+    );
+  }
+
+  Widget _buildDivider() {
+    return Container(
+      height: 1,
+      color: AppColors.border.withValues(alpha: 0.5),
+    );
+  }
+
+  Widget _buildSidebarItem({
+    required BuildContext context,
+    required bool isActive,
+    required IconData icon,
+    required IconData activeIcon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: isActive ? AppColors.surfaceVariant : Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        splashColor: AppColors.primary.withValues(alpha: 0.12),
+        highlightColor: AppColors.primary.withValues(alpha: 0.06),
+        child: Stack(
+          children: [
+            // Left active neon purple border line
+            if (isActive)
+              Positioned(
+                left: 0,
+                top: 0,
+                bottom: 0,
+                width: 3.5,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: AppColors.primary,
+                    borderRadius: const BorderRadius.only(
+                      topRight: Radius.circular(2),
+                      bottomRight: Radius.circular(2),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.primary.withValues(alpha: 0.4),
+                        blurRadius: 4,
+                        spreadRadius: 1,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            // Centered tactile layout block
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Icon(
+                      isActive ? activeIcon : icon,
+                      size: 28,
+                      color: isActive ? AppColors.primary : AppColors.onSurfaceMuted,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      label,
+                      textAlign: TextAlign.center,
+                      style: AppTextStyles.labelMd.copyWith(
+                        color: isActive ? AppColors.primary : AppColors.onSurfaceMuted,
+                        fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+                        fontSize: 12.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -68,6 +68,27 @@ async def run_detection(
     try:
         raw_detections: list[Any] = await run_inference_fn(inspection.image_key)
 
+        # Automatically infer annotation_domain based on YOLO detection classes
+        detected_domains = []
+        for d in raw_detections:
+            item = build_detection_item(
+                d["class_code"],
+                d["confidence"],
+                d["bbox"],
+                class_name=d.get("class_name"),
+            )
+            if item.annotation_domain:
+                detected_domains.append(item.annotation_domain)
+
+        if detected_domains:
+            # Choose the most frequent domain from detected items
+            inferred_domain = max(set(detected_domains), key=detected_domains.count)
+        else:
+            inferred_domain = "surface_treatment"
+
+        # Update the inspection's domain with the inferred domain
+        inspection.annotation_domain = inferred_domain
+
         domain_code = 25  # surface_treatment
 
         db_items = [
