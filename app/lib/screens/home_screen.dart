@@ -100,7 +100,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
       if (kIsWeb) {
         // Fallback for web sandbox environments
         if (!mounted) return;
-        context.push('/home/preview', extra: 'mock-temp-image.png');
+        context.pushNamed('preview', extra: 'mock-temp-image.png');
         return;
       }
 
@@ -111,7 +111,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
       await tempFile.writeAsBytes(pngBytes, flush: true);
 
       if (!mounted) return;
-      context.push('/home/preview', extra: tempFile.path);
+      context.pushNamed('preview', extra: tempFile.path);
     } catch (e) {
       if (!mounted) return;
       Toast.show(context, '사진 촬영에 실패했습니다.', type: ToastType.error);
