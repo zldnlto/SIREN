@@ -10,6 +10,7 @@ import '../widgets/image_overlay_viewer.dart';
 import '../widgets/siren_button.dart';
 import '../widgets/siren_card.dart';
 import '../widgets/toast.dart';
+import '../widgets/domain_override_bottom_sheet.dart';
 
 class NormalResultScreen extends ConsumerWidget {
   const NormalResultScreen({super.key, required this.inspectionId});
@@ -85,9 +86,10 @@ class NormalResultScreen extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         SizedBox(
-          height: 50, // 50px sporty height
+          height: 64, // glove-friendly height
           child: SirenButton(
             label: '보고서 저장',
+            size: SirenButtonSize.xl,
             icon: const Icon(Icons.save_alt_rounded),
             onPressed: () => Toast.show(
               context,
@@ -98,9 +100,10 @@ class NormalResultScreen extends ConsumerWidget {
         ),
         const SizedBox(height: AppSpacing.sm),
         SizedBox(
-          height: 50, // 50px sporty height
+          height: 64, // glove-friendly height
           child: SirenButton(
             label: '홈으로 돌아가기',
+            size: SirenButtonSize.xl,
             variant: SirenButtonVariant.secondary,
             onPressed: () {
               ref.read(inspectionProvider.notifier).reset();
@@ -130,6 +133,20 @@ class NormalResultScreen extends ConsumerWidget {
             context.go('/home');
           },
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.tune_rounded, color: AppColors.onSurface),
+            tooltip: '도메인 강제 변경',
+            onPressed: () {
+              final domain = state.inspection?.annotationDomain ?? 'surface_treatment';
+              DomainOverrideBottomSheet.show(
+                context,
+                inspectionId: inspectionId,
+                currentDomain: domain,
+              );
+            },
+          ),
+        ],
       ),
       body: Stack(
         children: [

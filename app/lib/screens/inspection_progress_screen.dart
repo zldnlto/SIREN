@@ -559,9 +559,10 @@ class _InspectionProgressScreenState
         children: [
           Expanded(
             child: SizedBox(
-              height: 50,
+              height: 64, // glove-friendly height
               child: SirenButton(
                 label: '다시 시도',
+                size: SirenButtonSize.xl,
                 onPressed: _runDetection,
               ),
             ),
@@ -569,9 +570,10 @@ class _InspectionProgressScreenState
           const SizedBox(width: AppSpacing.md),
           Expanded(
             child: SizedBox(
-              height: 50,
+              height: 64, // glove-friendly height
               child: SirenButton(
                 label: '홈으로',
+                size: SirenButtonSize.xl,
                 variant: SirenButtonVariant.secondary,
                 onPressed: () => context.go('/home'),
               ),
@@ -581,12 +583,12 @@ class _InspectionProgressScreenState
       );
     }
 
-    // 50px Height Sporty Cancel/Stop button
+    // 64px Height Glove-friendly Cancel/Stop button
     return AnimatedContainer(
       duration: AppDurations.fast,
       curve: AppCurves.standard,
       width: double.infinity,
-      height: 50,
+      height: 64, // glove-friendly height
       decoration: BoxDecoration(
         color: Colors.transparent,
         borderRadius: AppRadius.borderMd,
@@ -612,14 +614,15 @@ class _InspectionProgressScreenState
               const Icon(
                 Icons.stop_circle_outlined,
                 color: AppColors.defect,
-                size: 20,
+                size: 24, // enlarged icon size
               ),
               const SizedBox(width: AppSpacing.xs),
               Text(
                 'STOP INSPECTION (검사 비상 중단)',
                 style: AppTextStyles.buttonLg.copyWith(
+                  fontSize: 16.5, // matching SirenButtonSize.xl text size
                   color: AppColors.defect,
-                  fontWeight: FontWeight.w600,
+                  fontWeight: FontWeight.bold,
                   letterSpacing: -0.1,
                 ),
               ),
