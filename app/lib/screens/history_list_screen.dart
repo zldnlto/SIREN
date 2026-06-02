@@ -411,6 +411,37 @@ class _HistoryTileState extends State<_HistoryTile> {
                 ),
               ),
               const SizedBox(width: AppSpacing.md),
+
+              // Mini Premium Thumbnail Image Frame
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceVariant,
+                  borderRadius: AppRadius.borderMd,
+                  border: Border.all(
+                    color: AppColors.border,
+                    width: 1.0,
+                  ),
+                ),
+                clipBehavior: Clip.antiAlias,
+                child: widget.inspection.thumbnailKey != null
+                    ? Image.asset(
+                        widget.inspection.thumbnailKey!,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => const Icon(
+                          Icons.broken_image_rounded,
+                          size: 18,
+                          color: AppColors.onSurfaceMuted,
+                        ),
+                      )
+                    : const Icon(
+                        Icons.image_rounded,
+                        size: 18,
+                        color: AppColors.onSurfaceMuted,
+                      ),
+              ),
+              const SizedBox(width: AppSpacing.md),
               
               // Text Meta Info
               Expanded(
