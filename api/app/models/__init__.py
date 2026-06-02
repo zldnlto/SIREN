@@ -3,6 +3,7 @@ from app.models.detection_job import DetectionJob
 from app.models.guidance import Guidance
 from app.models.inspection import Inspection
 from app.models.inspection_report import InspectionReport
+from app.models.report import Report
 from app.models.user import User
 
 __all__ = [
@@ -12,4 +13,5 @@ __all__ = [
     "DefectItem",
     "InspectionReport",
     "Guidance",
+    "Report",
 ]
