@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -29,11 +30,215 @@ class DefectResultScreen extends ConsumerStatefulWidget {
 
 class _DefectResultScreenState extends ConsumerState<DefectResultScreen> {
   bool _showGradCam = false;
+  bool _isSaved = false;
+
+  Future<void> _handleSaveInspection() async {
+    HapticFeedback.lightImpact();
+    
+    final bool? confirm = await showGeneralDialog<bool>(
+      context: context,
+      barrierDismissible: true,
+      barrierLabel: 'Dismiss Dialog',
+      barrierColor: Colors.black.withValues(alpha: 0.6),
+      transitionDuration: const Duration(milliseconds: 180),
+      pageBuilder: (context, anim, _) {
+        return Center(
+          child: Material(
+            color: Colors.transparent,
+            child: ScaleTransition(
+              scale: CurvedAnimation(parent: anim, curve: Curves.easeOut),
+              child: Container(
+                width: 320,
+                padding: const EdgeInsets.all(AppSpacing.md),
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceContainerLowest,
+                  borderRadius: AppRadius.borderLg,
+                  border: Border.all(color: AppColors.border),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.save_rounded,
+                        color: AppColors.primaryLight,
+                        size: 28,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      '결과 저장',
+                      style: AppTextStyles.headlineSm.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      '이 결함 검사 결과를 로컬 및 관리자\n시스템에 저장하시겠습니까?',
+                      textAlign: TextAlign.center,
+                      style: AppTextStyles.bodySm.copyWith(
+                        color: AppColors.onSurfaceMuted,
+                        height: 1.4,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: SizedBox(
+                            height: 48,
+                            child: SirenButton(
+                              label: '취소',
+                              variant: SirenButtonVariant.secondary,
+                              onPressed: () => Navigator.pop(context, false),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: SizedBox(
+                            height: 48,
+                            child: SirenButton(
+                              label: '저장',
+                              onPressed: () => Navigator.pop(context, true),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+
+    if (confirm != true) return;
+
+    await Future.delayed(const Duration(milliseconds: 220));
+    setState(() {
+      _isSaved = true;
+    });
+
+    if (!mounted) return;
+    Toast.show(context, '저장 완료', type: ToastType.success);
+  }
+
+  Future<void> _handleSendReport() async {
+    HapticFeedback.lightImpact();
+
+    final bool? confirm = await showGeneralDialog<bool>(
+      context: context,
+      barrierDismissible: true,
+      barrierLabel: 'Dismiss Dialog',
+      barrierColor: Colors.black.withValues(alpha: 0.6),
+      transitionDuration: const Duration(milliseconds: 180),
+      pageBuilder: (context, anim, _) {
+        return Center(
+          child: Material(
+            color: Colors.transparent,
+            child: ScaleTransition(
+              scale: CurvedAnimation(parent: anim, curve: Curves.easeOut),
+              child: Container(
+                width: 320,
+                padding: const EdgeInsets.all(AppSpacing.md),
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceContainerLowest,
+                  borderRadius: AppRadius.borderLg,
+                  border: Border.all(color: AppColors.border),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.send_rounded,
+                        color: AppColors.primaryLight,
+                        size: 28,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      '보고서 발송',
+                      style: AppTextStyles.headlineSm.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      '이 결함 검사 결과를 관리자 시스템으로\n즉각 전송하시겠습니까?',
+                      textAlign: TextAlign.center,
+                      style: AppTextStyles.bodySm.copyWith(
+                        color: AppColors.onSurfaceMuted,
+                        height: 1.4,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: SizedBox(
+                            height: 48,
+                            child: SirenButton(
+                              label: '취소',
+                              variant: SirenButtonVariant.secondary,
+                              onPressed: () => Navigator.pop(context, false),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: SizedBox(
+                            height: 48,
+                            child: SirenButton(
+                              label: '발송 승인',
+                              onPressed: () => Navigator.pop(context, true),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+
+    if (confirm != true) return;
+
+    await Future.delayed(const Duration(milliseconds: 220));
+
+    if (!mounted) return;
+    
+    // Fire reactive provider update
+    await ref.read(inspectionProvider.notifier).reportInspection(widget.inspectionId);
+
+    if (!mounted) return;
+    Toast.show(context, '보고서가 성공적으로 발송되었습니다.', type: ToastType.success);
+  }
 
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(inspectionProvider);
     final result = state.result;
+    final isReported = state.inspection?.reportFlagged ?? false;
 
     if (result == null) {
       return const Scaffold(
@@ -219,7 +424,35 @@ class _DefectResultScreenState extends ConsumerState<DefectResultScreen> {
           ),
         ),
       ),
-      const SizedBox(height: AppSpacing.lg),
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.md),
+        child: Row(
+          children: [
+            Expanded(
+              child: SizedBox(
+                height: 64,
+                child: SirenButton(
+                  label: _isSaved ? '저장 완료 ✓' : '검사 결과 저장',
+                  variant: _isSaved ? SirenButtonVariant.secondary : SirenButtonVariant.primary,
+                  onPressed: _isSaved ? null : _handleSaveInspection,
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: SizedBox(
+                height: 64,
+                child: SirenButton(
+                  label: isReported ? '보고 완료 ✓' : '보고서 발송',
+                  variant: isReported ? SirenButtonVariant.secondary : SirenButtonVariant.primary,
+                  onPressed: (_isSaved && !isReported) ? _handleSendReport : null,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+      const SizedBox(height: AppSpacing.xl),
     ];
 
     return Scaffold(

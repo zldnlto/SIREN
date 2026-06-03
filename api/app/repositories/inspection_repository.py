@@ -38,3 +38,19 @@ async def update_image_keys(
     await db.commit()
     await db.refresh(inspection)
     return inspection
+
+
+async def update(
+    db: AsyncSession,
+    inspection: Inspection,
+    annotation_domain: str | None = None,
+    report_flagged: bool | None = None,
+) -> Inspection:
+    if annotation_domain is not None:
+        inspection.annotation_domain = annotation_domain
+    if report_flagged is not None:
+        inspection.report_flagged = report_flagged
+    await db.commit()
+    await db.refresh(inspection)
+    return inspection
+

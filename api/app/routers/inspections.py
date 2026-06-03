@@ -13,6 +13,7 @@ from app.schemas.inspection import (
     InspectionCreate,
     InspectionResponse,
     UploadUrlResponse,
+    InspectionUpdate,
 )
 from app.repositories import detection_job_repository, inspection_repository
 from app.services import detection_service, guidance_service, inspection_service
@@ -129,3 +130,15 @@ async def get_guidance(
             detail=f"guidance not found: {ontology_id}",
         )
     return result
+
+
+@router.patch("/inspections/{inspection_id}", response_model=InspectionResponse)
+async def update_inspection(
+    inspection_id: str,
+    data: InspectionUpdate,
+    db: AsyncSession = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    return await inspection_service.update_inspection(
+        db, inspection_id, current_user.id, data
+    )

@@ -380,3 +380,44 @@ async def test_upload_image_too_large():
             files={"file": ("big.jpg", b"x" * 100, "image/jpeg")},
         )
     assert resp.status_code == 413
+
+
+@pytest.mark.asyncio
+async def test_update_inspection_success():
+    updated = Inspection(
+        id=_INSPECTION.id,
+        annotation_domain="pipe_weld",
+        inspector_id=_INSPECTION.inspector_id,
+        image_key=_INSPECTION.image_key,
+        thumbnail_key=_INSPECTION.thumbnail_key,
+        report_flagged=True,
+        created_at=_INSPECTION.created_at,
+        updated_at=_INSPECTION.updated_at,
+    )
+    with patch(
+        "app.services.inspection_service.update_inspection",
+        new=AsyncMock(return_value=updated),
+    ):
+        resp = client.patch(
+            f"/api/v1/inspections/{_INSPECTION.id}",
+            json={"annotation_domain": "pipe_weld", "report_flagged": True},
+        )
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["annotation_domain"] == "pipe_weld"
+    assert data["report_flagged"] is True
+
+
+@pytest.mark.asyncio
+async def test_update_inspection_forbidden():
+    from fastapi import HTTPException, status
+    with patch(
+        "app.services.inspection_service.update_inspection",
+        new=AsyncMock(side_effect=HTTPException(status_code=status.HTTP_403_FORBIDDEN)),
+    ):
+        resp = client.patch(
+            f"/api/v1/inspections/{_INSPECTION.id}",
+            json={"report_flagged": True},
+        )
+    assert resp.status_code == 403
+

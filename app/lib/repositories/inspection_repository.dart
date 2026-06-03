@@ -39,6 +39,14 @@ class InspectionRepository {
     return InspectionDetail.fromJson(resp.data!);
   }
 
+  Future<Inspection> report(String inspectionId) async {
+    final resp = await _dio.patch<Map<String, dynamic>>(
+      '/inspections/$inspectionId',
+      data: {'report_flagged': true},
+    );
+    return Inspection.fromJson(resp.data!);
+  }
+
   Future<Inspection> updateDomain(String inspectionId, String annotationDomain) async {
     final resp = await _dio.patch<Map<String, dynamic>>(
       '/inspections/$inspectionId',

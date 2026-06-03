@@ -4,6 +4,7 @@ from typing import Any
 CreateInspectionFn = Callable[..., Awaitable[Any]]
 GetInspectionByIdFn = Callable[..., Awaitable[Any]]
 UpdateInspectionImageKeysFn = Callable[..., Awaitable[Any]]
+UpdateInspectionFn = Callable[..., Awaitable[Any]]
 CreateManyDefectsFn = Callable[..., Awaitable[Any]]
 GetUserByEmployeeIdFn = Callable[..., Awaitable[Any]]
 GetGuidanceByOntologyIdFn = Callable[..., Awaitable[Any]]
