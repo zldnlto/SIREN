@@ -71,12 +71,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       setState(() {
         if (_isIdActive) {
           _targetGlowPos = isTablet
-              ? Offset(size.width * 0.75, size.height * 0.3)
-              : Offset(size.width * 0.5, size.height * 0.4);
+              ? Offset(size.width * 0.75, size.height * 0.25)
+              : Offset(size.width * 0.5, size.height * 0.32);
         } else {
           _targetGlowPos = isTablet
-              ? Offset(size.width * 0.75, size.height * 0.45)
-              : Offset(size.width * 0.5, size.height * 0.55);
+              ? Offset(size.width * 0.75, size.height * 0.58)
+              : Offset(size.width * 0.5, size.height * 0.68);
         }
       });
     });
@@ -700,11 +700,21 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 duration: AppDurations.slow,
                 curve: Curves.easeOutQuart,
                 builder: (context, animOffset, child) {
-                  return CustomPaint(
-                    painter: _LoginBackgroundPainter(
-                      glowPosition: animOffset,
-                      themeColor: AppColors.primary,
-                    ),
+                  final activeColor = _isIdActive
+                      ? AppColors.primary
+                      : const Color(0xFF5E6DF8); // Indigo color for PIN focus to show a dynamic change
+                  return TweenAnimationBuilder<Color?>(
+                    tween: ColorTween(end: activeColor),
+                    duration: AppDurations.slow,
+                    curve: Curves.easeOutQuart,
+                    builder: (context, animColor, child) {
+                      return CustomPaint(
+                        painter: _LoginBackgroundPainter(
+                          glowPosition: animOffset,
+                          themeColor: animColor ?? AppColors.primary,
+                        ),
+                      );
+                    },
                   );
                 },
               ),
@@ -961,20 +971,20 @@ class _LoginBackgroundPainter extends CustomPainter {
     final glowPaint = Paint()
       ..shader = RadialGradient(
         colors: [
-          themeColor.withValues(alpha: 0.12),
-          themeColor.withValues(alpha: 0.04),
+          themeColor.withValues(alpha: 0.28), // 0.12 -> 0.28로 선명도 상향
+          themeColor.withValues(alpha: 0.10), // 0.04 -> 0.10으로 그라데이션 강도 보완
           Colors.transparent,
         ],
         stops: const [0.0, 0.5, 1.0],
-      ).createShader(Rect.fromCircle(center: glowPosition, radius: 360));
+      ).createShader(Rect.fromCircle(center: glowPosition, radius: 400)); // 크기 360 -> 400
 
-    canvas.drawCircle(glowPosition, 360, glowPaint);
+    canvas.drawCircle(glowPosition, 400, glowPaint);
     
     // 3. 좌상단 및 우하단 보조 Ambient Glow (은은한 깊이감 유지)
     final ambientTopPaint = Paint()
       ..shader = RadialGradient(
         colors: [
-          themeColor.withValues(alpha: 0.06),
+          themeColor.withValues(alpha: 0.12), // 0.06 -> 0.12
           Colors.transparent,
         ],
       ).createShader(Rect.fromCircle(center: const Offset(0, 0), radius: 450));
@@ -983,7 +993,7 @@ class _LoginBackgroundPainter extends CustomPainter {
     final ambientBottomPaint = Paint()
       ..shader = RadialGradient(
         colors: [
-          AppColors.primaryLight.withValues(alpha: 0.03),
+          AppColors.primaryLight.withValues(alpha: 0.08), // 0.03 -> 0.08
           Colors.transparent,
         ],
       ).createShader(Rect.fromCircle(center: Offset(size.width, size.height), radius: 450));
