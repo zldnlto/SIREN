@@ -398,7 +398,7 @@ class _HistoryTileState extends State<_HistoryTile> {
               // Left Status Glow Indicator Line
               Container(
                 width: 3,
-                height: 38,
+                height: 44,
                 decoration: BoxDecoration(
                   color: indicatorColor,
                   borderRadius: AppRadius.borderFull,

@@ -516,11 +516,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
                   // Run Diagnostic button
                   SizedBox(
-                    height: 52,
+                    height: 64,
                     child: SirenButton(
                       label: _isDiagnosing 
                           ? '${_t('diagnostic_run', lang)} (${(_diagnosticProgress * 100).round()}%)'
                           : _t('run_diagnostic', lang),
+                      size: SirenButtonSize.xl,
                       icon: _isDiagnosing 
                           ? const SizedBox(
                               width: 16,
@@ -612,12 +613,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           children: [
                             Expanded(
                               child: SizedBox(
-                                height: 46,
+                                height: 64,
                                 child: TextField(
                                   controller: _apiUrlController,
                                   style: AppTextStyles.monoSm,
                                   decoration: InputDecoration(
-                                    contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                                    contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: 22),
                                     enabledBorder: OutlineInputBorder(
                                       borderRadius: AppRadius.borderMd,
                                       borderSide: const BorderSide(color: AppColors.border, width: 1.0),
@@ -635,11 +636,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             const SizedBox(width: 12),
                             SizedBox(
                               width: 80,
-                              height: 46,
+                              height: 64,
                               child: SirenButton(
                                 label: _t('apply', lang),
                                 variant: SirenButtonVariant.primary,
-                                size: SirenButtonSize.md,
+                                size: SirenButtonSize.xl,
                                 onPressed: () {
                                   HapticFeedback.lightImpact();
                                   settingsNotifier.setApiUrl(_apiUrlController.text);
