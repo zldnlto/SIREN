@@ -78,11 +78,18 @@ async def run_detection(db: AsyncSession, inspection_id: str) -> DetectionResult
             detail="이미 진행 중인 탐지 작업이 있습니다.",
         )
 
-    return DetectionResult(
-        id=outcome.id,
-        inspection_id=outcome.inspection_id,
-        detection_job_id=outcome.detection_job_id,
-        defects=[
+    from app.core.s3 import generate_presigned_get_url
+
+    defects_with_urls = []
+    for defect in outcome.defects:
+        gradcam_url = None
+        if defect.gradcam_key:
+            try:
+                gradcam_url = await generate_presigned_get_url(defect.gradcam_key)
+            except Exception:
+                gradcam_url = None
+        
+        defects_with_urls.append(
             DefectItem(
                 canonical_class_name=defect.canonical_class_name,
                 ontology_id=defect.ontology_id,
@@ -91,10 +98,15 @@ async def run_detection(db: AsyncSession, inspection_id: str) -> DetectionResult
                 quality_state=defect.quality_state,
                 confidence_score=defect.confidence_score,
                 bbox=defect.bbox,
-                gradcam_key=defect.gradcam_key,
+                gradcam_key=gradcam_url,
             )
-            for defect in outcome.defects
-        ],
+        )
+
+    return DetectionResult(
+        id=outcome.id,
+        inspection_id=outcome.inspection_id,
+        detection_job_id=outcome.detection_job_id,
+        defects=defects_with_urls,
         confidence=outcome.confidence,
         detected_at=outcome.detected_at,
     )
