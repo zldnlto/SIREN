@@ -242,7 +242,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               width: 330,
               padding: const EdgeInsets.all(AppSpacing.lg),
               decoration: BoxDecoration(
-                color: const Color(0xFF0F1115).withValues(alpha: 0.95), // Glassmorphism container
+                color: AppColors.surfaceContainerLowest.withValues(alpha: 0.95), // Glassmorphism container
                 borderRadius: AppRadius.borderLg,
                 border: Border.all(
                   color: AppColors.border.withValues(alpha: 0.5),
@@ -357,7 +357,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               width: 320,
               padding: const EdgeInsets.all(AppSpacing.lg),
               decoration: BoxDecoration(
-                color: const Color(0xFF0F1115).withValues(alpha: 0.95), // glassmorphism background
+                color: AppColors.surfaceContainerLowest.withValues(alpha: 0.95), // glassmorphism background
                 borderRadius: AppRadius.borderLg,
                 border: Border.all(
                   color: AppColors.border.withValues(alpha: 0.5),
@@ -617,17 +617,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                 child: TextField(
                                   controller: _apiUrlController,
                                   style: AppTextStyles.monoSm,
-                                  decoration: InputDecoration(
-                                    contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: 22),
+                                  decoration: const InputDecoration(
+                                    contentPadding: EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: 22),
                                     enabledBorder: OutlineInputBorder(
                                       borderRadius: AppRadius.borderMd,
-                                      borderSide: const BorderSide(color: AppColors.border, width: 1.0),
+                                      borderSide: BorderSide(color: AppColors.border, width: 1.0),
                                     ),
                                     focusedBorder: OutlineInputBorder(
                                       borderRadius: AppRadius.borderMd,
-                                      borderSide: const BorderSide(color: AppColors.primary, width: 1.0),
+                                      borderSide: BorderSide(color: AppColors.primary, width: 1.0),
                                     ),
-                                    fillColor: const Color(0xFF0F1115),
+                                    fillColor: AppColors.surfaceContainerLowest,
                                     filled: true,
                                   ),
                                 ),

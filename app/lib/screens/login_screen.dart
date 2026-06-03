@@ -204,7 +204,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         'assets/images/logo@2x.png',
                         fit: BoxFit.contain,
                         // 실루엣을 딥 블랙 섀도우 톤으로 변환
-                        color: const Color(0xFF010102).withValues(alpha: 0.75),
+                        color: AppColors.background.withValues(alpha: 0.75),
                         colorBlendMode: BlendMode.srcIn,
                       ),
                     ),
@@ -357,7 +357,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       child: Image.asset(
                         'assets/images/logo@2x.png',
                         fit: BoxFit.contain,
-                        color: const Color(0xFF010102).withValues(alpha: 0.75),
+                        color: AppColors.background.withValues(alpha: 0.75),
                         colorBlendMode: BlendMode.srcIn,
                       ),
                     ),
@@ -472,7 +472,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             hintStyle: AppTextStyles.headlineMd.copyWith(
               fontSize: 22,
               fontWeight: FontWeight.w600,
-              color: const Color(0x50D0D6E0),
+              color: AppColors.onSurfaceVariant.withValues(alpha: 0.31),
             ),
             contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
             // Maintain dynamic border highlights based on the active boolean state
@@ -546,7 +546,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             hintStyle: AppTextStyles.headlineMd.copyWith(
               fontSize: 22,
               fontWeight: FontWeight.w600,
-              color: const Color(0x50D0D6E0),
+              color: AppColors.onSurfaceVariant.withValues(alpha: 0.31),
               letterSpacing: 0,
             ),
             contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),

@@ -319,7 +319,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
                             height: 64,
                             decoration: BoxDecoration(
                               border: Border.all(
-                                color: const Color(0xFFFF3B30),
+                                color: AppColors.defect,
                                 width: 2.0,
                               ),
                             ),
@@ -435,7 +435,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
 
     // Camera viewport mock with static 3x3 grid line drawing
     return Container(
-      color: const Color(0xFF0A0A0B),
+      color: AppColors.background,
       child: Stack(
         alignment: Alignment.center,
         children: [
@@ -660,7 +660,7 @@ class _DarkPlaceholder extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: const Color(0xFF090A0B),
+      color: AppColors.background,
       padding: const EdgeInsets.symmetric(horizontal: 40),
       child: Center(
         child: Column(
@@ -706,7 +706,7 @@ class _DarkPlaceholder extends StatelessWidget {
               style: TextStyle(
                 fontSize: 10,
                 fontFamily: 'monospace',
-                color: Color(0xFF4A4D54),
+                color: AppColors.onSurfaceMuted,
               ),
             ),
           ],

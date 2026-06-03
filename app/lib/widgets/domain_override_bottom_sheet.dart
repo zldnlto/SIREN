@@ -84,7 +84,7 @@ class _DomainOverrideBottomSheetState
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFF0F1115),
+        color: AppColors.surfaceContainerLowest,
         borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(AppRadius.xl),
           topRight: Radius.circular(AppRadius.xl),
