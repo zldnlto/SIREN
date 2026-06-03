@@ -5,7 +5,6 @@ import '../core/tokens.dart';
 import '../screens/login_screen.dart';
 import '../screens/home_screen.dart';
 import '../screens/capture_preview_screen.dart';
-import '../screens/inspection_progress_screen.dart';
 import '../screens/defect_result_screen.dart';
 import '../screens/normal_result_screen.dart';
 import '../screens/history_list_screen.dart';
@@ -58,15 +57,9 @@ final appRouter = GoRouter(
               name: 'preview',
               pageBuilder: (_, state) => _fadeSlidePage(
                 state,
-                CapturePreviewScreen(imagePath: state.extra as String),
-              ),
-            ),
-            GoRoute(
-              path: 'progress',
-              name: 'progress',
-              pageBuilder: (_, state) => _fadeSlidePage(
-                state,
-                InspectionProgressScreen(inspectionId: state.extra as String),
+                CapturePreviewScreen(
+                  extraData: state.extra as Map<String, String>,
+                ),
               ),
             ),
             GoRoute(
@@ -133,7 +126,7 @@ class MainShell extends StatelessWidget {
             ? 2
             : 0;
 
-    final showRail = !(location == '/home/progress' || location == '/home/preview' || location.startsWith('/home/result'));
+    final showRail = !(location == '/home/preview' || location.startsWith('/home/result'));
 
     if (!showRail) {
       return Scaffold(

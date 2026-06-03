@@ -12,6 +12,8 @@ class InspectionState {
     this.result,
     this.isCreating = false,
     this.isDetecting = false,
+    this.isRagConnecting = false,
+    this.isReady = false,
     this.error,
   });
 
@@ -19,12 +21,14 @@ class InspectionState {
   final DetectionResult? result;
   final bool isCreating;
   final bool isDetecting;
+  final bool isRagConnecting;
+  final bool isReady;
   final String? error;
 
-  bool get isLoading => isCreating || isDetecting;
+  bool get isLoading => isCreating || isDetecting || isRagConnecting;
 
   String? get nextRoute {
-    if (result == null) return null;
+    if (result == null || !isReady) return null;
     return result!.hasDefect ? 'result-defect' : 'result-normal';
   }
 
@@ -33,6 +37,8 @@ class InspectionState {
     DetectionResult? result,
     bool? isCreating,
     bool? isDetecting,
+    bool? isRagConnecting,
+    bool? isReady,
     String? error,
   }) =>
       InspectionState(
@@ -40,6 +46,8 @@ class InspectionState {
         result: result ?? this.result,
         isCreating: isCreating ?? this.isCreating,
         isDetecting: isDetecting ?? this.isDetecting,
+        isRagConnecting: isRagConnecting ?? this.isRagConnecting,
+        isReady: isReady ?? this.isReady,
         error: error,
       );
 }
@@ -78,7 +86,21 @@ class InspectionNotifier extends Notifier<InspectionState> {
 
   Future<void> start(String annotationDomain) async {
     reset();
-    await createInspection(annotationDomain);
+    
+    // Step 1: createInspection (isCreating = true)
+    final ins = await createInspection(annotationDomain);
+    if (ins == null) return;
+
+    // Step 3: runDetection (isDetecting = true)
+    final res = await runDetection(ins.id);
+    if (res == null) return;
+
+    // Step 5: RAG connecting (isRagConnecting = true)
+    state = state.copyWith(isRagConnecting: true);
+    await Future.delayed(const Duration(milliseconds: 1500));
+
+    // Step 6: Ready for result screen redirection
+    state = state.copyWith(isRagConnecting: false, isReady: true);
   }
 
   Future<void> updateDomain(String inspectionId, String annotationDomain) async {
@@ -151,6 +173,8 @@ class InspectionNotifier extends Notifier<InspectionState> {
       result: mockResult,
       isCreating: false,
       isDetecting: false,
+      isRagConnecting: false,
+      isReady: true,
     );
   }
 }

@@ -1,4 +1,5 @@
 enum AnnotationDomain {
+  auto,
   surfaceTreatment,
   welding,
   cutting,
@@ -10,6 +11,7 @@ enum AnnotationDomain {
 
 extension AnnotationDomainX on AnnotationDomain {
   String get label => switch (this) {
+        AnnotationDomain.auto => '자동',
         AnnotationDomain.surfaceTreatment => '표면처리',
         AnnotationDomain.welding => '용접',
         AnnotationDomain.cutting => '절단',
@@ -21,6 +23,7 @@ extension AnnotationDomainX on AnnotationDomain {
 
   // enum → 백엔드 annotation_domain 문자열
   String get apiValue => switch (this) {
+        AnnotationDomain.auto => 'auto',
         AnnotationDomain.surfaceTreatment => 'surface_treatment',
         AnnotationDomain.welding => 'welding',
         AnnotationDomain.cutting => 'cutting',
@@ -32,6 +35,7 @@ extension AnnotationDomainX on AnnotationDomain {
 
   // 백엔드 annotation_domain 문자열 → enum
   static AnnotationDomain fromString(String value) => switch (value) {
+        'auto' => AnnotationDomain.auto,
         'surface_treatment' => AnnotationDomain.surfaceTreatment,
         'welding' => AnnotationDomain.welding,
         'cutting' => AnnotationDomain.cutting,

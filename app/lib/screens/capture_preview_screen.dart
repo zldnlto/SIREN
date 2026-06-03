@@ -10,8 +10,11 @@ import '../providers/inspection_provider.dart';
 import '../widgets/siren_button.dart';
 
 class CapturePreviewScreen extends ConsumerStatefulWidget {
-  const CapturePreviewScreen({super.key, required this.imagePath});
-  final String imagePath;
+  const CapturePreviewScreen({super.key, required this.extraData});
+  final Map<String, String> extraData;
+
+  String get imagePath => extraData['imagePath'] ?? 'mock-temp-image.png';
+  String get domain => extraData['domain'] ?? 'auto';
 
   @override
   ConsumerState<CapturePreviewScreen> createState() => _CapturePreviewScreenState();
@@ -83,19 +86,11 @@ class _CapturePreviewScreenState extends ConsumerState<CapturePreviewScreen>
     
     if (!mounted) return;
     
-    // Launch the backend inspection creation call
-    ref.read(inspectionProvider.notifier).start('surface_treatment');
+    // Launch the backend inspection creation call with the selected domain
+    ref.read(inspectionProvider.notifier).start(widget.domain);
     
-    // Route to the real-time AI progress analysis screen
-    // We already listening to inspectionProvider in HomeScreen, but pushing progress ensures routing
-    final state = ref.read(inspectionProvider);
-    if (state.inspection != null) {
-      context.goNamed('progress', extra: state.inspection!.id);
-    } else {
-      // If not created yet (starts async loading), progress screen will be handled by Riverpod listener
-      // but we force transition to home to let HomeRiverpod listener catch state.
-      context.go('/home');
-    }
+    // Go back to home, the inline progress overlay will be triggered there
+    context.go('/home');
   }
 
   @override
@@ -175,7 +170,7 @@ class _CapturePreviewScreenState extends ConsumerState<CapturePreviewScreen>
                                   ),
                                 )
                               : Image.file(
-                                  File(widget.imagePath),
+                                  File(widget.extraData['imagePath']!),
                                   fit: BoxFit.cover,
                                   errorBuilder: (_, __, ___) => const Center(
                                     child: Icon(
