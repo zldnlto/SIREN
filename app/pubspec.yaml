@@ -54,3 +54,12 @@ flutter:
   uses-material-design: true
   assets:
     - assets/images/
+  fonts:
+    - family: LINESeedKR
+      fonts:
+        - asset: assets/fonts/LINESeedKR-Th.ttf
+          weight: 100
+        - asset: assets/fonts/LINESeedKR-Rg.ttf
+          weight: 400
+        - asset: assets/fonts/LINESeedKR-Bd.ttf
+          weight: 700

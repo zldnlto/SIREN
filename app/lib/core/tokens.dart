@@ -105,9 +105,9 @@ abstract final class AppRadius {
 // JetBrains Mono — inspection IDs, metric values, code blocks
 
 abstract final class AppTextStyles {
-  // Display & Headline (LINE Seed Sans KR at weights 400-800)
+  // Display & Headline (LINESeedKR at weights 400-800)
   static final TextStyle displayHero = const TextStyle(
-    fontFamily: 'LINE Seed Sans KR',
+    fontFamily: 'LINESeedKR',
     fontSize: 80,
     fontWeight: FontWeight.w700,
     color: AppColors.onBackground,
@@ -116,7 +116,7 @@ abstract final class AppTextStyles {
   );
 
   static final TextStyle displayLarge = const TextStyle(
-    fontFamily: 'LINE Seed Sans KR',
+    fontFamily: 'LINESeedKR',
     fontSize: 56,
     fontWeight: FontWeight.w700,
     color: AppColors.onBackground,
@@ -125,7 +125,7 @@ abstract final class AppTextStyles {
   );
 
   static final TextStyle headlineXl = const TextStyle(
-    fontFamily: 'LINE Seed Sans KR',
+    fontFamily: 'LINESeedKR',
     fontSize: 40,
     fontWeight: FontWeight.w700,
     color: AppColors.onBackground,
@@ -134,7 +134,7 @@ abstract final class AppTextStyles {
   );
 
   static final TextStyle headlineLg = const TextStyle(
-    fontFamily: 'LINE Seed Sans KR',
+    fontFamily: 'LINESeedKR',
     fontSize: 28,
     fontWeight: FontWeight.w700,
     color: AppColors.onBackground,
@@ -143,7 +143,7 @@ abstract final class AppTextStyles {
   );
 
   static final TextStyle headlineMd = const TextStyle(
-    fontFamily: 'LINE Seed Sans KR',
+    fontFamily: 'LINESeedKR',
     fontSize: 22,
     fontWeight: FontWeight.w500,
     color: AppColors.onBackground,
@@ -152,7 +152,7 @@ abstract final class AppTextStyles {
   );
 
   static final TextStyle headlineSm = const TextStyle(
-    fontFamily: 'LINE Seed Sans KR',
+    fontFamily: 'LINESeedKR',
     fontSize: 20,
     fontWeight: FontWeight.w400,
     color: AppColors.onSurface,
@@ -162,7 +162,7 @@ abstract final class AppTextStyles {
 
   // Section header — eyebrow above headings
   static final TextStyle sectionHeader = const TextStyle(
-    fontFamily: 'LINE Seed Sans KR',
+    fontFamily: 'LINESeedKR',
     fontSize: 13,
     fontWeight: FontWeight.w700,
     color: AppColors.primary, // Eyebrow in signature lavender-blue
@@ -172,7 +172,7 @@ abstract final class AppTextStyles {
 
   // Body
   static final TextStyle bodyLg = const TextStyle(
-    fontFamily: 'LINE Seed Sans KR',
+    fontFamily: 'LINESeedKR',
     fontSize: 18,
     fontWeight: FontWeight.w400,
     color: AppColors.onSurface,
@@ -181,7 +181,7 @@ abstract final class AppTextStyles {
   );
 
   static final TextStyle bodyStrong = const TextStyle(
-    fontFamily: 'LINE Seed Sans KR',
+    fontFamily: 'LINESeedKR',
     fontSize: 14,
     fontWeight: FontWeight.w700,
     color: AppColors.onSurface,
@@ -189,7 +189,7 @@ abstract final class AppTextStyles {
   );
 
   static final TextStyle bodyMd = const TextStyle(
-    fontFamily: 'LINE Seed Sans KR',
+    fontFamily: 'LINESeedKR',
     fontSize: 16,
     fontWeight: FontWeight.w400,
     color: AppColors.onSurface,
@@ -198,7 +198,7 @@ abstract final class AppTextStyles {
   );
 
   static final TextStyle bodySm = const TextStyle(
-    fontFamily: 'LINE Seed Sans KR',
+    fontFamily: 'LINESeedKR',
     fontSize: 14,
     fontWeight: FontWeight.w400,
     color: AppColors.onSurfaceVariant,
@@ -208,7 +208,7 @@ abstract final class AppTextStyles {
 
   // Label
   static final TextStyle labelLg = const TextStyle(
-    fontFamily: 'LINE Seed Sans KR',
+    fontFamily: 'LINESeedKR',
     fontSize: 14,
     fontWeight: FontWeight.w700,
     color: AppColors.onSurface,
@@ -217,7 +217,7 @@ abstract final class AppTextStyles {
   );
 
   static final TextStyle labelMd = const TextStyle(
-    fontFamily: 'LINE Seed Sans KR',
+    fontFamily: 'LINESeedKR',
     fontSize: 12,
     fontWeight: FontWeight.w400,
     color: AppColors.onSurfaceVariant,
@@ -226,7 +226,7 @@ abstract final class AppTextStyles {
   );
 
   static final TextStyle labelSm = const TextStyle(
-    fontFamily: 'LINE Seed Sans KR',
+    fontFamily: 'LINESeedKR',
     fontSize: 12,
     fontWeight: FontWeight.w400,
     color: AppColors.onSurfaceMuted,
@@ -256,7 +256,7 @@ abstract final class AppTextStyles {
 
   // Button
   static final TextStyle buttonLg = const TextStyle(
-    fontFamily: 'LINE Seed Sans KR',
+    fontFamily: 'LINESeedKR',
     fontSize: 14,
     fontWeight: FontWeight.w700,
     color: AppColors.onPrimary,
@@ -265,7 +265,7 @@ abstract final class AppTextStyles {
   );
 
   static final TextStyle buttonMd = const TextStyle(
-    fontFamily: 'LINE Seed Sans KR',
+    fontFamily: 'LINESeedKR',
     fontSize: 14,
     fontWeight: FontWeight.w700,
     color: AppColors.onPrimary,
