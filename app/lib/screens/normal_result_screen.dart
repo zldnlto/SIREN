@@ -150,43 +150,6 @@ class NormalResultScreen extends ConsumerWidget {
       ),
       body: Stack(
         children: [
-          // ─── Ambient Auroral Green/Lavender Glow Background ───
-          Positioned(
-            top: -150,
-            right: -150,
-            child: Container(
-              width: 450,
-              height: 450,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  colors: [
-                    AppColors.good.withOpacity(0.06), // green operational aura
-                    Colors.transparent,
-                  ],
-                ),
-              ),
-            ),
-          ),
-          Positioned(
-            bottom: -200,
-            left: -150,
-            child: Container(
-              width: 400,
-              height: 400,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  colors: [
-                    AppColors.primary.withOpacity(0.03),
-                    Colors.transparent,
-                  ],
-                ),
-              ),
-            ),
-          ),
-
-          // ─── Main Scaffold Content ───
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.all(AppSpacing.md),
