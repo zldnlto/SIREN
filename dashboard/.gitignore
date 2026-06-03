@@ -13,3 +13,4 @@ node_modules/
 # 캐시
 .eslintcache
 .turbo
+tsconfig.tsbuildinfo
