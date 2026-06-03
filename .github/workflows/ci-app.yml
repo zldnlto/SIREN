@@ -42,4 +42,4 @@ jobs:
           if [ "${{ github.ref }}" = "refs/heads/main" ]; then
             VERCEL_FLAGS="$VERCEL_FLAGS --prod"
           fi
-          vercel deploy app/build/web $VERCEL_FLAGS
+          cd app/build/web && vercel deploy . $VERCEL_FLAGS
