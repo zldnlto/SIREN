@@ -221,16 +221,54 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ),
                 ),
 
-                // 원래의 고화질 logo@2x.png 에셋 본체
+                // 원래의 고화질 logo@2x.png 에셋 본체 + 더블 dot 오버레이 (#247)
                 SizedBox(
                   width: 130,
                   height: 130,
-                  child: Image.asset(
-                    'assets/images/logo@2x.png',
-                    fit: BoxFit.contain,
-                    // 네온 흰 잔상을 어두운 배경에 블렌딩
-                    color: Colors.white.withValues(alpha: 0.95),
-                    colorBlendMode: BlendMode.modulate,
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      Positioned.fill(
+                        child: Image.asset(
+                          'assets/images/logo@2x.png',
+                          fit: BoxFit.contain,
+                          // 네온 흰 잔상을 어두운 배경에 블렌딩
+                          color: Colors.white.withValues(alpha: 0.95),
+                          colorBlendMode: BlendMode.modulate,
+                        ),
+                      ),
+                      Positioned(
+                        top: 4,
+                        right: 4,
+                        child: Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            // 작은 dot: 5dp, warning 색상 alpha 0.7, 큰 dot 좌측 8dp
+                            Positioned(
+                              left: -8,
+                              top: 2.5,
+                              child: Container(
+                                width: 5,
+                                height: 5,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: AppColors.warning.withValues(alpha: 0.7),
+                                ),
+                              ),
+                            ),
+                            // 큰 dot: 10dp, warning 색상
+                            Container(
+                              width: 10,
+                              height: 10,
+                              decoration: const BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: AppColors.warning,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
