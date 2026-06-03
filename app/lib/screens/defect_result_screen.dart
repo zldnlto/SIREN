@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 
 import '../core/tokens.dart';
 import '../models/defect_severity.dart';
+import '../models/detected_defect.dart';
+import '../models/annotation_domain.dart';
 import '../providers/guidance_provider.dart';
 import '../providers/inspection_provider.dart';
 import '../widgets/action_card.dart';
@@ -17,12 +19,19 @@ import '../widgets/domain_override_bottom_sheet.dart';
 import '../models/guidance_response.dart';
 import '../usecases/create_report_usecase.dart';
 
-class DefectResultScreen extends ConsumerWidget {
+class DefectResultScreen extends ConsumerStatefulWidget {
   const DefectResultScreen({super.key, required this.inspectionId});
   final String inspectionId;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<DefectResultScreen> createState() => _DefectResultScreenState();
+}
+
+class _DefectResultScreenState extends ConsumerState<DefectResultScreen> {
+  bool _showGradCam = false;
+
+  @override
+  Widget build(BuildContext context) {
     final state = ref.watch(inspectionProvider);
     final result = state.result;
 
@@ -41,6 +50,19 @@ class DefectResultScreen extends ConsumerWidget {
         .map((d) => d.bbox!)
         .toList();
 
+    final firstDefectWithGradCam = result.defects.firstWhere(
+      (d) => d.gradcamKey != null && d.gradcamKey!.isNotEmpty,
+      orElse: () => const DetectedDefect(
+        ontologyId: '',
+        displayLabel: '',
+        qualityState: 'good',
+        canonicalClassName: '',
+        annotationDomain: '',
+        confidenceScore: 0.0,
+      ),
+    );
+    final gradcamUrl = firstDefectWithGradCam.gradcamKey;
+
     final isTablet =
         MediaQuery.of(context).size.shortestSide >= AppBreakpoints.tablet;
 
@@ -51,8 +73,73 @@ class DefectResultScreen extends ConsumerWidget {
         border: Border.all(color: AppColors.border, width: 1.0),
       ),
       clipBehavior: Clip.antiAlias,
-      child: ImageOverlayViewer(imageUrl: imageUrl, bboxes: bboxes),
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: ImageOverlayViewer(
+              imageUrl: imageUrl,
+              gradcamUrl: gradcamUrl,
+              showGradCam: _showGradCam,
+              bboxes: bboxes,
+            ),
+          ),
+          if (gradcamUrl != null && gradcamUrl.isNotEmpty)
+            Positioned(
+              right: AppSpacing.sm,
+              bottom: AppSpacing.sm,
+              child: Material(
+                color: _showGradCam ? AppColors.primary : AppColors.surfaceVariant,
+                borderRadius: AppRadius.borderFull,
+                child: InkWell(
+                  onTap: () {
+                    setState(() {
+                      _showGradCam = !_showGradCam;
+                    });
+                  },
+                  borderRadius: AppRadius.borderFull,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.md,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      borderRadius: AppRadius.borderFull,
+                      border: Border.all(
+                        color: _showGradCam ? Colors.transparent : AppColors.border,
+                      ),
+                    ),
+                    child: Tooltip(
+                      message: "AI가 결함으로 판단한 영역을 열지도로 표시합니다",
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.layers_rounded,
+                            size: 16,
+                            color: AppColors.onSurface,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            '히트맵 ${_showGradCam ? "OFF" : "ON"}',
+                            style: AppTextStyles.bodySm.copyWith(
+                              color: AppColors.onSurface,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
     );
+
+    final domainStr = state.inspection?.annotationDomain ?? 'surface_treatment';
+    final domainEnum = AnnotationDomainX.fromString(domainStr);
+    final domainLabel = domainEnum.label;
 
     final defectList = [
       Padding(
@@ -68,6 +155,49 @@ class DefectResultScreen extends ConsumerWidget {
           showDivider: true,
         ),
       ),
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+        child: Align(
+          alignment: Alignment.centerLeft,
+          child: InkWell(
+            onTap: () {
+              DomainOverrideBottomSheet.show(
+                context,
+                inspectionId: widget.inspectionId,
+                currentDomain: domainStr,
+              );
+            },
+            borderRadius: AppRadius.borderFull,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: 6),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceVariant,
+                borderRadius: AppRadius.borderFull,
+                border: Border.all(color: AppColors.border),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    '공정: $domainLabel 공정',
+                    style: AppTextStyles.bodySm.copyWith(
+                      color: AppColors.onSurfaceVariant,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  const Icon(
+                    Icons.edit_rounded,
+                    size: 14,
+                    color: AppColors.onSurfaceMuted,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+      const SizedBox(height: AppSpacing.xs),
       ...result.defects.indexed.map(
         (entry) => _StaggeredItem(
           index: entry.$1,
@@ -77,7 +207,7 @@ class DefectResultScreen extends ConsumerWidget {
               vertical: AppSpacing.xs,
             ),
             child: _DefectCard(
-              inspectionId: inspectionId,
+              inspectionId: widget.inspectionId,
               ontologyId: entry.$2.ontologyId,
               displayLabel: entry.$2.displayLabel,
               confidenceScore: entry.$2.confidenceScore,
@@ -112,20 +242,7 @@ class DefectResultScreen extends ConsumerWidget {
             context.go('/home');
           },
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.tune_rounded, color: AppColors.onSurface),
-            tooltip: '도메인 강제 변경',
-            onPressed: () {
-              final domain = state.inspection?.annotationDomain ?? 'surface_treatment';
-              DomainOverrideBottomSheet.show(
-                context,
-                inspectionId: inspectionId,
-                currentDomain: domain,
-              );
-            },
-          ),
-        ],
+        actions: const [],
       ),
       body: Stack(
         children: [
@@ -436,9 +553,48 @@ class _DefectCardState extends ConsumerState<_DefectCard> {
             Row(
               children: [
                 Text(
-                  'CONFIDENCE: ',
-                  style: AppTextStyles.monoSm.copyWith(fontSize: 10, color: AppColors.onSurfaceMuted),
+                  'AI 신뢰도',
+                  style: AppTextStyles.labelSm.copyWith(color: AppColors.onSurfaceMuted),
                 ),
+                const SizedBox(width: 4),
+                GestureDetector(
+                  onTap: () {
+                    showDialog(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        backgroundColor: AppColors.surface,
+                        title: Text(
+                          'AI 신뢰도 안내',
+                          style: AppTextStyles.headlineSm.copyWith(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        content: Text(
+                          'AI가 이 결함 판정에 확신하는 정도입니다.\n80% 이상이면 높은 신뢰도입니다.',
+                          style: AppTextStyles.bodyMd,
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            child: Text(
+                              '확인',
+                              style: AppTextStyles.buttonMd.copyWith(
+                                color: AppColors.primary,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                  child: const Icon(
+                    Icons.help_outline_rounded,
+                    size: 14,
+                    color: AppColors.onSurfaceMuted,
+                  ),
+                ),
+                const SizedBox(width: 8),
                 Text(
                   '${(widget.confidenceScore * 100).toStringAsFixed(1)}%',
                   style: AppTextStyles.monoSm.copyWith(

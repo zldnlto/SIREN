@@ -65,6 +65,44 @@ class ActionCard extends StatelessWidget {
                       'AI 분석 신뢰도',
                       style: AppTextStyles.labelSm.copyWith(color: AppColors.onSurfaceMuted),
                     ),
+                    const SizedBox(width: 4),
+                    GestureDetector(
+                      onTap: () {
+                        showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            backgroundColor: AppColors.surface,
+                            title: Text(
+                              'AI 신뢰도 안내',
+                              style: AppTextStyles.headlineSm.copyWith(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            content: Text(
+                              'AI가 이 결함 판정에 확신하는 정도입니다.\n80% 이상이면 높은 신뢰도입니다.',
+                              style: AppTextStyles.bodyMd,
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.of(context).pop(),
+                                child: Text(
+                                  '확인',
+                                  style: AppTextStyles.buttonMd.copyWith(
+                                    color: AppColors.primary,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                      child: const Icon(
+                        Icons.help_outline_rounded,
+                        size: 14,
+                        color: AppColors.onSurfaceMuted,
+                      ),
+                    ),
                   ],
                 ),
                 Text(
