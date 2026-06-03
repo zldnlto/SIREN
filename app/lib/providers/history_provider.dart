@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../models/guidance_detail.dart';
 import '../models/inspection.dart';
+import '../models/inspection_detail.dart';
 import '../repositories/inspection_repository.dart';
 
 class HistoryNotifier extends Notifier<List<Inspection>> {
@@ -103,4 +105,45 @@ final inspectionDetailProvider = Provider.family<Inspection?, String>((ref, id) 
   final found = list.where((x) => x.id == id);
   if (found.isNotEmpty) return found.first;
   return null;
+});
+
+final historyDetailProvider = FutureProvider.family<InspectionDetail, String>((ref, id) async {
+  if (id.startsWith('insp-')) {
+    // Return mock InspectionDetail for demo/testing
+    final isDefect = id == 'insp-20260602-001' || id == 'insp-20260602-003';
+    
+    return InspectionDetail(
+      inspectionId: id,
+      inspectorId: 'inspector-123',
+      imageUrl: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=800',
+      overlayImageUrl: isDefect
+          ? 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800'
+          : null,
+      status: 'completed',
+      qualityState: isDefect ? 'defect' : 'good',
+      annotationDomain: id == 'insp-20260602-001'
+          ? 'surface_treatment'
+          : (id == 'insp-20260602-002' ? 'pipe_weld' : (id == 'insp-20260602-003' ? 'pump_tower' : 'internal_cargo')),
+      canonicalClassName: isDefect ? 'crack_paint' : null,
+      ontologyId: isDefect ? 'surface_treatment.crack.paint' : null,
+      confidenceScore: isDefect ? 0.942 : null,
+      createdAt: DateTime.now().subtract(const Duration(hours: 2)),
+      completedAt: DateTime.now().subtract(const Duration(hours: 1, minutes: 58)),
+      guidance: isDefect
+          ? const GuidanceDetail(
+              cause: '반복 하중 또는 용접부 결함으로 인한 균열 발생',
+              action: [
+                '해당 구역 즉시 작업 중단',
+                '관리자에게 보고 후 비파괴 검사(NDT) 일정 조율',
+                '보수 용접부 그라인딩 가공 처리'
+              ],
+              reinspection: '보수 완료 후 재촬영 및 AI 재검사 필수',
+              caution: '이 안내는 참고용입니다. 전문 검사원의 최종 판단을 따르십시오.',
+            )
+          : null,
+    );
+  }
+
+  final repo = ref.watch(inspectionRepositoryProvider);
+  return repo.getDetail(id);
 });
