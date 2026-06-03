@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../core/tokens.dart';
 import '../models/annotation_domain.dart';
@@ -31,6 +32,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
   String _flashMode = 'off'; // 'off' | 'on' | 'auto'
   String _deviceModel = 'CAM-01';
   AnnotationDomain _selectedDomain = AnnotationDomain.auto;
+  XFile? _selectedImage;
 
   // Inline progress overlay animations
   late final AnimationController _overlayCtrl;
@@ -131,6 +133,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
     });
   }
 
+  Future<void> _pickImageAndStart() async {
+    final xFile = await ImagePicker().pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 90,
+    );
+    if (xFile == null) return;
+    if (!mounted) return;
+    setState(() => _selectedImage = xFile);
+    HapticFeedback.mediumImpact();
+    await ref.read(inspectionProvider.notifier).start(
+      _selectedDomain.apiValue,
+      xFile: xFile,
+    );
+  }
+
   Future<void> _captureAndPreview() async {
     // Prevent double triggers
     HapticFeedback.mediumImpact();
@@ -198,6 +215,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
   Widget build(BuildContext context) {
     final inspectionState = ref.watch(inspectionProvider);
     final showOverlay = inspectionState.isCreating ||
+        inspectionState.isUploading ||
         inspectionState.isDetecting ||
         inspectionState.isRagConnecting ||
         inspectionState.isReady;
@@ -233,7 +251,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
           '검사 중 오류가 발생했습니다.',
           type: ToastType.error,
           actionLabel: '재시도',
-          onAction: () => ref.read(inspectionProvider.notifier).start(_selectedDomain.apiValue),
+          onAction: () => ref.read(inspectionProvider.notifier).start(
+            _selectedDomain.apiValue,
+            xFile: _selectedImage,
+          ),
         );
       }
     });
@@ -439,16 +460,59 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(
-                        '초점 자동 동기화 완료 (TERM-X9)',
-                        style: AppTextStyles.monoSm.copyWith(
-                          fontSize: 10,
-                          color: AppColors.onSurfaceMuted,
-                          letterSpacing: 0.5,
+                      if (_selectedImage != null)
+                        Text(
+                          '선택됨: ${_selectedImage!.name}',
+                          style: AppTextStyles.monoSm.copyWith(
+                            fontSize: 10,
+                            color: AppColors.primaryLight,
+                            letterSpacing: 0.5,
+                          ),
+                        )
+                      else
+                        Text(
+                          '초점 자동 동기화 완료 (TERM-X9)',
+                          style: AppTextStyles.monoSm.copyWith(
+                            fontSize: 10,
+                            color: AppColors.onSurfaceMuted,
+                            letterSpacing: 0.5,
+                          ),
                         ),
-                      ),
                       const SizedBox(height: 16),
-                      
+
+                      // Shutter row: [gallery] [shutter] [spacer]
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          // Gallery picker button
+                          GestureDetector(
+                            onTap: _pickImageAndStart,
+                            child: Container(
+                              width: 56,
+                              height: 56,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: _selectedImage != null
+                                    ? AppColors.primary.withValues(alpha: 0.2)
+                                    : AppColors.surface.withValues(alpha: 0.7),
+                                border: Border.all(
+                                  color: _selectedImage != null
+                                      ? AppColors.primary
+                                      : AppColors.border,
+                                  width: 1.5,
+                                ),
+                              ),
+                              child: Icon(
+                                Icons.photo_library_rounded,
+                                size: 24,
+                                color: _selectedImage != null
+                                    ? AppColors.primary
+                                    : AppColors.onSurfaceMuted,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 32),
+
                       // Tactile 120dp double circular shutter button
                       GestureDetector(
                         onTapDown: (_) => setState(() => _isShutterPressed = true),
@@ -498,12 +562,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
                           ),
                         ),
                       ),
+
+                          const SizedBox(width: 32),
+                          const SizedBox(width: 56, height: 56),
+                        ],
+                      ),
                     ],
                   ),
                 ),
               ),
             ),
-          
+
           // ─── 5. Inline Progress Overlay (Stack Top) ───
           if (showOverlay || _overlayCtrl.isAnimating)
             Positioned.fill(
@@ -839,7 +908,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
         );
         break;
       case StepStatus.pending:
-      default:
         iconColor = AppColors.onSurfaceMuted;
         leadingWidget = Icon(Icons.radio_button_unchecked_rounded, color: iconColor, size: 22);
         textStyle = AppTextStyles.bodySm.copyWith(
@@ -922,13 +990,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
           ).label)
         : selectedDomain.label;
 
-    // Step 1: 이미지 전송
-    final step1Status = state.inspection != null
-        ? StepStatus.done
-        : (state.isCreating ? StepStatus.running : StepStatus.pending);
-    final step1Label = step1Status == StepStatus.running
-        ? '이미지 전송 중...'
-        : '이미지 전송 완료';
+    // Step 1: 이미지 전송 (createInspection + upload)
+    final StepStatus step1Status;
+    final String step1Label;
+    if (state.inspection != null && !state.isUploading) {
+      step1Status = StepStatus.done;
+      step1Label = '이미지 전송 완료';
+    } else if (state.isUploading) {
+      step1Status = StepStatus.running;
+      step1Label = '이미지 전송 중...';
+    } else if (state.isCreating) {
+      step1Status = StepStatus.running;
+      step1Label = '검사 세션 생성 중...';
+    } else {
+      step1Status = StepStatus.pending;
+      step1Label = '이미지 전송 대기';
+    }
 
     // Step 2: 공정 검사 시작
     final step2Status = state.inspection != null ? StepStatus.done : StepStatus.pending;

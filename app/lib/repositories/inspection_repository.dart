@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../core/api_client.dart';
 import '../models/detection_result.dart';
@@ -16,6 +17,15 @@ class InspectionRepository {
       data: {'annotation_domain': annotationDomain},
     );
     return Inspection.fromJson(resp.data!);
+  }
+
+  Future<void> uploadImage(String inspectionId, XFile image) async {
+    final bytes = await image.readAsBytes();
+    final filename = image.name.isNotEmpty ? image.name : 'inspection.jpg';
+    final formData = FormData.fromMap({
+      'file': MultipartFile.fromBytes(bytes, filename: filename),
+    });
+    await _dio.post<void>('/inspections/$inspectionId/upload', data: formData);
   }
 
   Future<DetectionResult> detect(String inspectionId) async {
