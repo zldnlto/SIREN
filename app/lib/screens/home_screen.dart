@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 
 import '../core/tokens.dart';
 import '../providers/inspection_provider.dart';
@@ -25,6 +26,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
   bool _isCameraInitialized = false;
   bool _hasCameraError = false;
   String _flashMode = 'off'; // 'off' | 'on' | 'auto'
+  String _deviceModel = 'CAM-01';
 
   @override
   void initState() {
@@ -40,6 +42,29 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
 
     // Warm up camera interface
     _initializeCamera();
+    _loadDeviceModel();
+  }
+
+  Future<void> _loadDeviceModel() async {
+    try {
+      final deviceInfo = DeviceInfoPlugin();
+      String model = 'CAM-01';
+      if (kIsWeb) {
+        model = 'Web Simulator';
+      } else if (Platform.isAndroid) {
+        final androidInfo = await deviceInfo.androidInfo;
+        model = androidInfo.model;
+      } else if (Platform.isIOS) {
+        final iosInfo = await deviceInfo.iosInfo;
+        model = iosInfo.utsname.machine;
+      }
+      if (!mounted) return;
+      setState(() {
+        _deviceModel = model;
+      });
+    } catch (_) {
+      // Fallback stays as CAM-01
+    }
   }
 
   @override
@@ -180,7 +205,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
                         const _PulsingStatusLed(),
                         const SizedBox(width: 8),
                         Text(
-                          'CAM-01',
+                          _deviceModel,
                           style: AppTextStyles.monoSm.copyWith(
                             fontWeight: FontWeight.bold,
                             color: AppColors.primaryLight,
@@ -486,8 +511,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
     );
   }
 
+  Color _getFlashColor() {
+    switch (_flashMode) {
+      case 'on':
+        return AppColors.warning;
+      case 'auto':
+        return AppColors.primaryLight;
+      case 'off':
+      default:
+        return AppColors.onSurfaceMuted;
+    }
+  }
+
   Widget _buildFlashToggleChip() {
     return Container(
+      width: 44,
+      height: 44, // 44dp Touch target ensured
       decoration: BoxDecoration(
         color: AppColors.surface.withValues(alpha: 0.85),
         borderRadius: AppRadius.borderSm,
@@ -500,26 +539,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
           borderRadius: const BorderRadius.all(Radius.circular(AppRadius.sm)),
           splashColor: AppColors.primary.withValues(alpha: 0.2),
           highlightColor: AppColors.primary.withValues(alpha: 0.1),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  _getFlashIcon(),
-                  size: 13,
-                  color: _flashMode == 'off' ? AppColors.onSurfaceMuted : AppColors.primaryLight,
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  'FLASH: ${_flashMode.toUpperCase()}',
-                  style: AppTextStyles.monoSm.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: _flashMode == 'off' ? AppColors.onSurfaceMuted : AppColors.primaryLight,
-                    letterSpacing: 1.0,
-                  ),
-                ),
-              ],
+          child: Center(
+            child: Icon(
+              _getFlashIcon(),
+              size: 20, // optimized icon size for tactile touch
+              color: _getFlashColor(),
             ),
           ),
         ),
