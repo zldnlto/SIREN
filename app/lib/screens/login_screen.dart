@@ -661,28 +661,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           ),
         ),
       ),
-      const SizedBox(height: 16),
-      Center(
-        child: TextButton(
-          style: TextButton.styleFrom(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          ),
-          onPressed: () {
-            HapticFeedback.lightImpact();
-            _employeeIdCtrl.text = '000001';
-            _passwordCtrl.text = '1234';
-            _submit();
-          },
-          child: Text(
-            '데모 계정으로 로그인',
-            style: AppTextStyles.labelSm.copyWith(
-              color: AppColors.onSurfaceMuted,
-              decoration: TextDecoration.underline,
-              fontSize: 12,
-            ),
-          ),
-        ),
-      ),
     ];
 
     final loginInputSection = isTablet
@@ -818,6 +796,87 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               ),
                             ),
                           ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          // ─── Floating Demo Account Login Toolbar (Clipped & blurred backdrop) ───
+          Positioned(
+            left: 24,
+            bottom: 24,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(30),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+                child: MouseRegion(
+                  cursor: SystemMouseCursors.click,
+                  child: GestureDetector(
+                    onTap: () {
+                      HapticFeedback.lightImpact();
+                      _employeeIdCtrl.text = '000001';
+                      _passwordCtrl.text = '1234';
+                      _submit();
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: AppColors.surface.withValues(alpha: 0.75),
+                        borderRadius: BorderRadius.circular(30),
+                        border: Border.all(
+                          color: AppColors.border,
+                          width: 1.0,
+                        ),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Color(0x30000000),
+                            blurRadius: 10,
+                            offset: Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            width: 24,
+                            height: 24,
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: AppColors.primary,
+                            ),
+                            child: const Icon(
+                              Icons.bolt_rounded,
+                              size: 16,
+                              color: AppColors.onPrimary,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            '데모 로그인',
+                            style: AppTextStyles.labelSm.copyWith(
+                              color: AppColors.onSurface,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 12,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Container(
+                            width: 1,
+                            height: 12,
+                            color: AppColors.border,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            '사원: 000001 | PIN: 1234',
+                            style: AppTextStyles.labelSm.copyWith(
+                              color: AppColors.onSurfaceMuted,
+                              fontSize: 11,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
               ),
