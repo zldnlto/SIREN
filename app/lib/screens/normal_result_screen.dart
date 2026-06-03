@@ -150,43 +150,6 @@ class NormalResultScreen extends ConsumerWidget {
       ),
       body: Stack(
         children: [
-          // ─── Ambient Auroral Green/Lavender Glow Background ───
-          Positioned(
-            top: -150,
-            right: -150,
-            child: Container(
-              width: 450,
-              height: 450,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  colors: [
-                    AppColors.good.withOpacity(0.06), // green operational aura
-                    Colors.transparent,
-                  ],
-                ),
-              ),
-            ),
-          ),
-          Positioned(
-            bottom: -200,
-            left: -150,
-            child: Container(
-              width: 400,
-              height: 400,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  colors: [
-                    AppColors.primary.withOpacity(0.03),
-                    Colors.transparent,
-                  ],
-                ),
-              ),
-            ),
-          ),
-
-          // ─── Main Scaffold Content ───
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.all(AppSpacing.md),
@@ -274,13 +237,13 @@ class _PulsingStatusLedState extends State<_PulsingStatusLed>
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: Color.lerp(
-              const Color(0xFF27A644).withOpacity(0.3),
-              const Color(0xFF27A644),
+              AppColors.good.withOpacity(0.3),
+              AppColors.good,
               _pulseController.value,
             ),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF27A644).withOpacity(0.7 * _pulseController.value),
+                color: AppColors.good.withOpacity(0.7 * _pulseController.value),
                 blurRadius: 10 * _pulseController.value,
                 spreadRadius: 3 * _pulseController.value,
               ),

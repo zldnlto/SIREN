@@ -9,6 +9,7 @@ abstract final class AppColors {
   static const surface = Color(0xFF0F1011); // Surface 1 - cards
   static const surfaceVariant = Color(0xFF141516); // Surface 2
   static const surfaceTertiary = Color(0xFF18191A); // Surface 3
+  static const surfaceContainerLowest = Color(0xFF0F1115);
   static const surfaceOverlay = Color(0xFF000000);
 
   // Linear lavender-blue confidence accents

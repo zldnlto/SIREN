@@ -137,48 +137,53 @@ class _SirenButtonState extends State<SirenButton> {
                 }
               : null,
           onTapCancel: _enabled ? () => setState(() => _pressed = false) : null,
-          child: AnimatedContainer(
+          child: AnimatedScale(
+            scale: (_pressed && _enabled) ? 0.96 : 1.0,
             duration: AppDurations.fast,
-            curve: AppCurves.standard,
-            height: _height,
-            padding: _padding,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: _backgroundColor,
-              borderRadius: AppRadius.borderMd, // linear.app 8px rounded corners
-              border: _border,
-            ),
-            child: widget.isLoading
-                ? Center(
-                    child: SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: _foregroundColor,
-                      ),
-                    ),
-                  )
-                : Row(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      if (widget.icon != null) ...[
-                        IconTheme(
-                          data: IconThemeData(
-                            color: _foregroundColor, 
-                            size: widget.size == SirenButtonSize.xl ? 22 : 18,
-                          ),
-                          child: widget.icon!,
+            curve: AppCurves.exit,
+            child: AnimatedContainer(
+              duration: AppDurations.fast,
+              curve: AppCurves.standard,
+              height: _height,
+              padding: _padding,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: _backgroundColor,
+                borderRadius: AppRadius.borderMd,
+                border: _border,
+              ),
+              child: widget.isLoading
+                  ? Center(
+                      child: SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: _foregroundColor,
                         ),
-                        const SizedBox(width: AppSpacing.sm),
-                      ],
-                      Text(
-                        widget.label, // IBM sentence case
-                        style: _labelStyle.copyWith(color: _foregroundColor),
                       ),
-                    ],
-                  ),
+                    )
+                  : Row(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        if (widget.icon != null) ...[
+                          IconTheme(
+                            data: IconThemeData(
+                              color: _foregroundColor,
+                              size: widget.size == SirenButtonSize.xl ? 22 : 18,
+                            ),
+                            child: widget.icon!,
+                          ),
+                          const SizedBox(width: AppSpacing.sm),
+                        ],
+                        Text(
+                          widget.label,
+                          style: _labelStyle.copyWith(color: _foregroundColor),
+                        ),
+                      ],
+                    ),
+            ),
           ),
         ),
       ),

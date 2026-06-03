@@ -157,7 +157,7 @@ class _CapturePreviewScreenState extends ConsumerState<CapturePreviewScreen>
                 Expanded(
                   child: Container(
                     decoration: BoxDecoration(
-                      color: const Color(0xFF0D0E10),
+                      color: AppColors.background,
                       borderRadius: AppRadius.borderXl,
                       border: Border.all(color: AppColors.border, width: 1.0),
                     ),
