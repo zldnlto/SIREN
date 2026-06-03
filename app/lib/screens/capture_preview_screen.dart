@@ -13,6 +13,9 @@ class CapturePreviewScreen extends ConsumerStatefulWidget {
   const CapturePreviewScreen({super.key, required this.extraData});
   final Map<String, String> extraData;
 
+  String get imagePath => extraData['imagePath'] ?? 'mock-temp-image.png';
+  String get domain => extraData['domain'] ?? 'auto';
+
   @override
   ConsumerState<CapturePreviewScreen> createState() => _CapturePreviewScreenState();
 }
@@ -59,7 +62,7 @@ class _CapturePreviewScreenState extends ConsumerState<CapturePreviewScreen>
   void _cleanupTempFile() {
     if (kIsWeb) return;
     try {
-      final file = File(widget.extraData['imagePath']!);
+      final file = File(widget.imagePath);
       if (file.existsSync()) {
         file.deleteSync();
       }
@@ -84,16 +87,15 @@ class _CapturePreviewScreenState extends ConsumerState<CapturePreviewScreen>
     if (!mounted) return;
     
     // Launch the backend inspection creation call with the selected domain
-    final domain = widget.extraData['domain'] ?? 'surface_treatment';
-    ref.read(inspectionProvider.notifier).start(domain);
+    ref.read(inspectionProvider.notifier).start(widget.domain);
     
-    // Smoothly go back to Home Screen, the inline progress overlay will capture states
+    // Go back to home, the inline progress overlay will be triggered there
     context.go('/home');
   }
 
   @override
   Widget build(BuildContext context) {
-    final bool isMock = widget.extraData['imagePath'] == 'mock-temp-image.png';
+    final bool isMock = widget.imagePath == 'mock-temp-image.png';
 
     return Scaffold(
       backgroundColor: Colors.black,

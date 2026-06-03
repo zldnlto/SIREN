@@ -1,4 +1,6 @@
 import 'dart:io';
+import 'dart:math' as math;
+import 'dart:ui';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -30,6 +32,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
   String _deviceModel = 'CAM-01';
   AnnotationDomain _selectedDomain = AnnotationDomain.auto;
 
+  // Inline progress overlay animations
+  late final AnimationController _overlayCtrl;
+  late final Animation<double> _overlayScale;
+  late final Animation<double> _overlayFade;
+
   @override
   void initState() {
     super.initState();
@@ -40,6 +47,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
     
     _focusScale = Tween<double>(begin: 0.95, end: 1.05).animate(
       CurvedAnimation(parent: _focusCtrl, curve: Curves.easeInOut),
+    );
+
+    // Overlay transition configuration (springy entry + smooth fade)
+    _overlayCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 350),
+    );
+    _overlayScale = Tween<double>(begin: 0.8, end: 1.0).animate(
+      CurvedAnimation(parent: _overlayCtrl, curve: Curves.easeOutCubic),
+    );
+    _overlayFade = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _overlayCtrl, curve: Curves.easeIn),
     );
 
     // Warm up camera interface
@@ -72,6 +91,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
   @override
   void dispose() {
     _focusCtrl.dispose();
+    _overlayCtrl.dispose();
     super.dispose();
   }
 
@@ -176,20 +196,44 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
 
   @override
   Widget build(BuildContext context) {
+    final inspectionState = ref.watch(inspectionProvider);
+    final showOverlay = inspectionState.isCreating ||
+        inspectionState.isDetecting ||
+        inspectionState.isRagConnecting ||
+        inspectionState.isReady;
+
     // Listener is retained at top-level to orchestrate async routing/toasts without causing parent rebuilds
-    ref.listen(inspectionProvider, (prev, next) {
-      if (next.inspection != null &&
-          prev?.inspection == null &&
-          !next.isCreating) {
-        context.pushNamed('progress', extra: next.inspection!.id);
+    ref.listen<InspectionState>(inspectionProvider, (prev, next) {
+      final showPrev = prev != null && (prev.isCreating || prev.isDetecting || prev.isRagConnecting || prev.isReady);
+      final showNext = next.isCreating || next.isDetecting || next.isRagConnecting || next.isReady;
+      
+      if (showPrev != showNext) {
+        if (showNext) {
+          _overlayCtrl.forward();
+        } else {
+          _overlayCtrl.reverse();
+        }
       }
+
+      if (next.isReady && !(prev?.isReady ?? false)) {
+        final route = next.nextRoute;
+        if (route != null && next.inspection != null) {
+          // Grant brief period for the user to see the 100% finished state
+          Future.delayed(const Duration(milliseconds: 500), () {
+            if (mounted) {
+              context.goNamed(route, extra: next.inspection!.id);
+            }
+          });
+        }
+      }
+
       if (next.error != null && prev?.error == null) {
         Toast.show(
           context,
-          '검사 생성에 실패했습니다.',
+          '검사 중 오류가 발생했습니다.',
           type: ToastType.error,
           actionLabel: '재시도',
-          onAction: () => ref.read(inspectionProvider.notifier).start('surface_treatment'),
+          onAction: () => ref.read(inspectionProvider.notifier).start(_selectedDomain.apiValue),
         );
       }
     });
@@ -459,6 +503,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
                 ),
               ),
             ),
+          
+          // ─── 5. Inline Progress Overlay (Stack Top) ───
+          if (showOverlay || _overlayCtrl.isAnimating)
+            Positioned.fill(
+              child: _buildProgressOverlay(inspectionState),
+            ),
         ],
       ),
     );
@@ -647,6 +697,290 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
       child: child,
     );
   }
+
+  // ─── Progress Overlay Render Helpers ────────────────────────────────────────────────
+  Widget _buildProgressOverlay(InspectionState state) {
+    final steps = _calculateSteps(state, _selectedDomain);
+
+    return AnimatedBuilder(
+      animation: _overlayCtrl,
+      builder: (context, child) {
+        return FadeTransition(
+          opacity: _overlayFade,
+          child: ScaleTransition(
+            scale: _overlayScale,
+            alignment: const Alignment(0.0, 0.75), // Aligned with physical shutter button
+            child: child,
+          ),
+        );
+      },
+      child: Stack(
+        children: [
+          // 1. Refractive blurring overlay backplate
+          Positioned.fill(
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 12.0, sigmaY: 12.0),
+              child: Container(
+                color: AppColors.background.withValues(alpha: 0.85),
+              ),
+            ),
+          ),
+          
+          // 2. Control overlay content container
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 32),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const SizedBox(height: 40),
+                  
+                  // Top Title
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'AI REAL-TIME INSPECTION',
+                            style: AppTextStyles.sectionHeader.copyWith(
+                              color: AppColors.primaryLight,
+                              letterSpacing: 1.5,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            '실시간 검사 및 AI 분석 진행 중',
+                            style: AppTextStyles.headlineMd.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.onSurface,
+                            ),
+                          ),
+                        ],
+                      ),
+                      if (state.inspection != null)
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: AppColors.surface,
+                            borderRadius: AppRadius.borderSm,
+                            border: Border.all(color: AppColors.border),
+                          ),
+                          child: Text(
+                            'ID: ${state.inspection!.id.substring(0, math.min(8, state.inspection!.id.length))}',
+                            style: AppTextStyles.monoSm.copyWith(
+                              color: AppColors.onSurfaceVariant,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  
+                  const SizedBox(height: 48),
+                  
+                  // 6-step checklist card
+                  Expanded(
+                    child: Container(
+                      padding: const EdgeInsets.all(32),
+                      decoration: BoxDecoration(
+                        color: AppColors.surface.withValues(alpha: 0.5),
+                        borderRadius: AppRadius.borderXl,
+                        border: Border.all(color: AppColors.border, width: 1.0),
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: steps.map((step) => _buildStepRow(step)).toList(),
+                      ),
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 40),
+                  
+                  // Emergency Cancel Button
+                  _buildOverlayControlPanel(state),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStepRow(ProgressStep step) {
+    Color iconColor;
+    Widget leadingWidget;
+    TextStyle textStyle;
+
+    switch (step.status) {
+      case StepStatus.done:
+        iconColor = AppColors.good;
+        leadingWidget = Icon(Icons.check_circle_rounded, color: iconColor, size: 22);
+        textStyle = AppTextStyles.bodyStrong.copyWith(
+          color: AppColors.onSurface,
+          fontSize: 16,
+        );
+        break;
+      case StepStatus.running:
+        iconColor = AppColors.primary;
+        leadingWidget = const SizedBox(
+          width: 22,
+          height: 22,
+          child: CircularProgressIndicator(
+            strokeWidth: 2.5,
+            valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+          ),
+        );
+        textStyle = AppTextStyles.bodyStrong.copyWith(
+          color: AppColors.primaryLight,
+          fontSize: 16,
+        );
+        break;
+      case StepStatus.pending:
+      default:
+        iconColor = AppColors.onSurfaceMuted;
+        leadingWidget = Icon(Icons.radio_button_unchecked_rounded, color: iconColor, size: 22);
+        textStyle = AppTextStyles.bodySm.copyWith(
+          color: AppColors.onSurfaceMuted,
+          fontSize: 16,
+        );
+        break;
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 14.0),
+      child: Row(
+        children: [
+          leadingWidget,
+          const SizedBox(width: 16),
+          Expanded(
+            child: Text(
+              step.label,
+              style: textStyle,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOverlayControlPanel(InspectionState state) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      width: double.infinity,
+      height: 64,
+      decoration: BoxDecoration(
+        color: Colors.transparent,
+        borderRadius: AppRadius.borderMd,
+        border: Border.all(
+          color: AppColors.defect.withValues(alpha: 0.4),
+          width: 1.0,
+        ),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: const BorderRadius.all(Radius.circular(AppRadius.md)),
+          onTap: () {
+            HapticFeedback.mediumImpact();
+            ref.read(inspectionProvider.notifier).reset();
+          },
+          splashColor: AppColors.defect.withValues(alpha: 0.15),
+          highlightColor: AppColors.defect.withValues(alpha: 0.08),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(
+                Icons.stop_circle_outlined,
+                color: AppColors.defect,
+                size: 24,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'STOP INSPECTION (검사 비상 중단)',
+                style: AppTextStyles.buttonLg.copyWith(
+                  fontSize: 16.5,
+                  color: AppColors.defect,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: -0.1,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  List<ProgressStep> _calculateSteps(InspectionState state, AnnotationDomain selectedDomain) {
+    final domainLabel = state.inspection != null
+        ? (AnnotationDomain.values.firstWhere(
+            (d) => d.apiValue == state.inspection!.annotationDomain,
+            orElse: () => selectedDomain,
+          ).label)
+        : selectedDomain.label;
+
+    // Step 1: 이미지 전송
+    final step1Status = state.inspection != null
+        ? StepStatus.done
+        : (state.isCreating ? StepStatus.running : StepStatus.pending);
+    final step1Label = step1Status == StepStatus.running
+        ? '이미지 전송 중...'
+        : '이미지 전송 완료';
+
+    // Step 2: 공정 검사 시작
+    final step2Status = state.inspection != null ? StepStatus.done : StepStatus.pending;
+    final step2Label = '[$domainLabel] 도메인으로 검사 시작';
+
+    // Step 3: AI 결함 탐지
+    StepStatus step3Status;
+    if (state.result != null) {
+      step3Status = StepStatus.done;
+    } else if (state.inspection != null && state.isDetecting) {
+      step3Status = StepStatus.running;
+    } else {
+      step3Status = StepStatus.pending;
+    }
+    final step3Label = step3Status == StepStatus.running
+        ? 'AI 결함 탐지 중...'
+        : 'AI 결함 탐지 완료';
+
+    // Step 4: 결함 건수
+    final step4Status = state.result != null ? StepStatus.done : StepStatus.pending;
+    String step4Label = '결함 분석 대기';
+    if (state.result != null) {
+      final defectCount = state.result!.defects.length;
+      step4Label = defectCount > 0 ? '결함 $defectCount건 검출' : '결함 없음';
+    }
+
+    // Step 5: RAG 연결
+    StepStatus step5Status;
+    if (state.isReady) {
+      step5Status = StepStatus.done;
+    } else if (state.result != null && state.isRagConnecting) {
+      step5Status = StepStatus.running;
+    } else {
+      step5Status = StepStatus.pending;
+    }
+    final step5Label = step5Status == StepStatus.running
+        ? 'RAG 조치 안내 연결 중...'
+        : 'RAG 조치 안내 연결 완료';
+
+    // Step 6: 조치 가이드 준비 완료
+    final step6Status = state.isReady ? StepStatus.done : StepStatus.pending;
+    final step6Label = '조치 가이드 준비 완료';
+
+    return [
+      ProgressStep(label: step1Label, status: step1Status),
+      ProgressStep(label: step2Label, status: step2Status),
+      ProgressStep(label: step3Label, status: step3Status),
+      ProgressStep(label: step4Label, status: step4Status),
+      ProgressStep(label: step5Label, status: step5Status),
+      ProgressStep(label: step6Label, status: step6Status),
+    ];
+  }
 }
 
 // ─── Custom Painter for Viewfinder 3x3 Grid Pattern ───────────────────────────────
@@ -807,4 +1141,13 @@ class _DarkPlaceholder extends StatelessWidget {
       ),
     );
   }
+}
+
+enum StepStatus { pending, running, done }
+
+class ProgressStep {
+  final String label;
+  final StepStatus status;
+
+  const ProgressStep({required this.label, required this.status});
 }
