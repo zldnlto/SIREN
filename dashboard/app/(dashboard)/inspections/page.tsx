@@ -37,13 +37,13 @@ async function InspectionList({ searchParams }: PageProps) {
   return (
     <div className="space-y-4">
       <RecentInspectionsTable items={data.items} />
-      <div className="flex items-center justify-between pt-2 text-sm text-gray-500">
+      <div className="flex items-center justify-between pt-2 text-sm text-ink-subtle">
         <p>전체 {data.total.toLocaleString()}건</p>
         <div className="flex gap-2">
           {page > 1 && (
             <a
               href={`/inspections?${new URLSearchParams({ ...searchParams, page: String(page - 1) })}`}
-              className="px-3 py-1.5 border border-gray-200 rounded-lg hover:bg-gray-50"
+              className="px-3 py-1.5 border border-hairline rounded-md hover:bg-surface-2 text-ink-muted transition-colors"
             >
               이전
             </a>
@@ -51,7 +51,7 @@ async function InspectionList({ searchParams }: PageProps) {
           {data.total > page * 20 && (
             <a
               href={`/inspections?${new URLSearchParams({ ...searchParams, page: String(page + 1) })}`}
-              className="px-3 py-1.5 border border-gray-200 rounded-lg hover:bg-gray-50"
+              className="px-3 py-1.5 border border-hairline rounded-md hover:bg-surface-2 text-ink-muted transition-colors"
             >
               다음
             </a>
@@ -65,14 +65,14 @@ async function InspectionList({ searchParams }: PageProps) {
 export default function InspectionsPage({ searchParams }: PageProps) {
   return (
     <div className="space-y-6 max-w-6xl">
-      <h1 className="text-2xl font-bold text-gray-900">검사 목록</h1>
-      <div className="bg-white rounded-xl border border-gray-200 p-5 space-y-5">
+      <h1 className="text-2xl font-semibold text-ink tracking-tight">검사 목록</h1>
+      <div className="bg-surface-1 rounded-lg border border-hairline p-5 space-y-5">
         <Suspense fallback={null}>
           <InspectionFilter />
         </Suspense>
         <Suspense
           fallback={
-            <div className="py-12 text-center text-sm text-gray-400">
+            <div className="py-12 text-center text-sm text-ink-tertiary">
               불러오는 중…
             </div>
           }

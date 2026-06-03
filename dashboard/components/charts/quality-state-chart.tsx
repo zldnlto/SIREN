@@ -46,7 +46,7 @@ export function QualityStateChart({ data }: Props) {
           ))}
         </Pie>
         <Tooltip
-          contentStyle={{ fontSize: 12 }}
+          contentStyle={{ fontSize: 12, background: "#141516", border: "1px solid #23252a", borderRadius: 6, color: "#f7f8f8" }}
           formatter={(v: number) => [`${v}건`]}
         />
       </PieChart>
