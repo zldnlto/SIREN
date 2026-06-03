@@ -412,15 +412,53 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ),
                 ),
 
-                // 원래의 모바일 로고 이미지에 BlendMode 필터 튜닝 적용
+                // 원래의 모바일 로고 이미지에 BlendMode 필터 튜닝 적용 + 더블 dot 오버레이 (#248)
                 SizedBox(
                   width: 46,
                   height: 46,
-                  child: Image.asset(
-                    'assets/images/logo@2x.png',
-                    fit: BoxFit.contain,
-                    color: Colors.white.withValues(alpha: 0.95),
-                    colorBlendMode: BlendMode.modulate,
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      Positioned.fill(
+                        child: Image.asset(
+                          'assets/images/logo@2x.png',
+                          fit: BoxFit.contain,
+                          color: Colors.white.withValues(alpha: 0.95),
+                          colorBlendMode: BlendMode.modulate,
+                        ),
+                      ),
+                      Positioned(
+                        top: 0,
+                        right: 0,
+                        child: Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            // 작은 dot: 5dp, warning 색상 alpha 0.7, 큰 dot 좌측 8dp
+                            Positioned(
+                              left: -8,
+                              top: 2.5,
+                              child: Container(
+                                width: 5,
+                                height: 5,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: AppColors.warning.withValues(alpha: 0.7),
+                                ),
+                              ),
+                            ),
+                            // 큰 dot: 10dp, warning 색상
+                            Container(
+                              width: 10,
+                              height: 10,
+                              decoration: const BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: AppColors.warning,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
