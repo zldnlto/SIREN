@@ -357,43 +357,6 @@ class _HistoryDetailScreenState extends ConsumerState<HistoryDetailScreen>
       ),
       body: Stack(
         children: [
-          // ─── Ambient Auroral Glow Background ───
-          Positioned(
-            top: -150,
-            right: -150,
-            child: Container(
-              width: 400,
-              height: 400,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  colors: [
-                    AppColors.primary.withValues(alpha: 0.04),
-                    Colors.transparent,
-                  ],
-                ),
-              ),
-            ),
-          ),
-          Positioned(
-            bottom: -200,
-            left: -150,
-            child: Container(
-              width: 500,
-              height: 500,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  colors: [
-                    AppColors.primary.withValues(alpha: 0.03),
-                    Colors.transparent,
-                  ],
-                ),
-              ),
-            ),
-          ),
-          
-          // ─── Main Scaffold Content ───
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.all(AppSpacing.md),

@@ -42,93 +42,14 @@ class DefectResultScreen extends ConsumerWidget {
     final isTablet =
         MediaQuery.of(context).size.shortestSide >= AppBreakpoints.tablet;
 
-    // Premium Left Image Viewer Panel (16px rounded + 1px hairline + Device Metric Bar)
-    final imagePane = Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Expanded(
-          child: Container(
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: AppRadius.borderXl, // 16px rounded corners
-              border: Border.all(color: AppColors.border, width: 1.0),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.error.withOpacity(0.04), // Subtle red neon aura
-                  blurRadius: 30,
-                  spreadRadius: 2,
-                ),
-              ],
-            ),
-            clipBehavior: Clip.antiAlias,
-            child: Stack(
-              children: [
-                Positioned.fill(
-                  child: ImageOverlayViewer(imageUrl: imageUrl, bboxes: bboxes),
-                ),
-                // Diagnostics Camera overlay
-                Positioned(
-                  top: AppSpacing.sm,
-                  left: AppSpacing.sm,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.75),
-                      borderRadius: AppRadius.borderXs,
-                      border: Border.all(color: AppColors.borderSubtle),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Container(
-                          width: 6,
-                          height: 6,
-                          decoration: const BoxDecoration(
-                            color: AppColors.defect, // Red active warning dot
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          'CAM-01 / ANALYZED',
-                          style: AppTextStyles.monoSm.copyWith(
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.onSurface,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        const SizedBox(height: AppSpacing.xs),
-        // Precise device metric bar at bottom
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.xs),
-          decoration: BoxDecoration(
-            color: AppColors.surfaceVariant,
-            borderRadius: AppRadius.borderMd,
-            border: Border.all(color: AppColors.border, width: 1.0),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'RESOLUTION: 1024x768',
-                style: AppTextStyles.monoSm.copyWith(fontSize: 10, color: AppColors.onSurfaceMuted),
-              ),
-              Text(
-                'AI PROCESSED: 218ms',
-                style: AppTextStyles.monoSm.copyWith(fontSize: 10, color: AppColors.primaryLight),
-              ),
-            ],
-          ),
-        ),
-      ],
+    final imagePane = Container(
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: AppRadius.borderXl,
+        border: Border.all(color: AppColors.border, width: 1.0),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: ImageOverlayViewer(imageUrl: imageUrl, bboxes: bboxes),
     );
 
     final defectList = [
@@ -219,43 +140,6 @@ class DefectResultScreen extends ConsumerWidget {
       ),
       body: Stack(
         children: [
-          // ─── Ambient Auroral Red/Lavender Glow Background ───
-          Positioned(
-            top: -150,
-            right: -150,
-            child: Container(
-              width: 400,
-              height: 400,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  colors: [
-                    AppColors.defect.withOpacity(0.06), // red glow reflecting warning status
-                    Colors.transparent,
-                  ],
-                ),
-              ),
-            ),
-          ),
-          Positioned(
-            bottom: -200,
-            left: -150,
-            child: Container(
-              width: 500,
-              height: 500,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  colors: [
-                    AppColors.primary.withOpacity(0.04),
-                    Colors.transparent,
-                  ],
-                ),
-              ),
-            ),
-          ),
-          
-          // ─── Main Scaffold Content ───
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.all(AppSpacing.md),
