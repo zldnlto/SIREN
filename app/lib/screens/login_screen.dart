@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -20,17 +21,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   static const _employeeIdMaxLen = 6;
   static const _pinMaxLen = 4;
 
-  // 편의를 위해 개발용 프리필 탑재 (084920 / 1234)
-  final _employeeIdCtrl = TextEditingController(
-    text: '084920',
-  );
-  final _passwordCtrl = TextEditingController(
-    text: '1234',
-  );
+  final _employeeIdCtrl = TextEditingController();
+  final _passwordCtrl = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
   // Explicitly manage active input field via boolean state to prevent focus stealing bugs during virtual keypad taps
   bool _isIdActive = true; 
+  Offset _targetGlowPos = const Offset(200, 300);
 
   final FocusNode _employeeIdFocusNode = FocusNode();
   final FocusNode _passwordFocusNode = FocusNode();
@@ -41,19 +38,47 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     
     _employeeIdFocusNode.addListener(() {
       if (_employeeIdFocusNode.hasFocus) {
-        setState(() => _isIdActive = true);
+        setState(() {
+          _isIdActive = true;
+          _updateGlowForFocus();
+        });
       }
     });
     
     _passwordFocusNode.addListener(() {
       if (_passwordFocusNode.hasFocus) {
-        setState(() => _isIdActive = false);
+        setState(() {
+          _isIdActive = false;
+          _updateGlowForFocus();
+        });
       }
     });
 
     // Auto-focus ID field on page load/refresh
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _employeeIdFocusNode.requestFocus();
+      _updateGlowForFocus();
+    });
+  }
+
+  void _updateGlowForFocus() {
+    if (!mounted) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final size = MediaQuery.of(context).size;
+      final isTablet = size.shortestSide >= AppBreakpoints.tablet;
+      
+      setState(() {
+        if (_isIdActive) {
+          _targetGlowPos = isTablet
+              ? Offset(size.width * 0.75, size.height * 0.25)
+              : Offset(size.width * 0.5, size.height * 0.32);
+        } else {
+          _targetGlowPos = isTablet
+              ? Offset(size.width * 0.75, size.height * 0.58)
+              : Offset(size.width * 0.5, size.height * 0.68);
+        }
+      });
     });
   }
 
@@ -95,8 +120,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         // Auto-advance to the password PIN input field
         _passwordFocusNode.requestFocus();
       } else if (!_isIdActive && nextText.length == _pinMaxLen) {
-        // Auto-submit login immediately upon completing the 4-digit PIN
-        _submit();
+        // Auto-submit login removed for QA specs. User must tap login button.
+        focusNode.requestFocus();
       } else {
         focusNode.requestFocus();
       }
@@ -237,23 +262,23 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             ),
             const SizedBox(height: AppSpacing.md),
             Text(
-              'LNG TANK',
+              'SIREN',
               style: GoogleFonts.unbounded(
-                fontSize: 26,
-                fontWeight: FontWeight.w900, // Heavy / Black 900
-                height: 1.15,
-                letterSpacing: -1.2, // 대담한 밀착 자간
+                fontSize: 36,
+                fontWeight: FontWeight.w900,
+                height: 1.1,
+                letterSpacing: -1.5,
                 color: AppColors.onBackground,
               ),
             ),
+            const SizedBox(height: 6),
             Text(
-              'INSPECTOR',
-              style: GoogleFonts.unbounded(
-                fontSize: 26,
-                fontWeight: FontWeight.w900,
-                height: 1.15,
-                letterSpacing: -1.2,
-                color: AppColors.primary, // signature lavender
+              'Ship Inspection with RAG Engine + Neural network',
+              style: AppTextStyles.monoSm.copyWith(
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: AppColors.primaryLight,
+                letterSpacing: -0.2,
               ),
             ),
             const SizedBox(height: AppSpacing.sm),
@@ -267,10 +292,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             ),
             const SizedBox(height: AppSpacing.sm),
             Text(
-              '고위험 산업 환경용 검사 시스템. 허가된 작업자만 로그인할 수 있습니다.',
+              'LNG 탱크 육안 검사를 AI 비전으로 대체하는 현장 보조 시스템.\n허가된 작업자만 접근 가능합니다.',
               style: AppTextStyles.bodyLg.copyWith(
                 color: AppColors.onSurfaceVariant,
-                fontSize: 14,
+                fontSize: 13.5,
                 height: 1.45,
               ),
             ),
@@ -393,28 +418,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      'LNG TANK ',
-                      style: GoogleFonts.unbounded(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w900, // Heavy 900
-                        letterSpacing: -0.6,
-                        color: AppColors.onBackground,
-                      ),
-                    ),
-                    Text(
-                      'INSPECTOR',
-                      style: GoogleFonts.unbounded(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: -0.6,
-                        color: AppColors.primary, // signature lavender
-                      ),
-                    ),
-                  ],
+                Text(
+                  'SIREN',
+                  style: GoogleFonts.unbounded(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -0.6,
+                    color: AppColors.onBackground,
+                  ),
                 ),
                 Text(
                   '기기 ID: TERM-X9-204 (모바일)',
@@ -533,15 +544,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           ),
           onTap: () => _passwordFocusNode.requestFocus(),
           onChanged: (val) {
-            // Support physical keyboard auto-submit & length constraint
+            // Support physical keyboard length constraint
             if (val.length > _pinMaxLen) {
               _passwordCtrl.text = val.substring(0, _pinMaxLen);
               _passwordCtrl.selection = TextSelection.fromPosition(
                 const TextPosition(offset: _pinMaxLen),
               );
-            }
-            if (_passwordCtrl.text.length == _pinMaxLen) {
-              _submit();
             }
           },
           decoration: InputDecoration(
@@ -673,46 +681,42 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       backgroundColor: AppColors.background, // Deepest near-black canvas (#010102)
       body: Stack(
         children: [
-          // Layer 1: Ambient Auroral Glow (Signature linear.app aesthetic)
-          Positioned(
-            top: -250,
-            left: -200,
-            child: Container(
-              width: 600,
-              height: 600,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: AppColors.primary.withValues(alpha: 0.08), // Elegant lavender bloom
-              ),
-              child: Container(
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.primary.withValues(alpha: 0.08),
-                      blurRadius: 150,
-                      spreadRadius: 50,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          Positioned(
-            bottom: -200,
-            right: -200,
-            child: Container(
-              width: 500,
-              height: 500,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.primaryLight.withValues(alpha: 0.04),
-                    blurRadius: 180,
-                    spreadRadius: 30,
-                  ),
-                ],
+          // Layer 1: Interactive Grid & Glow Background (A + C + Alpha)
+          Positioned.fill(
+            child: GestureDetector(
+              behavior: HitTestBehavior.translucent,
+              onTapDown: (details) {
+                setState(() {
+                  _targetGlowPos = details.localPosition;
+                });
+              },
+              onPanUpdate: (details) {
+                setState(() {
+                  _targetGlowPos = details.localPosition;
+                });
+              },
+              child: TweenAnimationBuilder<Offset>(
+                tween: Tween<Offset>(end: _targetGlowPos),
+                duration: AppDurations.slow,
+                curve: Curves.easeOutQuart,
+                builder: (context, animOffset, child) {
+                  final activeColor = _isIdActive
+                      ? AppColors.primary
+                      : const Color(0xFF5E6DF8); // Indigo color for PIN focus to show a dynamic change
+                  return TweenAnimationBuilder<Color?>(
+                    tween: ColorTween(end: activeColor),
+                    duration: AppDurations.slow,
+                    curve: Curves.easeOutQuart,
+                    builder: (context, animColor, child) {
+                      return CustomPaint(
+                        painter: _LoginBackgroundPainter(
+                          glowPosition: animOffset,
+                          themeColor: animColor ?? AppColors.primary,
+                        ),
+                      );
+                    },
+                  );
+                },
               ),
             ),
           ),
@@ -807,6 +811,87 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ),
             ),
           ),
+          // ─── Floating Demo Account Login Toolbar (Clipped & blurred backdrop) ───
+          Positioned(
+            left: 24,
+            bottom: 24,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(30),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+                child: MouseRegion(
+                  cursor: SystemMouseCursors.click,
+                  child: GestureDetector(
+                    onTap: () {
+                      HapticFeedback.lightImpact();
+                      _employeeIdCtrl.text = '000001';
+                      _passwordCtrl.text = '1234';
+                      _submit();
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: AppColors.surface.withValues(alpha: 0.75),
+                        borderRadius: BorderRadius.circular(30),
+                        border: Border.all(
+                          color: AppColors.border,
+                          width: 1.0,
+                        ),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Color(0x30000000),
+                            blurRadius: 10,
+                            offset: Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            width: 24,
+                            height: 24,
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: AppColors.primary,
+                            ),
+                            child: const Icon(
+                              Icons.bolt_rounded,
+                              size: 16,
+                              color: AppColors.onPrimary,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            '데모 로그인',
+                            style: AppTextStyles.labelSm.copyWith(
+                              color: AppColors.onSurface,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 12,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Container(
+                            width: 1,
+                            height: 12,
+                            color: AppColors.border,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            '사원: 000001 | PIN: 1234',
+                            style: AppTextStyles.labelSm.copyWith(
+                              color: AppColors.onSurfaceMuted,
+                              fontSize: 11,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -855,5 +940,68 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
             ),
     );
+  }
+}
+
+// ─── Custom Painter for Interactive Login Backdrop ──────────────────────────
+class _LoginBackgroundPainter extends CustomPainter {
+  const _LoginBackgroundPainter({
+    required this.glowPosition,
+    required this.themeColor,
+  });
+
+  final Offset glowPosition;
+  final Color themeColor;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    // 1. 닷 그리드 배경 (C) 그리기
+    final dotPaint = Paint()
+      ..color = AppColors.border.withValues(alpha: 0.05)
+      ..style = PaintingStyle.fill;
+
+    const double spacing = 32.0;
+    for (double x = spacing / 2; x < size.width; x += spacing) {
+      for (double y = spacing / 2; y < size.height; y += spacing) {
+        canvas.drawCircle(Offset(x, y), 0.8, dotPaint);
+      }
+    }
+
+    // 2. 터치 및 포커스 반응형 대형 Radial Glow (A + Alpha)
+    final glowPaint = Paint()
+      ..shader = RadialGradient(
+        colors: [
+          themeColor.withValues(alpha: 0.28), // 0.12 -> 0.28로 선명도 상향
+          themeColor.withValues(alpha: 0.10), // 0.04 -> 0.10으로 그라데이션 강도 보완
+          Colors.transparent,
+        ],
+        stops: const [0.0, 0.5, 1.0],
+      ).createShader(Rect.fromCircle(center: glowPosition, radius: 400)); // 크기 360 -> 400
+
+    canvas.drawCircle(glowPosition, 400, glowPaint);
+    
+    // 3. 좌상단 및 우하단 보조 Ambient Glow (은은한 깊이감 유지)
+    final ambientTopPaint = Paint()
+      ..shader = RadialGradient(
+        colors: [
+          themeColor.withValues(alpha: 0.12), // 0.06 -> 0.12
+          Colors.transparent,
+        ],
+      ).createShader(Rect.fromCircle(center: const Offset(0, 0), radius: 450));
+    canvas.drawCircle(const Offset(0, 0), 450, ambientTopPaint);
+
+    final ambientBottomPaint = Paint()
+      ..shader = RadialGradient(
+        colors: [
+          AppColors.primaryLight.withValues(alpha: 0.08), // 0.03 -> 0.08
+          Colors.transparent,
+        ],
+      ).createShader(Rect.fromCircle(center: Offset(size.width, size.height), radius: 450));
+    canvas.drawCircle(Offset(size.width, size.height), 450, ambientBottomPaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _LoginBackgroundPainter oldDelegate) {
+    return oldDelegate.glowPosition != glowPosition || oldDelegate.themeColor != themeColor;
   }
 }
