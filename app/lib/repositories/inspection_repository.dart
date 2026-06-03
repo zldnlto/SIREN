@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/api_client.dart';
 import '../models/detection_result.dart';
 import '../models/inspection.dart';
+import '../models/inspection_detail.dart';
 
 class InspectionRepository {
   const InspectionRepository(this._dio);
@@ -29,6 +30,13 @@ class InspectionRepository {
       '/inspections/$inspectionId',
     );
     return Inspection.fromJson(resp.data!);
+  }
+
+  Future<InspectionDetail> getDetail(String inspectionId) async {
+    final resp = await _dio.get<Map<String, dynamic>>(
+      '/dashboard/inspections/$inspectionId',
+    );
+    return InspectionDetail.fromJson(resp.data!);
   }
 
   Future<Inspection> updateDomain(String inspectionId, String annotationDomain) async {
