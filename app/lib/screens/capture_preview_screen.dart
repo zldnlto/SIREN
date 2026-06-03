@@ -10,8 +10,8 @@ import '../providers/inspection_provider.dart';
 import '../widgets/siren_button.dart';
 
 class CapturePreviewScreen extends ConsumerStatefulWidget {
-  const CapturePreviewScreen({super.key, required this.imagePath});
-  final String imagePath;
+  const CapturePreviewScreen({super.key, required this.extraData});
+  final Map<String, String> extraData;
 
   @override
   ConsumerState<CapturePreviewScreen> createState() => _CapturePreviewScreenState();
@@ -59,7 +59,7 @@ class _CapturePreviewScreenState extends ConsumerState<CapturePreviewScreen>
   void _cleanupTempFile() {
     if (kIsWeb) return;
     try {
-      final file = File(widget.imagePath);
+      final file = File(widget.extraData['imagePath']!);
       if (file.existsSync()) {
         file.deleteSync();
       }
@@ -83,24 +83,17 @@ class _CapturePreviewScreenState extends ConsumerState<CapturePreviewScreen>
     
     if (!mounted) return;
     
-    // Launch the backend inspection creation call
-    ref.read(inspectionProvider.notifier).start('surface_treatment');
+    // Launch the backend inspection creation call with the selected domain
+    final domain = widget.extraData['domain'] ?? 'surface_treatment';
+    ref.read(inspectionProvider.notifier).start(domain);
     
-    // Route to the real-time AI progress analysis screen
-    // We already listening to inspectionProvider in HomeScreen, but pushing progress ensures routing
-    final state = ref.read(inspectionProvider);
-    if (state.inspection != null) {
-      context.goNamed('progress', extra: state.inspection!.id);
-    } else {
-      // If not created yet (starts async loading), progress screen will be handled by Riverpod listener
-      // but we force transition to home to let HomeRiverpod listener catch state.
-      context.go('/home');
-    }
+    // Smoothly go back to Home Screen, the inline progress overlay will capture states
+    context.go('/home');
   }
 
   @override
   Widget build(BuildContext context) {
-    final bool isMock = widget.imagePath == 'mock-temp-image.png';
+    final bool isMock = widget.extraData['imagePath'] == 'mock-temp-image.png';
 
     return Scaffold(
       backgroundColor: Colors.black,
@@ -175,7 +168,7 @@ class _CapturePreviewScreenState extends ConsumerState<CapturePreviewScreen>
                                   ),
                                 )
                               : Image.file(
-                                  File(widget.imagePath),
+                                  File(widget.extraData['imagePath']!),
                                   fit: BoxFit.cover,
                                   errorBuilder: (_, __, ___) => const Center(
                                     child: Icon(

@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 
 import '../core/tokens.dart';
+import '../models/annotation_domain.dart';
 import '../providers/inspection_provider.dart';
 import '../widgets/toast.dart';
 
@@ -27,6 +28,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
   bool _hasCameraError = false;
   String _flashMode = 'off'; // 'off' | 'on' | 'auto'
   String _deviceModel = 'CAM-01';
+  AnnotationDomain _selectedDomain = AnnotationDomain.auto;
 
   @override
   void initState() {
@@ -122,10 +124,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
         0, 73, 69, 78, 68, 174, 66, 96, 130
       ]);
 
+      final extraData = {
+        'imagePath': 'mock-temp-image.png',
+        'domain': _selectedDomain.apiValue,
+      };
+
       if (kIsWeb) {
         // Fallback for web sandbox environments
         if (!mounted) return;
-        context.pushNamed('preview', extra: 'mock-temp-image.png');
+        context.pushNamed('preview', extra: extraData);
         return;
       }
 
@@ -136,7 +143,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
       await tempFile.writeAsBytes(pngBytes, flush: true);
 
       if (!mounted) return;
-      context.pushNamed('preview', extra: tempFile.path);
+      context.pushNamed(
+        'preview',
+        extra: {
+          'imagePath': tempFile.path,
+          'domain': _selectedDomain.apiValue,
+        },
+      );
     } catch (e) {
       if (!mounted) return;
       Toast.show(
@@ -241,6 +254,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
                   
                   // Flash Controller with 0ms visual update latency
                   _buildFlashToggleChip(),
+                  const SizedBox(width: 10),
+                  _buildDomainSelectorChip(),
                 ],
               ),
             ),
@@ -546,6 +561,48 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
               color: _getFlashColor(),
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDomainSelectorChip() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      height: 44, // 44dp Touch target height matched
+      decoration: BoxDecoration(
+        color: AppColors.surface.withValues(alpha: 0.85),
+        borderRadius: AppRadius.borderSm,
+        border: Border.all(color: AppColors.border, width: 1.0),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<AnnotationDomain>(
+          value: _selectedDomain,
+          dropdownColor: AppColors.surface,
+          icon: const Icon(
+            Icons.arrow_drop_down_rounded,
+            color: AppColors.onSurfaceMuted,
+          ),
+          onChanged: (AnnotationDomain? newVal) {
+            if (newVal != null) {
+              HapticFeedback.lightImpact();
+              setState(() {
+                _selectedDomain = newVal;
+              });
+            }
+          },
+          items: AnnotationDomain.values.map((domain) {
+            return DropdownMenuItem<AnnotationDomain>(
+              value: domain,
+              child: Text(
+                domain.label,
+                style: AppTextStyles.monoSm.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: domain == AnnotationDomain.auto ? AppColors.primaryLight : AppColors.onSurface,
+                ),
+              ),
+            );
+          }).toList(),
         ),
       ),
     );

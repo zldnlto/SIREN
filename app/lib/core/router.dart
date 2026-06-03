@@ -58,7 +58,9 @@ final appRouter = GoRouter(
               name: 'preview',
               pageBuilder: (_, state) => _fadeSlidePage(
                 state,
-                CapturePreviewScreen(imagePath: state.extra as String),
+                CapturePreviewScreen(
+                  extraData: state.extra as Map<String, String>,
+                ),
               ),
             ),
             GoRoute(
