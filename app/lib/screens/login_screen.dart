@@ -292,7 +292,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             ),
             const SizedBox(height: AppSpacing.sm),
             Text(
-              'LNG 탱크 육안 검사를 AI 비전으로 대체하는 현장 보조 시스템. 허가된 작업자만 접근 가능합니다.',
+              'LNG 탱크 육안 검사를 AI 비전으로 대체하는 현장 보조 시스템.\n허가된 작업자만 접근 가능합니다.',
               style: AppTextStyles.bodyLg.copyWith(
                 color: AppColors.onSurfaceVariant,
                 fontSize: 13.5,
