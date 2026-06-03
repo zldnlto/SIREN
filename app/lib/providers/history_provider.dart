@@ -57,7 +57,7 @@ class HistoryNotifier extends Notifier<List<Inspection>> {
   Future<void> reportInspection(String id) async {
     try {
       // Background delegation PATCH request trigger
-      await ref.read(inspectionRepositoryProvider).updateDomain(id, 'surface_treatment');
+      await ref.read(inspectionRepositoryProvider).report(id);
     } catch (_) {}
 
     state = state.map((x) {

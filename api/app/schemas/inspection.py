@@ -8,6 +8,12 @@ class InspectionCreate(BaseModel):
     annotation_domain: str = "surface_treatment"
 
 
+class InspectionUpdate(BaseModel):
+    annotation_domain: str | None = None
+    report_flagged: bool | None = None
+
+
+
 class UploadUrlResponse(BaseModel):
     upload_url: str
     key: str

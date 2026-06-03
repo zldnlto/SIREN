@@ -24,6 +24,7 @@ from app.ports.repositories import (
     CreateInspectionFn,
     GetInspectionByIdFn,
     UpdateInspectionImageKeysFn,
+    UpdateInspectionFn,
 )
 from app.ports.storage import (
     DeleteFileFn,
@@ -129,3 +130,24 @@ async def upload_image(
     except Exception:
         await delete_file_fn(key)
         raise
+
+
+async def update_inspection(
+    db: AsyncSession,
+    inspection_id: str,
+    requester_id: uuid.UUID,
+    *,
+    annotation_domain: str | None = None,
+    report_flagged: bool | None = None,
+    get_inspection_fn: GetInspectionByIdFn,
+    update_fn: UpdateInspectionFn,
+):
+    inspection = await get_inspection(db, inspection_id, get_by_id_fn=get_inspection_fn)
+    if inspection.inspector_id != requester_id:
+        raise ForbiddenError
+    return await update_fn(
+        db,
+        inspection,
+        annotation_domain=annotation_domain,
+        report_flagged=report_flagged,
+    )

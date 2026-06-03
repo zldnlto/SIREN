@@ -15,7 +15,7 @@ from app.application.errors import (
 from app.core import s3
 from app.domain.inspection import ALLOWED_MIME_TYPES, MAX_FILE_SIZE
 from app.repositories import inspection_repository
-from app.schemas.inspection import InspectionCreate
+from app.schemas.inspection import InspectionCreate, InspectionUpdate
 
 
 async def create_inspection(
@@ -139,4 +139,31 @@ async def upload_image(db: AsyncSession, inspection_id: str, file: UploadFile):
         raise HTTPException(
             status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
             detail=f"파일 크기가 제한({MAX_FILE_SIZE // 1024 // 1024}MB)을 초과했습니다.",
+        )
+
+
+async def update_inspection(
+    db: AsyncSession,
+    inspection_id: str,
+    requester_id: uuid.UUID,
+    data: InspectionUpdate,
+):
+    try:
+        return await inspection_usecase.update_inspection(
+            db,
+            inspection_id,
+            requester_id,
+            annotation_domain=data.annotation_domain,
+            report_flagged=data.report_flagged,
+            get_inspection_fn=inspection_repository.get_by_id,
+            update_fn=inspection_repository.update,
+        )
+    except NotFoundError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Inspection not found"
+        )
+    except ForbiddenError:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="본인의 검사 건만 수정할 수 있습니다.",
         )

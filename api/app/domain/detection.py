@@ -59,15 +59,21 @@ CANONICAL_TO_DISPLAY_LABEL: dict[str, str] = {
 # 순서는 build_task_label_map() 파생 기준: ontology_id 알파벳 정렬
 # ⚠️ ML 서버가 class_name string을 응답에 포함하면 이 맵은 사용되지 않음 (detection_service.py 참조)
 CLASS_CODE_MAP: dict[int, str] = {
-    0: "coating_drop_paint",
-    1: "coating_separation_paint",
-    2: "crack_insulation",
-    3: "crack_paint",
-    4: "insulation_damage_insulation",
-    5: "paint_run_paint",
-    6: "scratch_base_material",
-    7: "scratch_insulation",
-    8: "scratch_paint",
+    0: "binding_defect_cable_tie",
+    1: "cable_damage_cable",
+    2: "cut_defect_base_material",
+    3: "cut_defect_insulation",
+    4: "coating_drop_paint",
+    5: "coating_separation_paint",
+    6: "crack_insulation",
+    7: "crack_paint",
+    8: "insulation_damage_insulation",
+    9: "paint_run_paint",
+    10: "scratch_base_material",
+    11: "scratch_insulation",
+    12: "scratch_paint",
+    13: "weld_blowhole_joint",
+    14: "weld_defect_joint",
 }
 
 CLS_ONLY_CODES: set[int] = set()

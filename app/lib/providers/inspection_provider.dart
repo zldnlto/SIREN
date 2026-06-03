@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../models/detected_defect.dart';
 import '../models/detection_result.dart';
@@ -11,6 +12,7 @@ class InspectionState {
     this.inspection,
     this.result,
     this.isCreating = false,
+    this.isUploading = false,
     this.isDetecting = false,
     this.isRagConnecting = false,
     this.isReady = false,
@@ -20,12 +22,13 @@ class InspectionState {
   final Inspection? inspection;
   final DetectionResult? result;
   final bool isCreating;
+  final bool isUploading;
   final bool isDetecting;
   final bool isRagConnecting;
   final bool isReady;
   final String? error;
 
-  bool get isLoading => isCreating || isDetecting || isRagConnecting;
+  bool get isLoading => isCreating || isUploading || isDetecting || isRagConnecting;
 
   String? get nextRoute {
     if (result == null || !isReady) return null;
@@ -36,6 +39,7 @@ class InspectionState {
     Inspection? inspection,
     DetectionResult? result,
     bool? isCreating,
+    bool? isUploading,
     bool? isDetecting,
     bool? isRagConnecting,
     bool? isReady,
@@ -45,6 +49,7 @@ class InspectionState {
         inspection: inspection ?? this.inspection,
         result: result ?? this.result,
         isCreating: isCreating ?? this.isCreating,
+        isUploading: isUploading ?? this.isUploading,
         isDetecting: isDetecting ?? this.isDetecting,
         isRagConnecting: isRagConnecting ?? this.isRagConnecting,
         isReady: isReady ?? this.isReady,
@@ -84,22 +89,40 @@ class InspectionNotifier extends Notifier<InspectionState> {
 
   void reset() => state = const InspectionState();
 
-  Future<void> start(String annotationDomain) async {
+  Future<bool> uploadImage(String inspectionId, XFile xFile) async {
+    state = state.copyWith(isUploading: true, error: null);
+    try {
+      await ref.read(inspectionRepositoryProvider).uploadImage(inspectionId, xFile);
+      state = state.copyWith(isUploading: false);
+      return true;
+    } on Exception catch (e) {
+      state = state.copyWith(isUploading: false, error: e.toString());
+      return false;
+    }
+  }
+
+  Future<void> start(String annotationDomain, {XFile? xFile}) async {
     reset();
-    
+
     // Step 1: createInspection (isCreating = true)
     final ins = await createInspection(annotationDomain);
     if (ins == null) return;
+
+    // Step 2: upload image if provided (isUploading = true)
+    if (xFile != null) {
+      final uploaded = await uploadImage(ins.id, xFile);
+      if (!uploaded) return;
+    }
 
     // Step 3: runDetection (isDetecting = true)
     final res = await runDetection(ins.id);
     if (res == null) return;
 
-    // Step 5: RAG connecting (isRagConnecting = true)
+    // Step 4: RAG connecting (isRagConnecting = true)
     state = state.copyWith(isRagConnecting: true);
     await Future.delayed(const Duration(milliseconds: 1500));
 
-    // Step 6: Ready for result screen redirection
+    // Step 5: Ready for result screen redirection
     state = state.copyWith(isRagConnecting: false, isReady: true);
   }
 
@@ -117,6 +140,30 @@ class InspectionNotifier extends Notifier<InspectionState> {
           annotationDomain: annotationDomain,
           inspectorId: state.inspection!.inspectorId,
           reportFlagged: state.inspection!.reportFlagged,
+          createdAt: state.inspection!.createdAt,
+          status: state.inspection!.status,
+          imageKey: state.inspection!.imageKey,
+          thumbnailKey: state.inspection!.thumbnailKey,
+        );
+        state = state.copyWith(inspection: fallback);
+      }
+    }
+  }
+
+  Future<void> reportInspection(String inspectionId) async {
+    try {
+      final updated = await ref
+          .read(inspectionRepositoryProvider)
+          .report(inspectionId);
+      state = state.copyWith(inspection: updated);
+    } catch (_) {
+      // Local fallback sync to maintain UI state seamlessly if backend PATCH endpoint is not ready yet
+      if (state.inspection != null && state.inspection!.id == inspectionId) {
+        final fallback = Inspection(
+          id: state.inspection!.id,
+          annotationDomain: state.inspection!.annotationDomain,
+          inspectorId: state.inspection!.inspectorId,
+          reportFlagged: true,
           createdAt: state.inspection!.createdAt,
           status: state.inspection!.status,
           imageKey: state.inspection!.imageKey,
