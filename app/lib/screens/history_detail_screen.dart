@@ -70,7 +70,7 @@ class _HistoryDetailScreenState extends ConsumerState<HistoryDetailScreen>
                 width: 320,
                 padding: const EdgeInsets.all(AppSpacing.md),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF0F1115),
+                  color: AppColors.surfaceContainerLowest,
                   borderRadius: AppRadius.borderLg,
                   border: Border.all(color: AppColors.border),
                 ),

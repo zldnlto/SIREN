@@ -114,7 +114,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
       context.pushNamed('preview', extra: tempFile.path);
     } catch (e) {
       if (!mounted) return;
-      Toast.show(context, '사진 촬영에 실패했습니다.', type: ToastType.error);
+      Toast.show(
+        context,
+        '사진 촬영에 실패했습니다.',
+        type: ToastType.error,
+        actionLabel: '재시도',
+        onAction: _captureAndPreview,
+      );
     }
   }
 
@@ -140,7 +146,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
         context.pushNamed('progress', extra: next.inspection!.id);
       }
       if (next.error != null && prev?.error == null) {
-        Toast.show(context, '검사 생성에 실패했습니다.', type: ToastType.error);
+        Toast.show(
+          context,
+          '검사 생성에 실패했습니다.',
+          type: ToastType.error,
+          actionLabel: '재시도',
+          onAction: () => ref.read(inspectionProvider.notifier).start('surface_treatment'),
+        );
       }
     });
 
@@ -319,7 +331,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
                             height: 64,
                             decoration: BoxDecoration(
                               border: Border.all(
-                                color: const Color(0xFFFF3B30),
+                                color: AppColors.defect,
                                 width: 2.0,
                               ),
                             ),
@@ -435,7 +447,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
 
     // Camera viewport mock with static 3x3 grid line drawing
     return Container(
-      color: const Color(0xFF0A0A0B),
+      color: AppColors.background,
       child: Stack(
         alignment: Alignment.center,
         children: [
@@ -660,7 +672,7 @@ class _DarkPlaceholder extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: const Color(0xFF090A0B),
+      color: AppColors.background,
       padding: const EdgeInsets.symmetric(horizontal: 40),
       child: Center(
         child: Column(
@@ -706,7 +718,7 @@ class _DarkPlaceholder extends StatelessWidget {
               style: TextStyle(
                 fontSize: 10,
                 fontFamily: 'monospace',
-                color: Color(0xFF4A4D54),
+                color: AppColors.onSurfaceMuted,
               ),
             ),
           ],

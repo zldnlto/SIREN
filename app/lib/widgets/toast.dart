@@ -11,6 +11,8 @@ class Toast {
     BuildContext context,
     String message, {
     ToastType type = ToastType.info,
+    String? actionLabel,
+    VoidCallback? onAction,
   }) {
     _current?.remove();
     _current = null;
@@ -22,6 +24,8 @@ class Toast {
       builder: (_) => _ToastWidget(
         message: message,
         type: type,
+        actionLabel: actionLabel,
+        onAction: onAction,
         onDismiss: () {
           entry.remove();
           if (_current == entry) _current = null;
@@ -38,11 +42,15 @@ class _ToastWidget extends StatefulWidget {
   const _ToastWidget({
     required this.message,
     required this.type,
+    this.actionLabel,
+    this.onAction,
     required this.onDismiss,
   });
 
   final String message;
   final ToastType type;
+  final String? actionLabel;
+  final VoidCallback? onAction;
   final VoidCallback onDismiss;
 
   @override
@@ -146,6 +154,29 @@ class _ToastWidgetState extends State<_ToastWidget>
                           ),
                         ),
                       ),
+                      if (widget.actionLabel != null && widget.onAction != null) ...[
+                        const SizedBox(width: AppSpacing.sm),
+                        TextButton(
+                          style: TextButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            backgroundColor: Colors.white.withValues(alpha: 0.2),
+                            shape: const RoundedRectangleBorder(
+                              borderRadius: AppRadius.borderSm,
+                            ),
+                          ),
+                          onPressed: () {
+                            _dismiss();
+                            widget.onAction!();
+                          },
+                          child: Text(
+                            widget.actionLabel!,
+                            style: AppTextStyles.buttonMd.copyWith(
+                              color: AppColors.onPrimary,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ),

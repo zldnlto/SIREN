@@ -274,13 +274,13 @@ class _PulsingStatusLedState extends State<_PulsingStatusLed>
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: Color.lerp(
-              const Color(0xFF27A644).withOpacity(0.3),
-              const Color(0xFF27A644),
+              AppColors.good.withOpacity(0.3),
+              AppColors.good,
               _pulseController.value,
             ),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF27A644).withOpacity(0.7 * _pulseController.value),
+                color: AppColors.good.withOpacity(0.7 * _pulseController.value),
                 blurRadius: 10 * _pulseController.value,
                 spreadRadius: 3 * _pulseController.value,
               ),
