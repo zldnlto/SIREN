@@ -2,23 +2,22 @@
 
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRef, useState } from "react";
+
+const DEMO_ID = "ADMIN-001";
+const DEMO_PW = "siren1234!";
 
 export default function LoginPage() {
   const router = useRouter();
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const idRef = useRef<HTMLInputElement>(null);
+  const pwRef = useRef<HTMLInputElement>(null);
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
+  async function login(employee_id: string, password: string) {
     setError("");
     setLoading(true);
-    const form = new FormData(e.currentTarget);
-    const result = await signIn("credentials", {
-      employee_id: form.get("employee_id"),
-      password: form.get("password"),
-      redirect: false,
-    });
+    const result = await signIn("credentials", { employee_id, password, redirect: false });
     setLoading(false);
     if (result?.error) {
       setError("사번 또는 비밀번호가 올바르지 않습니다.");
@@ -26,6 +25,17 @@ export default function LoginPage() {
       router.push("/");
       router.refresh();
     }
+  }
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const form = new FormData(e.currentTarget);
+    await login(form.get("employee_id") as string, form.get("password") as string);
+  }
+
+  function fillDemo() {
+    if (idRef.current) idRef.current.value = DEMO_ID;
+    if (pwRef.current) pwRef.current.value = DEMO_PW;
   }
 
   return (
@@ -41,6 +51,7 @@ export default function LoginPage() {
               사번
             </label>
             <input
+              ref={idRef}
               name="employee_id"
               type="text"
               required
@@ -53,6 +64,7 @@ export default function LoginPage() {
               비밀번호
             </label>
             <input
+              ref={pwRef}
               name="password"
               type="password"
               required
@@ -72,7 +84,20 @@ export default function LoginPage() {
             {loading ? "로그인 중…" : "로그인"}
           </button>
         </form>
-        <p className="mt-6 text-xs text-center text-ink-tertiary">
+
+        <div className="mt-4 pt-4 border-t border-hairline">
+          <button
+            type="button"
+            onClick={fillDemo}
+            disabled={loading}
+            className="w-full border border-hairline rounded-md py-2.5 text-sm text-ink-subtle hover:bg-surface-2 hover:text-ink transition-colors disabled:opacity-50"
+          >
+            데모 계정으로 채우기
+            <span className="ml-2 text-ink-tertiary text-xs">{DEMO_ID}</span>
+          </button>
+        </div>
+
+        <p className="mt-5 text-xs text-center text-ink-tertiary">
           AI 분석 결과는 현장 품질 판단을 보조하기 위한 참고 정보입니다.
         </p>
       </div>
