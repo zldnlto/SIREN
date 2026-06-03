@@ -7,3 +7,13 @@ body {
   font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   -webkit-font-smoothing: antialiased;
 }
+
+/* 브라우저 autofill 흰 배경 덮어쓰기 */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0px 1000px #141516 inset;
+  -webkit-text-fill-color: #f7f8f8;
+  caret-color: #f7f8f8;
+  transition: background-color 9999s ease-in-out 0s;
+}
