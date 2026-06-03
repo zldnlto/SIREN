@@ -114,7 +114,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
       context.pushNamed('preview', extra: tempFile.path);
     } catch (e) {
       if (!mounted) return;
-      Toast.show(context, '사진 촬영에 실패했습니다.', type: ToastType.error);
+      Toast.show(
+        context,
+        '사진 촬영에 실패했습니다.',
+        type: ToastType.error,
+        actionLabel: '재시도',
+        onAction: _captureAndPreview,
+      );
     }
   }
 
@@ -140,7 +146,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
         context.pushNamed('progress', extra: next.inspection!.id);
       }
       if (next.error != null && prev?.error == null) {
-        Toast.show(context, '검사 생성에 실패했습니다.', type: ToastType.error);
+        Toast.show(
+          context,
+          '검사 생성에 실패했습니다.',
+          type: ToastType.error,
+          actionLabel: '재시도',
+          onAction: () => ref.read(inspectionProvider.notifier).start('surface_treatment'),
+        );
       }
     });
 

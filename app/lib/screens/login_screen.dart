@@ -110,6 +110,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         .login(_employeeIdCtrl.text, _passwordCtrl.text);
   }
 
+  void _resetLoginForm() {
+    setState(() {
+      _passwordCtrl.clear();
+      _isIdActive = true;
+    });
+    _employeeIdFocusNode.requestFocus();
+  }
+
   @override
   Widget build(BuildContext context) {
     final authAsync = ref.watch(authProvider);
@@ -123,6 +131,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           context,
           '로그인에 실패했습니다. 사원번호와 비밀번호를 확인해 주세요.',
           type: ToastType.error,
+          actionLabel: '재시도',
+          onAction: _resetLoginForm,
         );
       }
     });

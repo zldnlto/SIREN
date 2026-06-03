@@ -199,7 +199,13 @@ class _InspectionProgressScreenState
         context.goNamed(route, extra: widget.inspectionId);
       }
       if (next.error != null && prev?.error == null) {
-        Toast.show(context, '검사 중 오류가 발생했습니다.', type: ToastType.error);
+        Toast.show(
+          context,
+          '검사 중 오류가 발생했습니다.',
+          type: ToastType.error,
+          actionLabel: '재시도',
+          onAction: _runDetection,
+        );
       }
     });
 
