@@ -1,5 +1,5 @@
 {
-  "buildCommand": "$HOME/flutter/bin/flutter build web --dart-define=BASE_URL=$BASE_URL",
+  "buildCommand": "$HOME/flutter/bin/flutter build web --dart-define=BASE_URL=${BASE_URL:-https://siren-api.duckdns.org/api/v1}",
   "outputDirectory": "build/web",
   "framework": null
 }
